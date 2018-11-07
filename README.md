@@ -1,6 +1,6 @@
-# Dashboard Manager & Editor
-**Purpose**: Enable quick visualization of operational analytics.
-[![Build Status via Travis CI](https://travis-ci.com/arundo/dashboards.svg?branch=develop)](https://travis-ci.com/arundo/dashboards)
+# React Sandbox
+**Purpose**: A live/hot-reloading sandbox for learning/teaching React concepts. Launch in dev mode,
+fire up the browser, and begin modifying/saving code for instant updates in the browser.
 ---
 
 # Requirements
