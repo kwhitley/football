@@ -1,0 +1,34 @@
+$baseColor: #222;
+$baseFontSize: 1.5em;
+
+body {
+  color: $baseColor;
+  font-family: sans-serif;
+  font-weight: lighter;
+  font-size: $baseFontSize;
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 80%;
+
+}
+
+.person {
+  flex: 0;
+  text-align: center;
+}
+
+.toggler {
+  margin: 0 0.3em;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
