@@ -25,6 +25,11 @@ yarn dev
 
 # Additional Notes
 
+Client code should be modified from inside the `/src/client/components` folder, with `App.jsx` as the
+primary entry point.  The `/src/client/index.html` is a template and should largely remain untouched.
+Likewise, the `/src/client/index.jsx` is a boilerplate entry for the app, and is only where high-level
+app-wide logic would go (e.g. store instantiation, etc).
+
 This build uses a fuse-box build process, rather than webpack.  This includes the following feature support, minus the time overhead or babel dependencies (fuse-box uses a TypeScript transpiler under the hood).
 - [x] React/JSX support
 - [x] Hot reloading
