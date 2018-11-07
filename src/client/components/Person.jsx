@@ -1,6 +1,15 @@
 import React from 'react'
 import Toggler from './Toggler'
 
+/*
+  This is a "stateful" ES6 React component.  It is an ES6 class, including constructor (if necessary),
+  state definition, internal methods, etc.  If any advanced logic or component lifecycle stages are needed,
+  create a component using this structure.
+
+  Notice that this component renders a child component, <Toggler />, and passes in values and functions that
+  are defined/tracked in *this* component.  This method allows children to be "dumb" components that are easy to
+  render, understand, and write.
+*/
 class Person extends React.PureComponent {
   // predefining some state for the component
   state = {
