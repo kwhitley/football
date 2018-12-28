@@ -37,23 +37,23 @@ const clientConfig = (isProduction, basePath = DEV_BUILD_PATH) => ({
     [
       SassPlugin(),
       CSSResourcePlugin({
-        dist: `${basePath}/client/assets/`,
-        resolve: f => `/assets/${f}`
+        dist: `${basePath}/client/i/`,
+        resolve: f => `/i/${f}`
       }),
       CSSPlugin()
     ],
     [
       LESSPlugin(),
       CSSResourcePlugin({
-        dist: `${basePath}/client/assets/`,
-        resolve: f => `/assets/${f}`
+        dist: `${basePath}/client/i/`,
+        resolve: f => `/i/${f}`
       }),
       CSSPlugin()
     ],
     [
       CSSResourcePlugin({
-        dist: `${basePath}/client/assets/`,
-        resolve: f => `/assets/${f}`
+        dist: `${basePath}/client/i/`,
+        resolve: f => `/i/${f}`
       }),
       CSSPlugin()
     ],

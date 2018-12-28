@@ -1,15 +1,17 @@
-// global imports
 import React from 'react'
 import ReactDom from 'react-dom'
-import 'semantic-ui-css/semantic.min.css'       // load base styles
+import { Provider } from 'mobx-react'
 
-// local imports
-import App from './components/App'              // root React component
+import App from './components/App'
+import store from './state'
+import { history } from './state/routing'
 
 // styles
-import './styles/base.scss'                     // example local SASS/LESS
+import './styles/base.scss'
 
 ReactDom.render(                                // bootstrap the app
-  <App />,
+  <Provider {...store}>
+    <App history={history} />
+  </Provider>,
   document.getElementById('app')
 )
