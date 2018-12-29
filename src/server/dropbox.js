@@ -23,7 +23,7 @@ export const download = (path) => {
   console.log('attempting to use dropbox api', { path })
   var dbx = new Dropbox({ accessToken: DROPBOX_ACCESS_TOKEN, fetch })
 
-  return dbx.filesDownload({ path, rev: '01600000001136ae8c0' })
+  return dbx.filesDownload({ path })
     .then((response) => {
       console.log(response)
 

@@ -11,24 +11,27 @@ body {
   position: relative;
 }
 
-#app {
+#app {}
+
+.grid {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  height: 80%;
+  flex-flow: row wrap;
+  overflow: hidden;
 
-}
+  article {
+    position: relative;
+    flex: 0 1 33%;
 
-.person {
-  flex: 0;
-  text-align: center;
-}
-
-.toggler {
-  margin: 0 0.3em;
-  cursor: pointer;
-
-  &:hover {
-    text-decoration: underline;
+    label {
+      position: absolute;
+      z-index: 1;
+      font-size: 2vmin;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 0.8em 1em;
+      background-color: rgba(0,0,0,0.1);
+      color: white;
+    }
   }
 }

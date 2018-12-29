@@ -9,168 +9,196 @@ const isProduction = process.env.NODE_ENV === 'production'
 const app = express()
 gm = gm.subClass({ imageMagick: true })
 
-// var express       = require('express')
-// var app           = module.exports = express()
-// var _             = require('lodash')
-// var collections   = require('./collections')
-// var gm            = require('gm')
-// var fs            = require('fs')
-// var store         = require('../file-store')
-// var Path          = require('path')
-
 app.get('*', async (req, res) => {
-  console.log('req.path', req.path)
-  let targetSize  = null
-  let p           = req.path
-  let [ fullpath, folder, filename ] = req.path.match(/(.*)\/(.*)/) || []
-  let parts       = p.match(/[^\.]+/g)
-  let path        = _.first(parts)
-  let extension   = _.first(p.match(/\b\w+$/))   // .jpg, .jpeg, .png
-  let size        = _.first(p.match(/\b(\d+x\d*)|(\d*x\d+)\b/))  // 300x, x33, 100x20
-  let optionsStr  = _.without(parts, folder, size, extension)
-  let options     = {}
-  let imagePath = req.path.toLowerCase()
+  let decodedPath = decodeURI(req.path)
+  let optionsSegment = decodedPath.replace(/^.*::(.*)\.\w{3,4}$/i, '$1') || ''
+  let originalPath = decodedPath.replace(/^(.*)(::.*)(\.\w{3,4})$/g, '$1$3')
+  let options = optionsSegment
+                  .split(',')
+                  .reduce((a, b) => {
+                    let [ key, value ] = b.split('=')
+                    a[key] = value !== undefined ? Number(value) : true
 
-  if (!_.isEmpty(optionsStr)) {
-    optionsStr = optionsStr.join('.').split(',')
-    _.each(optionsStr, function(option) {
-      var group = option.split('=')
-      options[group[0]] = group.length === 2 ? (parseFloat(group[1]) || group[1]) : true;
-    })
-  }
+                    return a
+                  }, {})
 
-  console.log('IMAGER', { path, parts, size, options, extension, imagePath })
+  // begin: save final output and stream output to response
+  let savefolder = Path.join(__dirname, `../${isProduction ? 'dist' : '.dist-dev'}/client`)
+  let savepath = savefolder + req.originalUrl
+  let [ fullpath, folder ] = req.path.match(/(.*)\/(.*)/) || []
 
-  if (size) {
-    size = size.split('x')
-    targetSize = {
-      height:  size[0],
-      width: size[1],
-    }
+  console.log('IMAGER', {
+    decodedPath,
+    optionsSegment,
+    options,
+    originalPath,
+    folder,
+  })
 
-    if (targetSize.width && targetSize.height) {
-      targetSize.ratio = targetSize.width / targetSize.height;
-      if (!options.background && !options.fit) {
-        options.crop = true;
-      }
+  if (options.width && options.height) {
+    options.targetRatio = options.width / options.height
+    if (!options.background && !options.fit) {
+      options.crop = true
     }
   }
 
-  let image = await download(imagePath)
+  let image = await fs.promises.readFile(savefolder + originalPath).catch(console.error)
+
+  if (!image) {
+    image = await download(originalPath)
+    console.log('image file loaded from dropbox')
+  } else {
+    console.log('image binary loaded from local content')
+  }
 
   if (!image) return res.status(404).send('Image not found in database')
 
   let gmImage = gm(image)
 
-  gmImage.size(async function(err, size) {
-    if (err) {
-      return res.status(500).send(err)
-    }
+  gmImage.orientation((err, orientation) => {
+    gmImage.size(async function(err, { height, width }) {
 
-    let h = size.height
-    let w = size.width
-    let r = w / h
+      console.log('orientation', orientation)
+      console.log('size', { height, width })
 
-    gmImage.setFormat('jpg')
-
-    // black and white filter
-    if (options.mono) {
-      gmImage.type('GrayScale')
-    }
-
-    // negative filter
-    if (options.negative) {
-      gmImage.negative()
-    }
-
-    if (options.crop) {
-      let rw, rh
-      let center = !_.isUndefined(options.center) ? parseFloat(options.center, 10) : 0.5
-      let tr = targetSize.width / targetSize.height // targetRatio
-      let tx = 0
-      let ty = 0
-
-      if (r > tr) {
-        // scale to height, leaving excess in horizontal
-        gmImage.resize(null, targetSize.height)
-        rw = targetSize.height * r; // resizedWidth
-        tx = Math.max(0,Math.round(rw * center - targetSize.width / 2))    // prevent clipping on left
-        tx = Math.min(tx, rw - targetSize.width)                           // prevent clipping on right
-      } else {
-        // scale to width, leaving excess in vertical
-        gmImage.resize(targetSize.width, null)
-        rh = targetSize.width / r; // resizedHeight
-        ty = Math.max(0,Math.round(rh * center - targetSize.height / 2))   // prevent clipping on top
-        ty = Math.min(ty, rh - targetSize.height)                          // prevent clipping on bottom
+      // switch requested dimensions
+      if (orientation === 'RightTop') {
+        let temp = options.width
+        options.width = options.height
+        options.height = temp
+        options.targetRatio = options.height && (options.width / options.height)
       }
 
-      // final crop
-      gmImage.crop(targetSize.width, targetSize.height, tx, ty)
-      options.sharpen = options.sharpen || 2
-    } else if (targetSize) {
-      gmImage.resize(targetSize.width, targetSize.height)
-      options.sharpen = options.sharpen || 2
-    }
+      if (err) {
+        return res.status(500).send(err)
+      }
 
-    // sharpen pass
-    if (options.sharpen) {
-      var sharpenValue = parseInt(options.sharpen, 10)
-      gmImage.sharpen(sharpenValue, sharpenValue / 5)
-    }
+      let actualRatio = width / height
+      console.log('actual aspect ratio', actualRatio)
+      console.log('actual height', height)
+      console.log('actual width', width)
 
-    // add black letterboxing for background requests
-    if (options.background) {
-      gmImage
-        .gravity("Center")
-        .background("black")
-        .extent(targetSize.width, targetSize.height)
+      gmImage.setFormat('jpg')
 
-      options.quality = options.quality || 98; // maximize quality for background renders
-    }
+      // black and white filter
+      if (options.mono) {
+        gmImage.type('GrayScale')
+      }
 
-    // quality filter (default = 80)
-    options.quality = options.quality || 90;
-    if (options.quality) {
-      gmImage.quality(options.quality)
-    }
+      // negative filter
+      if (options.negative) {
+        gmImage.negative()
+      }
 
-    // allow for any additional filter to be ran via "gm-[filtername]=[value]"
-    _.each(options, function(valueStr, key) {
-      if (key.match(/^gm-\w+$/)) {
-        var values  = valueStr.split(',')
-        _.map(values, function(value) {
-          return _.isNumber(value) ? parseFloat(value) : value;
-        })
+      if (options.crop) {
+        let rw, rh
+        let center = !_.isUndefined(options.center) ? parseFloat(options.center, 10) : 0.5
+        console.log('target aspect ratio', options.targetRatio)
+        let tx = 0
+        let ty = 0
 
-        var value   = values[0];
-        key = key.replace(/^gm-/,'')
+        console.log('cropping')
 
-        if (['blur', 'sharpen'].indexOf(key) !== -1) {
-          sigma = value / 3;
+        if (actualRatio > options.targetRatio) {
+          // actual aspect is wider than target aspect
+          // scale to height, leaving excess in horizontal
+          console.log('scaling to height')
+          gmImage.resize(null, options.height)
+          rw = options.height * actualRatio // resizedWidth
+          console.log('resized width', rw)
+          tx = Math.max(0, Math.round(rw * center - options.width / 2))    // prevent clipping on left
+          tx = Math.min(tx, rw - options.width)                           // prevent clipping on right
+        } else {
+          console.log('scaling to width')
+          // scale to width, leaving excess in vertical
+          gmImage.resize(options.width, null)
+          rh = options.width / actualRatio // resizedHeight
+          console.log('resized height', rh)
+          ty = Math.max(0, Math.round(rh * center - options.height / 2))   // prevent clipping on top
+          ty = Math.min(ty, rh - options.height)                          // prevent clipping on bottom
         }
-        gmImage[key].apply(gmImage[key], values)
+
+        console.log('final crop', { height, width, tx, ty })
+
+        // final crop
+        // if (orientation === 'RightTop') {
+        //   console.log('cropping for rotated image')
+        //   gmImage.crop(options.height, options.width, tx, ty)//, ty, tx)//, tx, ty)
+        // } else {
+          gmImage.crop(options.width, options.height, tx, ty)//, tx, ty)
+        // }
+
+        options.sharpen = options.sharpen || 2
+      } else if (options) {
+        console.log('resizing', options.width, options.height)
+        // if (orientation === 'RightTop') {
+        //   gmImage.resize(options.height, options.width)
+        // } else {
+          gmImage.resize(options.width, options.height)
+        // }
+        // options.sharpen = options.sharpen || 2
       }
-    })
 
-    // begin: save final output and stream output to response
-    let savefolder = Path.join(__dirname, `../${isProduction ? 'dist' : '.dist-dev'}/client/i${folder}`)
-    let savepath = savefolder + '/' + filename
-
-    // ensure folder exists before file stream opening
-    await fs.promises.mkdir(savefolder, { recursive: true }).catch(console.error)
-
-    savepath = fs.createWriteStream(savepath)
-
-    res.set('Content-Type', 'image/jpeg')
-    res.set('Cache-Control', "public, max-age=345600") // 4 days
-    res.set('Expires', new Date(Date.now() + 345600000).toUTCString())
-
-    gmImage.stream(function (err, stdout, stderr) {
-      stdout.pipe(res)
-
-      if (savepath) {
-        stdout.pipe(savepath)
+      // sharpen pass
+      if (options.sharpen) {
+        var sharpenValue = parseInt(options.sharpen, 10)
+        gmImage.sharpen(sharpenValue, sharpenValue / 5)
       }
+
+      // add black letterboxing for background requests
+      if (options.background) {
+        gmImage
+          .gravity("Center")
+          .background("black")
+          .extent(options.width, options.height)
+
+        options.quality = options.quality || 98 // maximize quality for background renders
+      }
+
+      // quality filter (default = 80)
+      options.quality = options.quality || 90
+      if (options.quality) {
+        gmImage.quality(options.quality)
+      }
+
+      // allow for any additional filter to be ran via "gm-[filtername]=[value]"
+      _.each(options, function(valueStr, key) {
+        if (key.match(/^gm-\w+$/)) {
+          var values  = valueStr.split(',')
+          _.map(values, function(value) {
+            return _.isNumber(value) ? parseFloat(value) : value
+          })
+
+          var value   = values[0]
+          key = key.replace(/^gm-/,'')
+
+          if (['blur', 'sharpen'].indexOf(key) !== -1) {
+            sigma = value / 3
+          }
+          gmImage[key].apply(gmImage[key], values)
+        }
+      })
+
+      gmImage.autoOrient()
+
+      console.log('ready to save...')
+
+      // ensure folder exists before file stream opening
+      await fs.promises.mkdir(savefolder + '/i' + folder, { recursive: true }).catch(console.error)
+
+      savepath = fs.createWriteStream(savepath)
+
+      res.set('Content-Type', 'image/jpeg')
+      res.set('Cache-Control', "public, max-age=345600") // 4 days
+      res.set('Expires', new Date(Date.now() + 345600000).toUTCString())
+
+      gmImage.stream(function (err, stdout, stderr) {
+        stdout.pipe(res)
+
+        if (savepath) {
+          stdout.pipe(savepath)
+        }
+      })
     })
   })
 })
