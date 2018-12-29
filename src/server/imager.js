@@ -41,18 +41,11 @@ app.get('*', async (req, res) => {
 
   console.log('IMAGER', { path, parts, size, options, extension, imagePath })
 
-  // if (!path.match(/jpg|png|jpeg$/gi)) {
-  //   res.setHeader("Cache-Control", "public, max-age=345600") // 4 days
-  //   res.setHeader("Expires", new Date(Date.now() + 345600000).toUTCString())
-
-  //   return res.sendStatus(404)
-  // }
-
   if (size) {
     size = size.split('x')
     targetSize = {
-      width:  size[0],
-      height: size[1]
+      height:  size[0],
+      width: size[1],
     }
 
     if (targetSize.width && targetSize.height) {
@@ -67,141 +60,118 @@ app.get('*', async (req, res) => {
 
   if (!image) return res.status(404).send('Image not found in database')
 
-  // res.send('ok')
-  //   if (extension === 'purge') {
-  //     image.clearCache()
-  //     return res.send('cache cleared for key ' + image._id)
-  //   }
+  let gmImage = gm(image)
 
-  //   store.getFile({ key: image._id, refresh: options.refresh }, function(err, resourcePath) {
-      var gmImage = gm(image)
+  gmImage.size(async function(err, size) {
+    if (err) {
+      return res.status(500).send(err)
+    }
 
-      gmImage.size(async function(err, size) {
-        if (err) {
-          console.log('err getting size', err)
-          return res.status(500).send(err)
-        }
+    let h = size.height
+    let w = size.width
+    let r = w / h
 
-        let h = size.height;
-        let w = size.width;
-        let r = w / h;
+    gmImage.setFormat('jpg')
 
-        console.log('size', size)
+    // black and white filter
+    if (options.mono) {
+      gmImage.type('GrayScale')
+    }
 
-        gmImage.setFormat('jpg')
+    // negative filter
+    if (options.negative) {
+      gmImage.negative()
+    }
 
-        // black and white filter
-        if (options.mono) {
-          gmImage.type('GrayScale')
-        }
+    if (options.crop) {
+      let rw, rh
+      let center = !_.isUndefined(options.center) ? parseFloat(options.center, 10) : 0.5
+      let tr = targetSize.width / targetSize.height // targetRatio
+      let tx = 0
+      let ty = 0
 
-        // negative filter
-        if (options.negative) {
-          gmImage.negative()
-        }
+      if (r > tr) {
+        // scale to height, leaving excess in horizontal
+        gmImage.resize(null, targetSize.height)
+        rw = targetSize.height * r; // resizedWidth
+        tx = Math.max(0,Math.round(rw * center - targetSize.width / 2))    // prevent clipping on left
+        tx = Math.min(tx, rw - targetSize.width)                           // prevent clipping on right
+      } else {
+        // scale to width, leaving excess in vertical
+        gmImage.resize(targetSize.width, null)
+        rh = targetSize.width / r; // resizedHeight
+        ty = Math.max(0,Math.round(rh * center - targetSize.height / 2))   // prevent clipping on top
+        ty = Math.min(ty, rh - targetSize.height)                          // prevent clipping on bottom
+      }
 
-        // resize if barely off
-        // if (options.background && targetSize.ratio) {
-        //   console.log('ratio difference', Math.abs(r / targetSize.ratio - 1))
-        //   if (Math.abs(r / targetSize.ratio - 1) < 0.1) {
-        //     options.crop = true;
-        //     options.background = false;
-        //   }
-        // }
+      // final crop
+      gmImage.crop(targetSize.width, targetSize.height, tx, ty)
+      options.sharpen = options.sharpen || 2
+    } else if (targetSize) {
+      gmImage.resize(targetSize.width, targetSize.height)
+      options.sharpen = options.sharpen || 2
+    }
 
-        if (options.crop) {
-          let rw, rh
-          let center = !_.isUndefined(options.center) ? parseFloat(options.center, 10) : 0.5
-          let tr = targetSize.width / targetSize.height // targetRatio
-          let tx = 0
-          let ty = 0
+    // sharpen pass
+    if (options.sharpen) {
+      var sharpenValue = parseInt(options.sharpen, 10)
+      gmImage.sharpen(sharpenValue, sharpenValue / 5)
+    }
 
-          if (r > tr) {
-            // scale to height, leaving excess in horizontal
-            gmImage.resize(null, targetSize.height)
-            rw = targetSize.height * r; // resizedWidth
-            tx = Math.max(0,Math.round(rw * center - targetSize.width / 2))    // prevent clipping on left
-            tx = Math.min(tx, rw - targetSize.width)                           // prevent clipping on right
-          } else {
-            // scale to width, leaving excess in vertical
-            gmImage.resize(targetSize.width, null)
-            rh = targetSize.width / r; // resizedHeight
-            ty = Math.max(0,Math.round(rh * center - targetSize.height / 2))   // prevent clipping on top
-            ty = Math.min(ty, rh - targetSize.height)                          // prevent clipping on bottom
-          }
+    // add black letterboxing for background requests
+    if (options.background) {
+      gmImage
+        .gravity("Center")
+        .background("black")
+        .extent(targetSize.width, targetSize.height)
 
-          // final crop
-          gmImage.crop(targetSize.width, targetSize.height, tx, ty)
-          options.sharpen = options.sharpen || 2;
-        } else if (targetSize) {
-          gmImage.resize(targetSize.width, targetSize.height)
-          options.sharpen = options.sharpen || 2;
-        }
+      options.quality = options.quality || 98; // maximize quality for background renders
+    }
 
-        // sharpen pass
-        if (options.sharpen) {
-          var sharpenValue = parseInt(options.sharpen, 10)
-          gmImage.sharpen(sharpenValue, sharpenValue / 5)
-        }
+    // quality filter (default = 80)
+    options.quality = options.quality || 90;
+    if (options.quality) {
+      gmImage.quality(options.quality)
+    }
 
-        // add black letterboxing for background requests
-        if (options.background) {
-          gmImage
-            .gravity("Center")
-            .background("black")
-            .extent(targetSize.width, targetSize.height)
-
-          options.quality = options.quality || 98; // maximize quality for background renders
-        }
-
-        // quality filter (default = 80)
-        options.quality = options.quality || 90;
-        if (options.quality) {
-          gmImage.quality(options.quality)
-        }
-
-        // allow for any additional filter to be ran via "gm-[filtername]=[value]"
-        _.each(options, function(valueStr, key) {
-          if (key.match(/^gm-\w+$/)) {
-            var values  = valueStr.split(',')
-            _.map(values, function(value) {
-              return _.isNumber(value) ? parseFloat(value) : value;
-            })
-
-            var value   = values[0];
-            key = key.replace(/^gm-/,'')
-            console.log('image processing:', key, values)
-
-            if (['blur', 'sharpen'].indexOf(key) !== -1) {
-              sigma = value / 3;
-            }
-            console.log(gmImage[key])
-            gmImage[key].apply(gmImage[key], values)
-          }
+    // allow for any additional filter to be ran via "gm-[filtername]=[value]"
+    _.each(options, function(valueStr, key) {
+      if (key.match(/^gm-\w+$/)) {
+        var values  = valueStr.split(',')
+        _.map(values, function(value) {
+          return _.isNumber(value) ? parseFloat(value) : value;
         })
 
-        let savefolder = Path.join(__dirname, `../${isProduction ? 'dist' : '.dist-dev'}/client/i${folder}`)
-        let savepath = savefolder + '/' + filename
-        console.log('saving image fragment @ ', savepath)
+        var value   = values[0];
+        key = key.replace(/^gm-/,'')
 
-        // ensure folder exists before file stream opening
-        await fs.promises.mkdir(savefolder, { recursive: true }).catch(console.error)
+        if (['blur', 'sharpen'].indexOf(key) !== -1) {
+          sigma = value / 3;
+        }
+        gmImage[key].apply(gmImage[key], values)
+      }
+    })
 
-        savepath = fs.createWriteStream(savepath)
+    // begin: save final output and stream output to response
+    let savefolder = Path.join(__dirname, `../${isProduction ? 'dist' : '.dist-dev'}/client/i${folder}`)
+    let savepath = savefolder + '/' + filename
 
-        res.set('Content-Type', 'image/jpeg')
-        res.set('Cache-Control', "public, max-age=345600") // 4 days
-        res.set('Expires', new Date(Date.now() + 345600000).toUTCString())
-  //       // stream final processed image to response
-        gmImage.stream(function (err, stdout, stderr) {
-          stdout.pipe(res)
+    // ensure folder exists before file stream opening
+    await fs.promises.mkdir(savefolder, { recursive: true }).catch(console.error)
 
-          if (savepath) {
-            stdout.pipe(savepath)
-          }
-        })
-  //     })
-  //   })
+    savepath = fs.createWriteStream(savepath)
+
+    res.set('Content-Type', 'image/jpeg')
+    res.set('Cache-Control', "public, max-age=345600") // 4 days
+    res.set('Expires', new Date(Date.now() + 345600000).toUTCString())
+
+    gmImage.stream(function (err, stdout, stderr) {
+      stdout.pipe(res)
+
+      if (savepath) {
+        stdout.pipe(savepath)
+      }
+    })
   })
 })
 
