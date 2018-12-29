@@ -16,6 +16,7 @@ export class ImageList {
     fetch('/api/list')
       .then(r => r.json())
       .then(r => r.entries)
+      .then(entries => entries.filter(e => e['.tag'] === 'file'))
       .then(r => r.forEach(this.add))
       .catch(err => console.warn(err))
   }

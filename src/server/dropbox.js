@@ -16,18 +16,18 @@ export const list = () => {
 
       return response
     })
-    .catch((error) => console.log(error))
+    .catch(console.error)
 }
 
 export const download = (path) => {
   console.log('attempting to use dropbox api', { path })
   var dbx = new Dropbox({ accessToken: DROPBOX_ACCESS_TOKEN, fetch })
 
-  return dbx.filesDownload({ path })
+  return dbx.filesDownload({ path, rev: '01600000001136ae8c0' })
     .then((response) => {
       console.log(response)
 
       return response.fileBinary
     })
-    .catch((error) => console.log(error))
+    .catch(console.error)
 }

@@ -1,9 +1,6 @@
 import React from 'react'
-import Person from './Person'
+import ImageCollection from './ImageCollection'
 
-const App = () =>
-  <React.Fragment>
-    <Person name="Kevin" />
-  </React.Fragment>
+const App = () => <ImageCollection />
 
 export default App

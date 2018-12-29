@@ -18,17 +18,18 @@ gm = gm.subClass({ imageMagick: true })
 // var store         = require('../file-store')
 // var Path          = require('path')
 
-app.get('/:path', async (req, res) => {
+app.get('*', async (req, res) => {
+  console.log('req.path', req.path)
   let targetSize  = null
-  let p           = req.params.path
+  let p           = req.path
+  let [ fullpath, folder, filename ] = req.path.match(/(.*)\/(.*)/) || []
   let parts       = p.match(/[^\.]+/g)
   let path        = _.first(parts)
   let extension   = _.first(p.match(/\b\w+$/))   // .jpg, .jpeg, .png
   let size        = _.first(p.match(/\b(\d+x\d*)|(\d*x\d+)\b/))  // 300x, x33, 100x20
-  let optionsStr  = _.without(parts, path, size, extension)
+  let optionsStr  = _.without(parts, folder, size, extension)
   let options     = {}
-  let savepath    = null
-  let imagePath = `/${path}.${extension}`
+  let imagePath = req.path.toLowerCase()
 
   if (!_.isEmpty(optionsStr)) {
     optionsStr = optionsStr.join('.').split(',')
@@ -38,14 +39,14 @@ app.get('/:path', async (req, res) => {
     })
   }
 
-  console.log('IMAGER', { path, size, options, extension, imagePath })
+  console.log('IMAGER', { path, parts, size, options, extension, imagePath })
 
-  if (!path.match(/^[\w_\-\s]+$/)) {
-    res.setHeader("Cache-Control", "public, max-age=345600") // 4 days
-    res.setHeader("Expires", new Date(Date.now() + 345600000).toUTCString())
+  // if (!path.match(/jpg|png|jpeg$/gi)) {
+  //   res.setHeader("Cache-Control", "public, max-age=345600") // 4 days
+  //   res.setHeader("Expires", new Date(Date.now() + 345600000).toUTCString())
 
-    return res.send(404)
-  }
+  //   return res.sendStatus(404)
+  // }
 
   if (size) {
     size = size.split('x')
@@ -64,7 +65,7 @@ app.get('/:path', async (req, res) => {
 
   let image = await download(imagePath)
 
-  if (!image) return res.send(404, 'Image not found in database')
+  if (!image) return res.status(404).send('Image not found in database')
 
   // res.send('ok')
   //   if (extension === 'purge') {
@@ -75,7 +76,7 @@ app.get('/:path', async (req, res) => {
   //   store.getFile({ key: image._id, refresh: options.refresh }, function(err, resourcePath) {
       var gmImage = gm(image)
 
-      gmImage.size(function(err, size) {
+      gmImage.size(async function(err, size) {
         if (err) {
           console.log('err getting size', err)
           return res.status(500).send(err)
@@ -87,9 +88,7 @@ app.get('/:path', async (req, res) => {
 
         console.log('size', size)
 
-        // if (extension) {
-          gmImage.setFormat('jpg')
-        // }
+        gmImage.setFormat('jpg')
 
         // black and white filter
         if (options.mono) {
@@ -181,14 +180,16 @@ app.get('/:path', async (req, res) => {
           }
         })
 
-        savepath = Path.join(__dirname, `../${isProduction ? 'dist' : '.dist-dev'}/client/i/${req.params.path}`)
+        let savefolder = Path.join(__dirname, `../${isProduction ? 'dist' : '.dist-dev'}/client/i${folder}`)
+        let savepath = savefolder + '/' + filename
         console.log('saving image fragment @ ', savepath)
 
-        // res.send('ok')
+        // ensure folder exists before file stream opening
+        await fs.promises.mkdir(savefolder, { recursive: true }).catch(console.error)
 
         savepath = fs.createWriteStream(savepath)
 
-        res.set('Content-Type', extension ? 'image/' + extension : image.file.type)
+        res.set('Content-Type', 'image/jpeg')
         res.set('Cache-Control', "public, max-age=345600") // 4 days
         res.set('Expires', new Date(Date.now() + 345600000).toUTCString())
   //       // stream final processed image to response
@@ -204,6 +205,6 @@ app.get('/:path', async (req, res) => {
   })
 })
 
-app.get('*', (req, res) => res.send(403))
+app.get('*', (req, res) => res.sendStatus(403))
 
 export default app
