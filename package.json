@@ -13,6 +13,7 @@
     "test": "mocha -r esm -r ts-node/register src/**/*.spec.*",
     "predev": "rm -rf .fusebox cache",
     "dev": "node fuse",
+    "postinstall": "yarn build",
     "build": "node fuse build",
     "lint": "eslint src --ext .js,.jsx",
     "setup": "node ./.dbscripts/init_db.js && npm run test"
