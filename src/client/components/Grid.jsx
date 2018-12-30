@@ -5,7 +5,8 @@ import Imager from './Imager'
 export const Grid = ({ items }) =>
   <section className="grid">
     {
-      items.map(item =>
+      items.map((item, index) =>
+        // index !== 0 ? null :
         <article key={item.content_hash}>
           <label>{ item.name }</label>
           <Imager src={`/i${item.path_display}`} />

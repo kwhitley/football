@@ -7,7 +7,6 @@ import { download } from './dropbox'
 const isProduction = process.env.NODE_ENV === 'production'
 
 const app = express()
-gm = gm.subClass({ imageMagick: true })
 
 app.get('*', async (req, res) => {
   let decodedPath = decodeURI(req.path)
@@ -54,14 +53,24 @@ app.get('*', async (req, res) => {
   if (!image) return res.status(404).send('Image not found in database')
 
   let gmImage = gm(image)
+  console.log('gmImage', gmImage)
 
-  gmImage.orientation((err, orientation) => {
-    gmImage.size(async function(err, { height, width }) {
+  gmImage.orientation(async function(err, orientation) {
+    err && console.log('orientation.error', err)
 
-      console.log('orientation', orientation)
+    gmImage.size(async function(err, geometry) {
+      err && console.log('geometry.error', err)
+
+      if (!geometry) {
+        console.error(`Image geometry not found for ${req.path}`)
+        return res.status(500).send(`Image geometry not found for ${req.path}`)
+      }
+
+      let { height, width } = geometry
+
       console.log('size', { height, width })
 
-      // switch requested dimensions
+      switch requested dimensions
       if (orientation === 'RightTop') {
         let temp = options.width
         options.width = options.height
@@ -89,6 +98,9 @@ app.get('*', async (req, res) => {
       if (options.negative) {
         gmImage.negative()
       }
+
+
+      gmImage.autoOrient()
 
       if (options.crop) {
         let rw, rh
@@ -118,25 +130,13 @@ app.get('*', async (req, res) => {
           ty = Math.min(ty, rh - options.height)                          // prevent clipping on bottom
         }
 
-        console.log('final crop', { height, width, tx, ty })
+        console.log('final crop', { height: options.height, width: options.width, tx, ty })
 
-        // final crop
-        // if (orientation === 'RightTop') {
-        //   console.log('cropping for rotated image')
-        //   gmImage.crop(options.height, options.width, tx, ty)//, ty, tx)//, tx, ty)
-        // } else {
-          gmImage.crop(options.width, options.height, tx, ty)//, tx, ty)
-        // }
-
+        gmImage.crop(options.width, options.height, tx, ty)//, tx, ty)
         options.sharpen = options.sharpen || 2
       } else if (options) {
         console.log('resizing', options.width, options.height)
-        // if (orientation === 'RightTop') {
-        //   gmImage.resize(options.height, options.width)
-        // } else {
-          gmImage.resize(options.width, options.height)
-        // }
-        // options.sharpen = options.sharpen || 2
+        gmImage.resize(options.width, options.height)
       }
 
       // sharpen pass
@@ -179,7 +179,6 @@ app.get('*', async (req, res) => {
         }
       })
 
-      gmImage.autoOrient()
 
       console.log('ready to save...')
 
