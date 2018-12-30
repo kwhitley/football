@@ -1,5 +1,11 @@
 $baseColor: #222;
 $baseFontSize: 1.5em;
+$gridItemMargin: 0.25rem;
+
+@mixin grid($itemsPerRow, $margin) {
+  margin: $margin;
+  width: calc(100% / #{$itemsPerRow} - (#{$margin} + #{$margin}));
+}
 
 body {
   color: $baseColor;
@@ -8,6 +14,8 @@ body {
   font-size: $baseFontSize;
   height: 100%;
   width: 100%;
+  margin: 0;
+  padding: 0;
   position: relative;
 }
 
@@ -17,10 +25,36 @@ body {
   display: flex;
   flex-flow: row wrap;
   overflow: hidden;
+  margin: $gridItemMargin;
+
 
   article {
     position: relative;
-    flex: 0 1 33%;
+
+    @include grid(1, $gridItemMargin);
+    // flex: 0 1 100%;
+    // margin-bottom: 3%;
+
+    @media screen and (min-width : 30em) {
+      @include grid(2, $gridItemMargin);
+    }
+
+    @media screen and (min-width : 40em) {
+      @include grid(3, $gridItemMargin);
+    }
+
+    @media screen and (min-width : 50em) {
+      @include grid(4, $gridItemMargin);
+    }
+
+    @media screen and (min-width : 60em) {
+      @include grid(5, $gridItemMargin);
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
 
     label {
       position: absolute;
