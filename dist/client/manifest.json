@@ -1,0 +1,25 @@
+{
+  "vendor": {
+    "fileName": "f7586f40-vendor.js",
+    "hash": "f7586f40",
+    "type": "js",
+    "absPath": "/Users/kevinwhitley/dev/kwhitley/dropbox-gallery/dist/client/f7586f40-vendor.js",
+    "webIndexed": true,
+    "relativePath": "f7586f40-vendor.js"
+  },
+  "app": {
+    "fileName": "dcc7180d-app.js",
+    "hash": "dcc7180d",
+    "type": "js",
+    "absPath": "/Users/kevinwhitley/dev/kwhitley/dropbox-gallery/dist/client/dcc7180d-app.js",
+    "webIndexed": true,
+    "relativePath": "dcc7180d-app.js"
+  },
+  "styles.css": {
+    "fileName": "7b58febb-styles.css",
+    "type": "css",
+    "hash": "7b58febb",
+    "absPath": "/Users/kevinwhitley/dev/kwhitley/dropbox-gallery/dist/client/7b58febb-styles.css",
+    "webIndexed": true
+  }
+}
