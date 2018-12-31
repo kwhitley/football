@@ -6,7 +6,7 @@ export const Grid = ({ items }) =>
   <section className="grid">
     {
       items.map((item, index) =>
-        index !== 2 ? null :
+        // index !== 2 ? null :
         <article key={item.content_hash}>
           <label>{ item.name }</label>
           <Imager src={`/i${item.path_display}`} />

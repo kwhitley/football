@@ -3,6 +3,8 @@ import fs from 'fs'
 import Path from 'path'
 import { download } from './dropbox'
 
+gm = gm.subClass({ imageMagick: true })
+
 const isProduction = process.env.NODE_ENV === 'production'
 
 export const getImage = (requestedImagePath) => {
