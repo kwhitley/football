@@ -41,25 +41,37 @@ app.get('*', async (req, res) => {
     }
   }
 
+  // ensure folder exists before file stream opening
+  await fs.promises.mkdir(savefolder + '/i' + folder, { recursive: true }).catch(e => e)
+  savefolder = savefolder + '/i' + folder
+
   let image = await fs.promises.readFile(savefolder + originalPath).catch(console.error)
 
   if (!image) {
     image = await download(originalPath)
     console.log('image file loaded from dropbox')
+
+    console.log(`saving original to ${savefolder + originalPath}...`)
+    fs.promises.writeFile(savefolder + originalPath, image, (err) => {
+      if (!err) {
+        console.log('original file saved to', savefolder + originalPath)
+      } else {
+        console.log('error saving original...', err)
+      }
+    })
   } else {
-    console.log('image binary loaded from local content')
+    console.log('image binary loaded from local content', image)
   }
 
   if (!image) return res.status(404).send('Image not found in database')
 
-  let gmImage = gm(image)
-  console.log('gmImage', gmImage)
+  // console.log('gmImage', gmImage)
 
-  gmImage.orientation(async function(err, orientation) {
-    err && console.log('orientation.error', err)
-
-    gmImage.size(async function(err, geometry) {
+  gm(image).autoOrient().toBuffer(function (err, buffer) {
+    gm(buffer).size(async function(err, geometry) {
       err && console.log('geometry.error', err)
+
+      let gmImage = gm(buffer)
 
       if (!geometry) {
         console.error(`Image geometry not found for ${req.path}`)
@@ -69,14 +81,15 @@ app.get('*', async (req, res) => {
       let { height, width } = geometry
 
       console.log('size', { height, width })
+      // console.log('orientation', orientation)
 
-      switch requested dimensions
-      if (orientation === 'RightTop') {
-        let temp = options.width
-        options.width = options.height
-        options.height = temp
-        options.targetRatio = options.height && (options.width / options.height)
-      }
+      // switch requested dimensions
+      // if (orientation === 'RightTop') {
+      //   let temp = options.width
+      //   options.width = options.height
+      //   options.height = temp
+      //   options.targetRatio = options.height && (options.width / options.height)
+      // }
 
       if (err) {
         return res.status(500).send(err)
@@ -98,9 +111,6 @@ app.get('*', async (req, res) => {
       if (options.negative) {
         gmImage.negative()
       }
-
-
-      gmImage.autoOrient()
 
       if (options.crop) {
         let rw, rh
@@ -179,11 +189,13 @@ app.get('*', async (req, res) => {
         }
       })
 
+      // gmImage.autoOrient()
+      // if (orientation === 'RightTop') {
+      //   console.log('orienting')
+      //   gmImage.rotate()
+      // }
 
-      console.log('ready to save...')
-
-      // ensure folder exists before file stream opening
-      await fs.promises.mkdir(savefolder + '/i' + folder, { recursive: true }).catch(console.error)
+      console.log(`ready to save to ${savepath}...`)
 
       savepath = fs.createWriteStream(savepath)
 

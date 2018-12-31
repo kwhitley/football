@@ -7,14 +7,10 @@ export const list = () => {
   console.log('attempting to use dropbox api')
   var dbx = new Dropbox({ accessToken: DROPBOX_ACCESS_TOKEN, fetch })
 
-  return dbx.filesListFolder({
+  return dbx
+    .filesListFolder({
       recursive: true,
       path: '',
-    })
-    .then((response) => {
-      console.log(response)
-
-      return response
     })
     .catch(console.error)
 }
@@ -24,10 +20,6 @@ export const download = (path) => {
   var dbx = new Dropbox({ accessToken: DROPBOX_ACCESS_TOKEN, fetch })
 
   return dbx.filesDownload({ path })
-    .then((response) => {
-      console.log(response)
-
-      return response.fileBinary
-    })
+    .then((response) => response.fileBinary)
     .catch(console.error)
 }
