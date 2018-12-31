@@ -65,8 +65,6 @@ app.get('*', async (req, res) => {
 
   if (!image) return res.status(404).send('Image not found in database')
 
-  // console.log('gmImage', gmImage)
-
   gm(image).autoOrient().toBuffer(function (err, buffer) {
     gm(buffer).size(async function(err, geometry) {
       err && console.log('geometry.error', err)
@@ -79,17 +77,6 @@ app.get('*', async (req, res) => {
       }
 
       let { height, width } = geometry
-
-      console.log('size', { height, width })
-      // console.log('orientation', orientation)
-
-      // switch requested dimensions
-      // if (orientation === 'RightTop') {
-      //   let temp = options.width
-      //   options.width = options.height
-      //   options.height = temp
-      //   options.targetRatio = options.height && (options.width / options.height)
-      // }
 
       if (err) {
         return res.status(500).send(err)
@@ -188,12 +175,6 @@ app.get('*', async (req, res) => {
           gmImage[key].apply(gmImage[key], values)
         }
       })
-
-      // gmImage.autoOrient()
-      // if (orientation === 'RightTop') {
-      //   console.log('orienting')
-      //   gmImage.rotate()
-      // }
 
       console.log(`ready to save to ${savepath}...`)
 
