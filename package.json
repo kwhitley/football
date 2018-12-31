@@ -22,6 +22,7 @@
   "license": "ISC",
   "dependencies": {
     "apicache": "^1.2.3",
+    "app-root-path": "^2.1.0",
     "body-parser": "^1.18.3",
     "compression": "^1.7.3",
     "dotenv": "^6.2.0",
@@ -33,7 +34,8 @@
     "lodash": "^4.17.11",
     "mobx": "^5.8.0",
     "mobx-react": "^5.4.3",
-    "serve-favicon": "^2.5.0"
+    "serve-favicon": "^2.5.0",
+    "workerpool": "^3.0.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",

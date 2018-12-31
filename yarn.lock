@@ -116,6 +116,10 @@ app-root-path@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/app-root-path/-/app-root-path-2.0.1.tgz#cd62dcf8e4fd5a417efc664d2e5b10653c651b46"
 
+app-root-path@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/app-root-path/-/app-root-path-2.1.0.tgz#98bf6599327ecea199309866e8140368fd2e646a"
+
 aproba@^1.0.3:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/aproba/-/aproba-1.2.0.tgz#6802e6264efd18c790a1b0d517f0f2627bf2c94a"
@@ -2524,7 +2528,7 @@ oauth-sign@~0.9.0:
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/oauth-sign/-/oauth-sign-0.9.0.tgz#47a7b016baa68b5fa0ecf3dee08a85c679ac6455"
 
-object-assign@^4.0.1, object-assign@^4.1.0, object-assign@^4.1.1:
+object-assign@4.1.1, object-assign@^4.0.1, object-assign@^4.1.0, object-assign@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/object-assign/-/object-assign-4.1.1.tgz#2109adc7965887cfc05cbbd442cac8bfbb360863"
 
@@ -3803,6 +3807,12 @@ widest-line@^2.0.0:
 wordwrap@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/wordwrap/-/wordwrap-1.0.0.tgz#27584810891456a4171c8d0226441ade90cbcaeb"
+
+workerpool@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/workerpool/-/workerpool-3.0.0.tgz#970d960f6db7505650af925f3873ac0bcb3438d1"
+  dependencies:
+    object-assign "4.1.1"
 
 wrap-ansi@^2.0.0:
   version "2.1.0"

@@ -11,7 +11,7 @@ import fs from 'fs'
 import favicon from 'serve-favicon'
 
 import api from './api'
-import imager from './imager'
+import imager from './imager-api'
 
 // instantiate express
 const app = express()
