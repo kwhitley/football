@@ -16,10 +16,10 @@ export const list = () => {
 }
 
 export const download = (path) => {
-  console.log('attempting to use dropbox api', { path })
+  console.log('attempting to use dropbox api', { path: `rev:${path}` })
   var dbx = new Dropbox({ accessToken: DROPBOX_ACCESS_TOKEN, fetch })
 
-  return dbx.filesDownload({ path })
+  return dbx.filesDownload({ path: `rev:${path}` })
     .then((response) => response.fileBinary)
     .catch(console.error)
 }

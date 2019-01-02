@@ -84,9 +84,9 @@ exports.list = () => {
         .catch(console.error);
 };
 exports.download = (path) => {
-    console.log('attempting to use dropbox api', { path });
+    console.log('attempting to use dropbox api', { path: `rev:${path}` });
     var dbx = new dropbox_1.Dropbox({ accessToken: DROPBOX_ACCESS_TOKEN, fetch: isomorphic_fetch_1.default });
-    return dbx.filesDownload({ path })
+    return dbx.filesDownload({ path: `rev:${path}` })
         .then((response) => response.fileBinary)
         .catch(console.error);
 };
@@ -98,20 +98,15 @@ ___scope___.file("server/imager-api.js", function(exports, require, module, __fi
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const imager_1 = require("./imager");
-const fs_1 = require("fs");
 const app = express_1.default();
 // single route catches all requests to imager and passes them to worker
 app.get('*.(png|jpg)', (req, res) => {
     imager_1.getImage(req.path)
-        .then(({ image, path }) => {
-        res.set('Content-Type', 'image/jpeg');
+        .then((image) => {
+        res.type('image/jpeg');
         res.set('Cache-Control', "public, max-age=345600"); // 4 days
         res.set('Expires', new Date(Date.now() + 345600000).toUTCString());
-        let filestream = fs_1.default.createWriteStream(path);
-        image.stream(function (err, stdout, stderr) {
-            stdout.pipe(res);
-            stdout.pipe(filestream);
-        });
+        res.end(image);
     })
         .catch((err) => {
         console.error(err);
@@ -134,7 +129,7 @@ exports.getImage = (requestedImagePath) => {
     return new Promise(async function (resolve, reject) {
         let decodedPath = decodeURI(requestedImagePath);
         let optionsSegment = decodedPath.replace(/^.*::(.*)\.\w{3,4}$/i, '$1') || '';
-        let originalPath = decodedPath.replace(/^(.*)(::.*)(\.\w{3,4})$/g, '$1$3');
+        let revisionId = decodedPath.replace(/.*?(\w+).*/g, '$1');
         let options = optionsSegment
             .split(',')
             .reduce((a, b) => {
@@ -149,15 +144,17 @@ exports.getImage = (requestedImagePath) => {
             return a;
         }, {});
         // begin: save final output and stream output to response
-        let savefolder = path_1.default.join(__dirname, `../${isProduction ? 'dist' : '.dist-dev'}/client`);
-        let savepath = savefolder + '/i' + requestedImagePath;
-        let [fullpath, folder] = requestedImagePath.match(/(.*)\/(.*)/) || [];
+        let savefolder = path_1.default.join(__dirname, `../${isProduction ? 'dist' : '.dist-dev'}/client/i`);
+        let savepath = savefolder + requestedImagePath;
+        let originalpath = savefolder + '/' + revisionId + '.jpg';
+        let saveoriginal = false;
         console.log('IMAGER', {
             decodedPath,
             optionsSegment,
+            savepath,
+            originalpath,
             options,
-            originalPath,
-            folder,
+            revisionId,
         });
         if (options.width && options.height) {
             options.targetRatio = options.width / options.height;
@@ -166,23 +163,22 @@ exports.getImage = (requestedImagePath) => {
             }
         }
         // ensure folder exists before file stream opening
-        await fs_1.default.promises.mkdir(savefolder + '/i' + folder, { recursive: true }).catch(e => e);
-        savefolder = savefolder + '/i' + folder;
-        let image = await fs_1.default.promises.readFile(savefolder + originalPath).catch(console.error);
+        await fs_1.default.promises.mkdir(savefolder, { recursive: true }).catch(e => e);
+        let image = await fs_1.default.promises.readFile(originalpath).catch(console.error);
         if (!image) {
-            image = await dropbox_1.download(originalPath);
+            image = await dropbox_1.download(revisionId);
             console.log('image file loaded from dropbox');
-            console.log(`saving original to ${savefolder + originalPath}...`);
-            fs_1.default.promises.writeFile(savefolder + originalPath, image)
-                .then(() => console.log('original file saved to', savefolder + originalPath))
-                .catch(console.error);
+            console.log(`saving original to ${originalpath}...`);
+            saveoriginal = true;
+            // fs.promises.writeFile(originalpath, image)
+            //   .then(() => console.log('original file saved to', originalpath))
+            //   .catch(console.error)
         }
         else {
             console.log('image binary loaded from local content', image);
         }
         if (!image)
             return reject('Image not found in database');
-        console.log('image', image);
         gm_1.default(image).autoOrient().toBuffer(function (err, buffer) {
             console.log('buffer', buffer);
             gm_1.default(buffer).size(async function (err, geometry) {
@@ -192,14 +188,21 @@ exports.getImage = (requestedImagePath) => {
                     console.error(`Image geometry not found for ${requestedImagePath}`);
                     return reject(`Image geometry not found for ${requestedImagePath}`);
                 }
+                if (saveoriginal) {
+                    gmImage.write(originalpath, (err) => {
+                        if (err) {
+                            console.error('error saving original', err);
+                        }
+                        else {
+                            console.log('original saved to', originalpath);
+                        }
+                    });
+                }
                 let { height, width } = geometry;
                 if (err) {
                     return reject(err);
                 }
                 let actualRatio = width / height;
-                console.log('actual aspect ratio', actualRatio);
-                console.log('actual height', height);
-                console.log('actual width', width);
                 gmImage.setFormat('jpg');
                 // black and white filter
                 if (options.mono) {
@@ -212,35 +215,27 @@ exports.getImage = (requestedImagePath) => {
                 if (options.crop) {
                     let rw, rh;
                     let center = options.center !== undefined ? parseFloat(options.center, 10) : 0.5;
-                    console.log('target aspect ratio', options.targetRatio);
                     let tx = 0;
                     let ty = 0;
-                    console.log('cropping');
                     if (actualRatio > options.targetRatio) {
                         // actual aspect is wider than target aspect
                         // scale to height, leaving excess in horizontal
-                        console.log('scaling to height');
                         gmImage.resize(null, options.height);
                         rw = options.height * actualRatio; // resizedWidth
-                        console.log('resized width', rw);
                         tx = Math.max(0, Math.round(rw * center - options.width / 2)); // prevent clipping on left
                         tx = Math.min(tx, rw - options.width); // prevent clipping on right
                     }
                     else {
-                        console.log('scaling to width');
-                        // scale to width, leaving excess in vertical
+                        // console.log('scaling to width')
                         gmImage.resize(options.width, null);
                         rh = options.width / actualRatio; // resizedHeight
-                        console.log('resized height', rh);
                         ty = Math.max(0, Math.round(rh * center - options.height / 2)); // prevent clipping on top
                         ty = Math.min(ty, rh - options.height); // prevent clipping on bottom
                     }
-                    console.log('final crop', { height: options.height, width: options.width, tx, ty });
                     gmImage.crop(options.width, options.height, tx, ty); //, tx, ty)
                     options.sharpen = options.sharpen || 2;
                 }
                 else if (options) {
-                    console.log('resizing', options.width, options.height);
                     gmImage.resize(options.width, options.height);
                 }
                 // sharpen pass
@@ -262,13 +257,22 @@ exports.getImage = (requestedImagePath) => {
                     gmImage.quality(options.quality);
                 }
                 console.log(`saving image fragment to ${savepath}...`);
-                fs_1.default.promises.writeFile(savepath, image)
-                    .then(() => console.log('image fragment saved to', savepath))
-                    .catch(console.error);
-                return resolve({
-                    image: gmImage,
-                    path: savepath
+                gmImage.write(savepath, (err) => {
+                    if (err) {
+                        console.error('error saving fragment', err);
+                        reject(err);
+                    }
+                    else {
+                        console.log('fragment saved to', savepath);
+                        fs_1.default.promises.readFile(savepath)
+                            .then(resolve)
+                            .catch(reject);
+                    }
                 });
+                // fs.promises.writeFile(savepath, image)
+                //   .then(() => console.log('image fragment saved to', savepath))
+                //   .catch(console.error)
+                // return resolve(gmImage)
             });
         });
     });

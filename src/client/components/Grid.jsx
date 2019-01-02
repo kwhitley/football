@@ -9,7 +9,7 @@ export const Grid = ({ items }) =>
         // index !== 2 ? null :
         <article key={item.content_hash}>
           <label>{ item.name }</label>
-          <Imager src={`/i${item.path_display}`} />
+          <Imager src={`/i/${item.rev}.jpg`} />
         </article>
       )
     }

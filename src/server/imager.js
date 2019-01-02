@@ -9,7 +9,7 @@ export const getImage = (requestedImagePath) => {
   return new Promise(async function(resolve, reject) {
     let decodedPath = decodeURI(requestedImagePath)
     let optionsSegment = decodedPath.replace(/^.*::(.*)\.\w{3,4}$/i, '$1') || ''
-    let originalPath = decodedPath.replace(/^(.*)(::.*)(\.\w{3,4})$/g, '$1$3')
+    let revisionId = decodedPath.replace(/.*?(\w+).*/g, '$1')
     let options = optionsSegment
                     .split(',')
                     .reduce((a, b) => {
@@ -27,16 +27,18 @@ export const getImage = (requestedImagePath) => {
                     }, {})
 
     // begin: save final output and stream output to response
-    let savefolder = Path.join(__dirname, `../${isProduction ? 'dist' : '.dist-dev'}/client`)
-    let savepath = savefolder + '/i' + requestedImagePath
-    let [ fullpath, folder ] = requestedImagePath.match(/(.*)\/(.*)/) || []
+    let savefolder = Path.join(__dirname, `../${isProduction ? 'dist' : '.dist-dev'}/client/i`)
+    let savepath = savefolder + requestedImagePath
+    let originalpath = savefolder + '/' + revisionId + '.jpg'
+    let saveoriginal = false
 
     console.log('IMAGER', {
       decodedPath,
       optionsSegment,
+      savepath,
+      originalpath,
       options,
-      originalPath,
-      folder,
+      revisionId,
     })
 
     if (options.width && options.height) {
@@ -47,29 +49,28 @@ export const getImage = (requestedImagePath) => {
     }
 
     // ensure folder exists before file stream opening
-    await fs.promises.mkdir(savefolder + '/i' + folder, { recursive: true }).catch(e => e)
-    savefolder = savefolder + '/i' + folder
+    await fs.promises.mkdir(savefolder, { recursive: true }).catch(e => e)
 
-    let image = await fs.promises.readFile(savefolder + originalPath).catch(console.error)
+    let image = await fs.promises.readFile(originalpath).catch(console.error)
 
     if (!image) {
-      image = await download(originalPath)
+      image = await download(revisionId)
       console.log('image file loaded from dropbox')
 
-      console.log(`saving original to ${savefolder + originalPath}...`)
-      fs.promises.writeFile(savefolder + originalPath, image)
-        .then(() => console.log('original file saved to', savefolder + originalPath))
-        .catch(console.error)
+      console.log(`saving original to ${originalpath}...`)
+      saveoriginal = true
+      // fs.promises.writeFile(originalpath, image)
+      //   .then(() => console.log('original file saved to', originalpath))
+      //   .catch(console.error)
     } else {
       console.log('image binary loaded from local content', image)
     }
 
     if (!image) return reject('Image not found in database')
 
-    console.log('image', image)
-
     gm(image).autoOrient().toBuffer(function (err, buffer) {
       console.log('buffer', buffer)
+
       gm(buffer).size(async function(err, geometry) {
         err && console.log('geometry.error', err)
 
@@ -80,6 +81,16 @@ export const getImage = (requestedImagePath) => {
           return reject(`Image geometry not found for ${requestedImagePath}`)
         }
 
+        if (saveoriginal) {
+          gmImage.write(originalpath, (err) => {
+            if (err) {
+              console.error('error saving original', err)
+            } else {
+              console.log('original saved to', originalpath)
+            }
+          })
+        }
+
         let { height, width } = geometry
 
         if (err) {
@@ -87,9 +98,6 @@ export const getImage = (requestedImagePath) => {
         }
 
         let actualRatio = width / height
-        console.log('actual aspect ratio', actualRatio)
-        console.log('actual height', height)
-        console.log('actual width', width)
 
         gmImage.setFormat('jpg')
 
@@ -106,37 +114,27 @@ export const getImage = (requestedImagePath) => {
         if (options.crop) {
           let rw, rh
           let center = options.center !== undefined ? parseFloat(options.center, 10) : 0.5
-          console.log('target aspect ratio', options.targetRatio)
           let tx = 0
           let ty = 0
-
-          console.log('cropping')
 
           if (actualRatio > options.targetRatio) {
             // actual aspect is wider than target aspect
             // scale to height, leaving excess in horizontal
-            console.log('scaling to height')
             gmImage.resize(null, options.height)
             rw = options.height * actualRatio // resizedWidth
-            console.log('resized width', rw)
             tx = Math.max(0, Math.round(rw * center - options.width / 2))    // prevent clipping on left
             tx = Math.min(tx, rw - options.width)                           // prevent clipping on right
           } else {
-            console.log('scaling to width')
-            // scale to width, leaving excess in vertical
+            // console.log('scaling to width')
             gmImage.resize(options.width, null)
             rh = options.width / actualRatio // resizedHeight
-            console.log('resized height', rh)
             ty = Math.max(0, Math.round(rh * center - options.height / 2))   // prevent clipping on top
             ty = Math.min(ty, rh - options.height)                          // prevent clipping on bottom
           }
 
-          console.log('final crop', { height: options.height, width: options.width, tx, ty })
-
           gmImage.crop(options.width, options.height, tx, ty)//, tx, ty)
           options.sharpen = options.sharpen || 2
         } else if (options) {
-          console.log('resizing', options.width, options.height)
           gmImage.resize(options.width, options.height)
         }
 
@@ -163,14 +161,22 @@ export const getImage = (requestedImagePath) => {
         }
 
         console.log(`saving image fragment to ${savepath}...`)
-        fs.promises.writeFile(savepath, image)
-          .then(() => console.log('image fragment saved to', savepath))
-          .catch(console.error)
-
-        return resolve({
-          image: gmImage,
-          path: savepath
+        gmImage.write(savepath, (err) => {
+          if (err) {
+            console.error('error saving fragment', err)
+            reject(err)
+          } else {
+            console.log('fragment saved to', savepath)
+            fs.promises.readFile(savepath)
+              .then(resolve)
+              .catch(reject)
+          }
         })
+        // fs.promises.writeFile(savepath, image)
+        //   .then(() => console.log('image fragment saved to', savepath))
+        //   .catch(console.error)
+
+        // return resolve(gmImage)
       })
     })
   })
