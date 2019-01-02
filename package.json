@@ -30,11 +30,11 @@
     "dropbox": "^4.0.14",
     "express": "^4.16.4",
     "globby": "^8.0.1",
-    "gm": "^1.23.1",
     "isomorphic-fetch": "^2.2.1",
     "mobx": "^5.8.0",
     "mobx-react": "^5.4.3",
-    "serve-favicon": "^2.5.0"
+    "serve-favicon": "^2.5.0",
+    "sharp": "^0.21.1"
   },
   "devDependencies": {
     "chai": "^4.2.0",
