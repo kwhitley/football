@@ -148,6 +148,8 @@ exports.getImage = (requestedImagePath) => {
         let savepath = savefolder + requestedImagePath;
         let originalpath = savefolder + '/' + revisionId + '.jpg';
         let saveoriginal = false;
+        // ensure folder exists before file stream opening
+        await fs_1.default.promises.mkdir(savefolder, { recursive: true }).catch(e => e);
         let image = await fs_1.default.promises.readFile(originalpath)
             .catch((err) => console.log('loading image from dropbox...'));
         if (!image) {
