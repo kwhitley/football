@@ -52,7 +52,7 @@ export const getImage = (requestedImagePath) => {
 
     if (saveoriginal) {
       image
-        .jpeg({ quality: 100 })
+        .jpeg({ quality: 95 })
         .toFile(originalpath)
     }
 
