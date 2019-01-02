@@ -164,7 +164,9 @@ exports.getImage = (requestedImagePath) => {
             return reject('Image not found in database');
         image = sharp_1.default(image).rotate();
         if (saveoriginal) {
-            image.toFile(originalpath);
+            image
+                .jpeg({ quality: 100 })
+                .toFile(originalpath);
         }
         let data = await image
             .resize({ width: options.width, height: options.height })

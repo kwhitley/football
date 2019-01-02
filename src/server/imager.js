@@ -51,7 +51,9 @@ export const getImage = (requestedImagePath) => {
     image = sharp(image).rotate()
 
     if (saveoriginal) {
-      image.toFile(originalpath)
+      image
+        .jpeg({ quality: 100 })
+        .toFile(originalpath)
     }
 
     let data = await image
