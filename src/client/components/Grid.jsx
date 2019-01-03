@@ -1,16 +1,15 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import Imager from './Imager'
+import GridItem from './GridItem'
 
 export const Grid = ({ items }) =>
   <section className="grid">
     {
       items.map((item, index) =>
-        // index !== 2 ? null :
-        <article key={item.content_hash}>
-          <label>{ item.name }</label>
-          <Imager src={`/i/${item.rev}.jpg`} />
-        </article>
+        <GridItem
+          key={item.id}
+          item={item}
+          />
       )
     }
   </section>

@@ -3,6 +3,15 @@ import fetch from 'isomorphic-fetch'
 
 const { DROPBOX_ACCESS_TOKEN } = process.env
 
+const toFileItem = (i) => ({
+  id: i.rev,
+  type: i['.tag'],
+  filename: i.name,
+  folder: i.path_display.replace(/(.*\/).*/gi, '$1'),
+  size: i.size,
+  date: i.server_modified,
+})
+
 export const list = () => {
   console.log('attempting to use dropbox api')
   var dbx = new Dropbox({ accessToken: DROPBOX_ACCESS_TOKEN, fetch })
@@ -12,6 +21,7 @@ export const list = () => {
       recursive: true,
       path: '',
     })
+    .then((r) => r.entries.map(toFileItem))
     .catch(console.error)
 }
 

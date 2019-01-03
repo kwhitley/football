@@ -1,11 +1,30 @@
 import React from 'react'
 
-export default ({
-  src
+
+
+const Imager = ({
+  src,
+  width,
+  height,
+  quality,
+  ...props,
 }) => {
-  let previewPath = src.replace(/^(.*)\.(\w{3,4})$/, '$1::width=400,height=400,quality=90.$2')
+  let params = []
+
+  if (width) params.push(`width=${width}`)
+  if (height) params.push(`height=${height}`)
+  if (quality) params.push(`quality=${quality}`)
+
+  let previewPath = src.replace(/^(.*)\.(\w{3,4})$/, `$1::${params.join(',')}.$2`)
 
   return (
     <img src={previewPath} />
   )
 }
+
+Imager.defaultProps = {
+  quality: 80,
+  width: 1000,
+}
+
+export default Imager

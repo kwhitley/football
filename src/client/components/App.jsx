@@ -1,6 +1,15 @@
 import React from 'react'
-import ImageCollection from './ImageCollection'
+import { Switch, Route, Redirect, Router } from 'react-router-dom'
 
-const App = () => <ImageCollection />
+import ImageCollection from './ImageCollection'
+import Viewer from './Viewer'
+
+const App = ({ history }) =>
+  <Router history={history}>
+    <Switch>
+      <Route path="/view/:id" component={Viewer} />
+      <Route path="/" component={ImageCollection} />
+    </Switch>
+  </Router>
 
 export default App
