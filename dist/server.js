@@ -73,6 +73,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const dropbox_1 = require("dropbox");
 const isomorphic_fetch_1 = require("isomorphic-fetch");
 const { DROPBOX_ACCESS_TOKEN } = process.env;
+const toFileItem = (i) => ({
+    id: i.rev,
+    type: i['.tag'],
+    filename: i.name,
+    folder: i.path_display.replace(/(.*\/).*/gi, '$1'),
+    size: i.size,
+    date: i.server_modified,
+});
 exports.list = () => {
     console.log('attempting to use dropbox api');
     var dbx = new dropbox_1.Dropbox({ accessToken: DROPBOX_ACCESS_TOKEN, fetch: isomorphic_fetch_1.default });
@@ -81,6 +89,7 @@ exports.list = () => {
         recursive: true,
         path: '',
     })
+        .then((r) => r.entries.map(toFileItem))
         .catch(console.error);
 };
 exports.download = (path) => {
