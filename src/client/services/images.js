@@ -21,21 +21,21 @@ export class Image {
 
     // create load chain
     preview.onload = () => {
-      console.log('preview loaded')
+      // console.log('preview loaded')
       this.previewLoading = false
       this.src = previewPath
     }
 
-    console.log('previews loading', parent.previewsLoading)
+    // console.log('previews loading', parent.previewsLoading)
 
     reaction(
       () => parent.previewsLoading,
       (pending, reaction) => {
         if (pending < 3) {
-          console.log(pending, 'pending previews, loading image')
+          // console.log(pending, 'pending previews, loading image')
           full.src = path
           full.onload = () => {
-            console.log('full image loaded')
+            // console.log('full image loaded')
             this.src = path
           }
 

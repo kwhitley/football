@@ -1,10 +1,16 @@
 $baseColor: #222;
 $baseFontSize: 1.5em;
 $gridItemMargin: 0.25rem;
+$maxPageWidth: 900px;
 
-@mixin grid($itemsPerRow, $margin) {
-  margin: $margin;
-  width: calc(100% / #{$itemsPerRow} - (#{$margin} + #{$margin}));
+@mixin gridMultiple($itemsPerRow, $margin) {
+  margin-bottom: $margin;
+  width: calc(100% / #{$itemsPerRow} - (#{$margin} * 0.5));
+}
+
+@mixin gridSingle($margin) {
+  margin-bottom: $margin;
+  width: 100%;
 }
 
 body {
@@ -27,10 +33,14 @@ body {
   min-height: 100%;
 
   > * {
-    flex: 0 900px;
-    padding: 1em;
+    flex: 0 $maxPageWidth;
+    padding: 0.2em;
     background-color: #fff;
     outline: 1px solid #ccc;
+
+    @media screen and (min-width: $maxPageWidth) {
+      padding: 1em;
+    }
   }
 }
 
@@ -38,34 +48,34 @@ body {
   display: flex;
   flex-flow: row wrap;
   overflow: hidden;
-  margin: $gridItemMargin;
+  justify-content: space-between;
 
   article {
     position: relative;
-    @include grid(1, $gridItemMargin);
+    @include gridSingle($gridItemMargin);
 
-    @media screen and (min-width : 30em) {
-      @include grid(2, $gridItemMargin);
+    @media screen and (min-width: 30em) {
+      @include gridMultiple(2, $gridItemMargin);
     }
 
-    @media screen and (min-width : 40em) {
-      @include grid(3, $gridItemMargin);
+    @media screen and (min-width: 40em) {
+      @include gridMultiple(3, $gridItemMargin);
     }
 
-    @media screen and (min-width : 55em) {
-      @include grid(4, $gridItemMargin);
+    @media screen and (min-width: 55em) {
+      @include gridMultiple(4, $gridItemMargin);
     }
 
-    @media screen and (min-width : 70em) {
-      @include grid(5, $gridItemMargin);
+    @media screen and (min-width: 70em) {
+      @include gridMultiple(5, $gridItemMargin);
     }
 
-    @media screen and (min-width : 90em) {
-      @include grid(6, $gridItemMargin);
+    @media screen and (min-width: 90em) {
+      @include gridMultiple(6, $gridItemMargin);
     }
 
-    @media screen and (min-width : 130em) {
-      @include grid(7, $gridItemMargin);
+    @media screen and (min-width: 130em) {
+      @include gridMultiple(7, $gridItemMargin);
     }
 
     img, .preview {
@@ -86,4 +96,22 @@ body {
       color: white;
     }
   }
+}
+
+.fade-enter {
+  opacity: 0.01;
+}
+
+.fade-enter.fade-enter-active {
+  opacity: 1;
+  transition: opacity 200ms ease-in;
+}
+
+.fade-leave {
+  opacity: 1;
+}
+
+.fade-leave.fade-leave-active {
+  opacity: 0.01;
+  transition: opacity 200ms ease-in;
 }

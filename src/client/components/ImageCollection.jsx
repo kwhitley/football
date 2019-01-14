@@ -4,7 +4,11 @@ import Grid from './Grid'
 
 export const ImageCollection = ({ images }) =>
   <React.Fragment>
-    <Grid items={images.itemsSorted} />
+    <Grid
+      items={images.itemsSorted}
+      location={location}
+      history={history}
+      />
   </React.Fragment>
 
 export default inject('images')(observer(ImageCollection))

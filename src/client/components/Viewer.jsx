@@ -4,7 +4,8 @@ import styled from 'styled-components'
 import Imager from './Imager'
 
 let Wrapper = styled.div`
-  padding: 0.50rem;
+  border-radius: 0.2em;
+  overflow: hidden;
 
   img {
     max-width: 100%;
@@ -20,7 +21,9 @@ let PreStyled = styled.pre`
 export const Viewer = ({ images, match }) =>
   <Wrapper>
     <Imager id={match.params.id} width={1000} />
-    <PreStyled>{ JSON.stringify(images.getById(match.params.id), null, 2) }</PreStyled>
+    {
+      false && <PreStyled>{ JSON.stringify(images.getById(match.params.id), null, 2) }</PreStyled>
+    }
   </Wrapper>
 
 export default inject('images')(observer(Viewer))
