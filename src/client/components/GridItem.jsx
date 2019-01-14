@@ -8,7 +8,7 @@ export const GridItem = ({ item }) =>
     <label>{ item.filename }</label>
     <NavLink to={`/view/${item.id}`}>
       <Imager
-        src={`/i/${item.id}.jpg`}
+        id={item.id}
         width={400}
         height={400}
         quality={90}

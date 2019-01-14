@@ -50,6 +50,20 @@ export const getImage = (requestedImagePath) => {
 
     image = sharp(image).rotate()
 
+    if (options.preview) {
+      if (options.width) {
+        options.width = 75
+      }
+
+      if (options.height) {
+        options.height = 75
+      }
+
+      options.fit = (options.height && options.width ? 'cover' : 'inside'
+
+      console.log('generating preview', options)
+    }
+
     if (saveoriginal) {
       image
         .jpeg({ quality: 95 })
@@ -57,7 +71,11 @@ export const getImage = (requestedImagePath) => {
     }
 
     let data = await image
-      .resize({ width: options.width, height: options.height })
+      .resize({
+        width: options.width,
+        height: options.height,
+        fit: options.fit || 'cover',
+      })
       .jpeg({
         quality: options.quality || 80,
       })

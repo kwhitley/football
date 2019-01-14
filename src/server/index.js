@@ -31,6 +31,11 @@ app.use(favicon(path.join(__dirname, '../src/client/images', 'favicon.ico')))
 app.use('/api', api)
 app.use('/i', imager)
 
+// 404
+app.get('*', (req, res) => {
+  res.sendStatus(404)
+})
+
 const serverPort = process.env.PORT || 3000
 const server = http.createServer(app)
 

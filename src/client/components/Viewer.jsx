@@ -8,6 +8,7 @@ let Wrapper = styled.div`
 
   img {
     max-width: 100%;
+    width: 100%;
   }
 `
 
@@ -18,7 +19,7 @@ let PreStyled = styled.pre`
 
 export const Viewer = ({ images, match }) =>
   <Wrapper>
-    <Imager src={`/i/${match.params.id}.jpg`} />
+    <Imager id={match.params.id} width={1000} />
     <PreStyled>{ JSON.stringify(images.getById(match.params.id), null, 2) }</PreStyled>
   </Wrapper>
 

@@ -68,7 +68,7 @@ body {
       @include grid(7, $gridItemMargin);
     }
 
-    img {
+    img, .preview {
       display: block;
       max-width: 100%;
       width: 100%;
