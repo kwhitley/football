@@ -26,8 +26,6 @@ export class Image {
       this.src = previewPath
     }
 
-    // console.log('previews loading', parent.previewsLoading)
-
     reaction(
       () => parent.previewsLoading,
       (pending, reaction) => {
@@ -56,7 +54,7 @@ export class ImageService {
   }
 
   @action unload(path) {
-    delete this.images[path]
+    // delete this.images[path]
   }
 
   @computed get previewsLoading() {
