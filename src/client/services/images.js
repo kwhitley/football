@@ -1,4 +1,4 @@
-import { observable, computed, reaction } from 'mobx'
+import { action, observable, computed, reaction } from 'mobx'
 
 console.log('image service loaded')
 
@@ -15,7 +15,7 @@ export class Image {
     setTimeout(() => this.load(path,parent), 0)
   }
 
-  load(path, parent) {
+  @action load(path, parent) {
     let { preview, full } = this.el
     let previewPath = preview.src = path.replace(/^(.*)(\.jpg)$/, '$1,preview$2')
 
@@ -53,6 +53,10 @@ export class ImageService {
     let image = this.images[path] || (this.images[path] = new Image(path, this))
 
     return image.src
+  }
+
+  @action unload(path) {
+    delete this.images[path]
   }
 
   @computed get previewsLoading() {

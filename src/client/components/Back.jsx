@@ -8,6 +8,7 @@ const BackButtonContainer = styled.div`
   margin-bottom: 0.2em;
   position: relative;
   border-radius: 0.2em;
+  color: white;
 
   &:before {
     content: '\\2039';
@@ -15,7 +16,6 @@ const BackButtonContainer = styled.div`
     line-height: 0;
     position: relative;
     bottom: -0.1em;
-    color: #666;
     margin-right: 0.1em;
   }
 

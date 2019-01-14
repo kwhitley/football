@@ -1,6 +1,6 @@
 import React from 'react'
 import ImageService from '../services/images.js'
-import { observer } from 'mobx-react'
+import { observer, inject } from 'mobx-react'
 import styled from 'styled-components'
 
 const Loading = styled.div`
@@ -20,17 +20,27 @@ const Loading = styled.div`
   }
 `
 
-const Image = ({ width, height, quality, id }) => {
-  let params = []
+@observer class Image extends React.Component {
+  componentWillMount() {
+    let { width, height, quality, id } = this.props
+    let params = []
 
-  if (width) params.push(`width=${width}`)
-  if (height) params.push(`height=${height}`)
-  if (quality) params.push(`quality=${quality}`)
+    if (width) params.push(`width=${width}`)
+    if (height) params.push(`height=${height}`)
+    if (quality) params.push(`quality=${quality}`)
 
-  let path = `/i/${id}::${params.join(',')}.jpg`
-  let src = ImageService.getImage(path)
+    this.path = `/i/${id}::${params.join(',')}.jpg`
+  }
 
-  return src ? <img src={src} /> : <Loading />
+  componentWillUnmount() {
+    ImageService.unload(this.path)
+  }
+
+  render() {
+    let src = ImageService.getImage(this.path)
+
+    return src ? <img src={src} /> : <Loading />
+  }
 }
 
-export default observer(Image)
+export default Image
