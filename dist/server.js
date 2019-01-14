@@ -34,6 +34,10 @@ app.use(serve_favicon_1.default(path_1.default.join(__dirname, '../src/client/im
 // add api layers
 app.use('/api', api_1.default);
 app.use('/i', imager_api_1.default);
+// 404
+app.get('*', (req, res) => {
+    res.sendStatus(404);
+});
 const serverPort = process.env.PORT || 3000;
 const server = http_1.default.createServer(app);
 server.listen(serverPort);
@@ -48,6 +52,7 @@ const express_1 = require("express");
 const globby_1 = require("globby");
 const dropbox_1 = require("./dropbox");
 const apicache_1 = require("apicache");
+const mongo_1 = require("./mongo");
 // create an express app
 const app = express_1.default();
 const cache = apicache_1.default.middleware;
@@ -61,6 +66,32 @@ app.get('/env', (req, res) => {
 });
 app.get('/list', cache('30 seconds'), (req, res) => {
     dropbox_1.list().then((response) => res.json(response));
+});
+app.get('/images', async (req, res) => {
+    let imageCollection = await mongo_1.collection('images')
+        .catch(res.status(500).json);
+    let images = await imageCollection
+        .find({})
+        .catch(res.status(500).json);
+    res.json(images);
+});
+app.get('/images/:image_id', async (req, res) => {
+    let { image_id } = req.params;
+    let imageCollection = await mongo_1.collection('images')
+        .catch(res.status(500).json);
+    // insert doc
+    await imageCollection
+        .update(image_id, { image_id, bar: 'baz' })
+        .catch(res.status(500).json);
+    // get updated/created doc
+    let doc = await imageCollection
+        .find({ image_id })
+        .catch(res.status(500).json);
+    res.json(doc);
+});
+// 404
+app.get('*', (req, res) => {
+    res.sendStatus(404);
 });
 // export the express app
 exports.default = app;
@@ -100,6 +131,54 @@ exports.download = (path) => {
         .catch(console.error);
 };
 //# sourceMappingURL=dropbox.js.map
+});
+___scope___.file("server/mongo.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const mongodb_1 = require("mongodb");
+console.log('loading mongo interface');
+const { DB_USER, DB_PASSWORD, DB_CLUSTER, DB_DATABASE, } = process.env;
+const connectionStr = `mongodb+srv://${DB_USER}:${DB_PASSWORD}@personal-gallery-8rxci.gcp.mongodb.net/test?retryWrites=true`;
+// Connect to your MongoDB instance(s)
+exports.getDatabase = () => mongodb_1.MongoClient
+    .connect(connectionStr, { useNewUrlParser: true })
+    .then(client => client.db(DB_DATABASE))
+    .catch(console.error);
+const find = (collection) => {
+    return (match) => {
+        return new Promise((resolve, reject) => {
+            collection
+                .find(match)
+                .toArray(function (err, data) {
+                err
+                    ? reject(err)
+                    : resolve(data);
+            });
+        });
+    };
+};
+const update = (collection) => {
+    return (id, update = {}) => {
+        return new Promise((resolve, reject) => {
+            collection
+                .update({ id }, update, { upsert: true }, (err, status) => {
+                err
+                    ? reject(err)
+                    : resolve(status);
+            });
+        });
+    };
+};
+exports.collection = async (name) => {
+    let db = await exports.getDatabase();
+    let col = db.collection(name);
+    return {
+        find: find(col),
+        update: update(col),
+    };
+};
+//# sourceMappingURL=mongo.js.map
 });
 ___scope___.file("server/imager-api.js", function(exports, require, module, __filename, __dirname){
 
@@ -172,13 +251,27 @@ exports.getImage = (requestedImagePath) => {
         if (!image)
             return reject('Image not found in database');
         image = sharp_1.default(image).rotate();
+        if (options.preview) {
+            if (options.width) {
+                options.width = 75;
+            }
+            if (options.height) {
+                options.height = 75;
+            }
+            options.fit = (options.height && options.width ? 'cover' : 'inside');
+            console.log('generating preview', options);
+        }
         if (saveoriginal) {
             image
                 .jpeg({ quality: 95 })
                 .toFile(originalpath);
         }
         let data = await image
-            .resize({ width: options.width, height: options.height })
+            .resize({
+            width: options.width,
+            height: options.height,
+            fit: options.fit || 'cover',
+        })
             .jpeg({
             quality: options.quality || 80,
         })
