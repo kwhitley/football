@@ -105,6 +105,7 @@ body {
 .fade-enter.fade-enter-active {
   opacity: 1;
   transition: opacity 200ms ease-in;
+  -webkit-transition: opacity 200ms ease-in;
 }
 
 .fade-leave {
@@ -114,4 +115,5 @@ body {
 .fade-leave.fade-leave-active {
   opacity: 0.01;
   transition: opacity 200ms ease-in;
+  -webkit-transition: opacity 200ms ease-in;
 }
