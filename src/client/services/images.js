@@ -31,7 +31,7 @@ export class Image {
     reaction(
       () => parent.previewsLoading,
       (pending, reaction) => {
-        if (pending < 3) {
+        if (pending === 0) {
           // console.log(pending, 'pending previews, loading image')
           full.src = path
           full.onload = () => {

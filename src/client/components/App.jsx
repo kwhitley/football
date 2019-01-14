@@ -22,18 +22,10 @@ const App = ({ history }) =>
           history={history}
           location={location}
           />
-        <TransitionGroup>
-          <CSSTransition
-            key={location.pathname}
-            timeout={200}
-            classNames="fade"
-          >
-            <Switch>
-              <Route path="/view/:id" component={Viewer} />
-              <Route path="/" component={ImageCollection} />
-            </Switch>
-          </CSSTransition>
-        </TransitionGroup>
+          <Switch>
+            <Route path="/view/:id" component={Viewer} />
+            <Route path="/" component={ImageCollection} />
+          </Switch>
       </div>
     }>
     </Route>

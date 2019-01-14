@@ -77,24 +77,6 @@ body {
     @media screen and (min-width: 130em) {
       @include gridMultiple(7, $gridItemMargin);
     }
-
-    img, .preview {
-      display: block;
-      max-width: 100%;
-      width: 100%;
-    }
-
-    label {
-      position: absolute;
-      z-index: 1;
-      font-size: 2vmin;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 0.8em 1em;
-      background-color: rgba(0,0,0,0.1);
-      color: white;
-    }
   }
 }
 
