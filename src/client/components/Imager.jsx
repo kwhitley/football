@@ -1,24 +1,6 @@
 import React from 'react'
 import ImageService from '../services/images.js'
 import { observer, inject } from 'mobx-react'
-import styled from 'styled-components'
-
-const Loading = styled.div`
-  background-color: #eee;
-  height: 100%;
-  text-align: center;
-  position: relative;
-
-  &:after {
-    color: #333;
-    opacity: 0.2;
-    content: ' loading...';
-    display: block;
-    position: absolute;
-    top: 40%;
-    width: 100%;
-  }
-`
 
 @observer class Image extends React.Component {
   componentWillMount() {
@@ -39,7 +21,7 @@ const Loading = styled.div`
   render() {
     let src = ImageService.getImage(this.path)
 
-    return src ? <img src={src} /> : <Loading />
+    return src ? <img src={src} /> : <div className="loading" />
   }
 }
 

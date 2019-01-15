@@ -1,7 +1,7 @@
 import { observable, action, computed } from 'mobx'
 
 const sortByDate = (a,b) =>
-  a.date < b.date ? 1 : (a.date > b.date ? -1 : 0)
+  a.date < b.date ? -1 : (a.date > b.date ? 1 : 0)
 
 export class ImageItem {
   @observable name = ''
