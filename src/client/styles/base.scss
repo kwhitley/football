@@ -2,10 +2,10 @@ $baseColor: #222;
 $baseFontSize: 1.5em;
 $gridItemMargin: 0.25rem;
 $maxPageWidth: 900px;
-$gutterSize: 0.1em;
+$gutterSize: 0.2em;
 
 @mixin grid($itemsPerRow) {
-  flex: 1 1 calc(100% / (#{$itemsPerRow} + 1));
+  flex: 0 0 calc(100% / (#{$itemsPerRow}));
 }
 
 body {
@@ -40,30 +40,14 @@ body {
 }
 
 .grid {
-  display: flex;
-  flex-direction: row-reverse;
-  flex-wrap: wrap-reverse;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-gap: $gutterSize;
   overflow: hidden;
-  margin: -$gutterSize;
   border-radius: 0.5em;
 
   article {
     position: relative;
-    margin: $gutterSize;
-
-    @include grid(1);
-
-    @media screen and (min-width: 28em) {
-      @include grid(2);
-    }
-
-    @media screen and (min-width: 40em) {
-      @include grid(3);
-    }
-
-    @media screen and (min-width: $maxPageWidth) {
-      @include grid(4);
-    }
 
     &:after {
       content: "";
