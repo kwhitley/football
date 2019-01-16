@@ -1,30 +1,28 @@
 import React from 'react'
+import ImageService from '../services/images.js'
+import { observer, inject } from 'mobx-react'
 
+@observer class Image extends React.Component {
+  componentWillMount() {
+    let { width, height, quality, id } = this.props
+    let params = []
 
+    if (width) params.push(`width=${width}`)
+    if (height) params.push(`height=${height}`)
+    if (quality) params.push(`quality=${quality}`)
 
-const Imager = ({
-  src,
-  width,
-  height,
-  quality,
-  ...props,
-}) => {
-  let params = []
+    this.path = `/i/${id}::${params.join(',')}.jpg`
+  }
 
-  if (width) params.push(`width=${width}`)
-  if (height) params.push(`height=${height}`)
-  if (quality) params.push(`quality=${quality}`)
+  componentWillUnmount() {
+    ImageService.unload(this.path)
+  }
 
-  let previewPath = src.replace(/^(.*)\.(\w{3,4})$/, `$1::${params.join(',')}.$2`)
+  render() {
+    let src = ImageService.getImage(this.path)
 
-  return (
-    <img src={previewPath} />
-  )
+    return src ? <img src={src} /> : <div className="loading" />
+  }
 }
 
-Imager.defaultProps = {
-  quality: 80,
-  width: 1000,
-}
-
-export default Imager
+export default Image

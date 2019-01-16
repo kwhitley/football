@@ -1,25 +1,25 @@
 {
   "vendor": {
-    "fileName": "59c8b667-vendor.js",
-    "hash": "59c8b667",
+    "fileName": "1347ce16-vendor.js",
+    "hash": "1347ce16",
     "type": "js",
-    "absPath": "/Users/kevinwhitley/dev/kwhitley/dropbox-gallery/dist/client/59c8b667-vendor.js",
+    "absPath": "/Users/kevinwhitley/dev/kwhitley/dropbox-gallery/dist/client/1347ce16-vendor.js",
     "webIndexed": true,
-    "relativePath": "59c8b667-vendor.js"
+    "relativePath": "1347ce16-vendor.js"
   },
   "app": {
-    "fileName": "9072aa09-app.js",
-    "hash": "9072aa09",
+    "fileName": "978eb8d3-app.js",
+    "hash": "978eb8d3",
     "type": "js",
-    "absPath": "/Users/kevinwhitley/dev/kwhitley/dropbox-gallery/dist/client/9072aa09-app.js",
+    "absPath": "/Users/kevinwhitley/dev/kwhitley/dropbox-gallery/dist/client/978eb8d3-app.js",
     "webIndexed": true,
-    "relativePath": "9072aa09-app.js"
+    "relativePath": "978eb8d3-app.js"
   },
   "styles.css": {
-    "fileName": "830933b8-styles.css",
+    "fileName": "cfc30657-styles.css",
     "type": "css",
-    "hash": "830933b8",
-    "absPath": "/Users/kevinwhitley/dev/kwhitley/dropbox-gallery/dist/client/830933b8-styles.css",
+    "hash": "cfc30657",
+    "absPath": "/Users/kevinwhitley/dev/kwhitley/dropbox-gallery/dist/client/cfc30657-styles.css",
     "webIndexed": true
   }
 }

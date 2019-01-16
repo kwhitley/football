@@ -1,8 +1,10 @@
 import express from 'express'
 import globby from 'globby'
-import { list, download } from './dropbox'
+import { getIndex, download } from './dropbox'
 import dropboxFs from 'dropbox-fs'
 import apicache from 'apicache'
+
+import { collection } from './mongo'
 
 // create an express app
 const app = express()
@@ -20,7 +22,36 @@ app.get('/env', (req, res) => {
 })
 
 app.get('/list', cache('30 seconds'), (req, res) => {
-  list().then((response) => res.json(response))
+  getIndex().then((response) => res.json(response))
+})
+
+app.get('/images', async (req, res) => {
+  let images = await collection('images')
+                      .find({})
+                      .catch(res.status(500).json)
+
+  res.json(images)
+})
+
+app.get('/images/:image_id', async (req, res) => {
+  let { image_id } = req.params
+
+  // insert doc
+  await collection('images')
+          .update(image_id, { image_id, bar: 'baz' })
+          .catch(res.status(500).json)
+
+  // get updated/created doc
+  let doc = await collection('images')
+                    .find({ image_id })
+                    .catch(res.status(500).json)
+
+  res.json(doc)
+})
+
+// 404
+app.get('*', (req, res) => {
+  res.sendStatus(404)
 })
 
 // export the express app

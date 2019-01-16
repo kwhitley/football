@@ -2,6 +2,7 @@ import fs from 'fs'
 import sharp from 'sharp'
 import Path from 'path'
 import { download } from './dropbox'
+import { getBaseImage } from './get-base-image'
 
 const isProduction = process.env.NODE_ENV === 'production'
 
@@ -29,37 +30,36 @@ export const getImage = (requestedImagePath) => {
     // begin: save final output and stream output to response
     let savefolder = Path.join(__dirname, `../${isProduction ? 'dist' : '.dist-dev'}/client/i`)
     let savepath = savefolder + requestedImagePath
-    let originalpath = savefolder + '/' + revisionId + '.jpg'
-    let saveoriginal = false
+    let file = await getBaseImage(`/${revisionId}.jpg`)
+      .catch((err) => console.error('failure fetching image', err))
 
-    // ensure folder exists before file stream opening
-    await fs.promises.mkdir(savefolder, { recursive: true }).catch(e => e)
+    let image = sharp(file).rotate()
 
-    let image = await fs.promises.readFile(originalpath)
-                        .catch((err) => console.log('loading image from dropbox...'))
+    if (options.preview) {
+      if (options.width) {
+        options.width = 75
+      }
 
-    if (!image) {
-      image = await download(revisionId)
-      console.log('loaded.')
-      saveoriginal = true
+      if (options.height) {
+        options.height = 75
+      }
+
+      options.quality = 70
+      options.fit = (options.height && options.width ? 'cover' : 'inside'
+
+      console.log('generating preview', options)
     } else {
-      console.log('original image loaded from local content')
-    }
-
-    if (!image) return reject('Image not found in database')
-
-    image = sharp(image).rotate()
-
-    if (saveoriginal) {
-      image
-        .jpeg({ quality: 95 })
-        .toFile(originalpath)
+      console.log('generating fragment', options)
     }
 
     let data = await image
-      .resize({ width: options.width, height: options.height })
+      .resize({
+        width: options.width,
+        height: options.height,
+        fit: options.fit || 'cover',
+      })
       .jpeg({
-        quality: options.quality || 80,
+        quality: options.quality || 90,
       })
       .toFile(savepath)
 

@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import GridItem from './GridItem'
 
 export const Grid = ({ items }) =>
-  <section className="grid">
+  <div className="grid">
     {
       items.map((item, index) =>
         <GridItem
@@ -12,7 +12,7 @@ export const Grid = ({ items }) =>
           />
       )
     }
-  </section>
+  </div>
 
 export default observer(Grid)
 

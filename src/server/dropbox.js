@@ -12,8 +12,8 @@ const toFileItem = (i) => ({
   date: i.server_modified,
 })
 
-export const list = () => {
-  console.log('attempting to use dropbox api')
+export const getIndex = () => {
+  console.log('dropbox:filesListFolder')
   var dbx = new Dropbox({ accessToken: DROPBOX_ACCESS_TOKEN, fetch })
 
   return dbx
@@ -26,10 +26,13 @@ export const list = () => {
 }
 
 export const download = (path) => {
-  console.log('attempting to use dropbox api', { path: `rev:${path}` })
+  console.log('dropbox:filesDownload', { path: `rev:${path}` })
   var dbx = new Dropbox({ accessToken: DROPBOX_ACCESS_TOKEN, fetch })
 
   return dbx.filesDownload({ path: `rev:${path}` })
-    .then((response) => response.fileBinary)
+    .then((response) => {
+      console.log(`${path} downloaded`)
+      return response.fileBinary
+    })
     .catch(console.error)
 }

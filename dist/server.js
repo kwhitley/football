@@ -19,6 +19,7 @@ const http_1 = require("http");
 const serve_favicon_1 = require("serve-favicon");
 const api_1 = require("./api");
 const imager_api_1 = require("./imager-api");
+const cache_warmer_1 = require("./cache-warmer");
 // instantiate express
 const app = express_1.default();
 const isProduction = process.env.NODE_ENV === 'production';
@@ -34,10 +35,16 @@ app.use(serve_favicon_1.default(path_1.default.join(__dirname, '../src/client/im
 // add api layers
 app.use('/api', api_1.default);
 app.use('/i', imager_api_1.default);
+// 404
+app.get('*', (req, res) => {
+    res.sendStatus(404);
+});
 const serverPort = process.env.PORT || 3000;
 const server = http_1.default.createServer(app);
 server.listen(serverPort);
 console.log(`Express server @ http://localhost:${serverPort} (${isProduction ? 'production' : 'development'})\n`);
+// warm the cache
+cache_warmer_1.cacheWarmer();
 //# sourceMappingURL=index.js.map
 });
 ___scope___.file("server/api.js", function(exports, require, module, __filename, __dirname){
@@ -48,6 +55,7 @@ const express_1 = require("express");
 const globby_1 = require("globby");
 const dropbox_1 = require("./dropbox");
 const apicache_1 = require("apicache");
+const mongo_1 = require("./mongo");
 // create an express app
 const app = express_1.default();
 const cache = apicache_1.default.middleware;
@@ -60,7 +68,29 @@ app.get('/env', (req, res) => {
     res.json(process.env);
 });
 app.get('/list', cache('30 seconds'), (req, res) => {
-    dropbox_1.list().then((response) => res.json(response));
+    dropbox_1.getIndex().then((response) => res.json(response));
+});
+app.get('/images', async (req, res) => {
+    let images = await mongo_1.collection('images')
+        .find({})
+        .catch(res.status(500).json);
+    res.json(images);
+});
+app.get('/images/:image_id', async (req, res) => {
+    let { image_id } = req.params;
+    // insert doc
+    await mongo_1.collection('images')
+        .update(image_id, { image_id, bar: 'baz' })
+        .catch(res.status(500).json);
+    // get updated/created doc
+    let doc = await mongo_1.collection('images')
+        .find({ image_id })
+        .catch(res.status(500).json);
+    res.json(doc);
+});
+// 404
+app.get('*', (req, res) => {
+    res.sendStatus(404);
 });
 // export the express app
 exports.default = app;
@@ -81,8 +111,8 @@ const toFileItem = (i) => ({
     size: i.size,
     date: i.server_modified,
 });
-exports.list = () => {
-    console.log('attempting to use dropbox api');
+exports.getIndex = () => {
+    console.log('dropbox:filesListFolder');
     var dbx = new dropbox_1.Dropbox({ accessToken: DROPBOX_ACCESS_TOKEN, fetch: isomorphic_fetch_1.default });
     return dbx
         .filesListFolder({
@@ -93,13 +123,64 @@ exports.list = () => {
         .catch(console.error);
 };
 exports.download = (path) => {
-    console.log('attempting to use dropbox api', { path: `rev:${path}` });
+    console.log('dropbox:filesDownload', { path: `rev:${path}` });
     var dbx = new dropbox_1.Dropbox({ accessToken: DROPBOX_ACCESS_TOKEN, fetch: isomorphic_fetch_1.default });
     return dbx.filesDownload({ path: `rev:${path}` })
-        .then((response) => response.fileBinary)
+        .then((response) => {
+        console.log(`${path} downloaded`);
+        return response.fileBinary;
+    })
         .catch(console.error);
 };
 //# sourceMappingURL=dropbox.js.map
+});
+___scope___.file("server/mongo.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const mongodb_1 = require("mongodb");
+const { DB_USER, DB_PASSWORD, DB_CLUSTER, DB_DATABASE, } = process.env;
+const connectionStr = `mongodb+srv://${DB_USER}:${DB_PASSWORD}@personal-gallery-8rxci.gcp.mongodb.net/test?retryWrites=true`;
+let database = undefined;
+mongodb_1.MongoClient
+    .connect(connectionStr, { useNewUrlParser: true })
+    .then((client) => {
+    console.log('connected to database.');
+    database = client.db(DB_DATABASE);
+})
+    .catch(console.error);
+const find = (collection) => {
+    return (match) => {
+        return new Promise((resolve, reject) => {
+            collection
+                .find(match)
+                .toArray(function (err, data) {
+                err
+                    ? reject(err)
+                    : resolve(data);
+            });
+        });
+    };
+};
+const update = (collection) => {
+    return (image_id, update = {}) => {
+        return new Promise((resolve, reject) => {
+            collection
+                .update({ image_id }, update, { upsert: true }, (err, status) => {
+                err
+                    ? reject(err)
+                    : resolve(status);
+            });
+        });
+    };
+};
+exports.collection = (name) => {
+    return {
+        find: find(database.collection(name)),
+        update: update(database.collection(name)),
+    };
+};
+//# sourceMappingURL=mongo.js.map
 });
 ___scope___.file("server/imager-api.js", function(exports, require, module, __filename, __dirname){
 
@@ -132,7 +213,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = require("fs");
 const sharp_1 = require("sharp");
 const path_1 = require("path");
-const dropbox_1 = require("./dropbox");
+const get_base_image_1 = require("./get-base-image");
 const isProduction = process.env.NODE_ENV === 'production';
 exports.getImage = (requestedImagePath) => {
     return new Promise(async function (resolve, reject) {
@@ -155,32 +236,31 @@ exports.getImage = (requestedImagePath) => {
         // begin: save final output and stream output to response
         let savefolder = path_1.default.join(__dirname, `../${isProduction ? 'dist' : '.dist-dev'}/client/i`);
         let savepath = savefolder + requestedImagePath;
-        let originalpath = savefolder + '/' + revisionId + '.jpg';
-        let saveoriginal = false;
-        // ensure folder exists before file stream opening
-        await fs_1.default.promises.mkdir(savefolder, { recursive: true }).catch(e => e);
-        let image = await fs_1.default.promises.readFile(originalpath)
-            .catch((err) => console.log('loading image from dropbox...'));
-        if (!image) {
-            image = await dropbox_1.download(revisionId);
-            console.log('loaded.');
-            saveoriginal = true;
+        let file = await get_base_image_1.getBaseImage(`/${revisionId}.jpg`)
+            .catch((err) => console.error('failure fetching image', err));
+        let image = sharp_1.default(file).rotate();
+        if (options.preview) {
+            if (options.width) {
+                options.width = 75;
+            }
+            if (options.height) {
+                options.height = 75;
+            }
+            options.quality = 70;
+            options.fit = (options.height && options.width ? 'cover' : 'inside');
+            console.log('generating preview', options);
         }
         else {
-            console.log('original image loaded from local content');
-        }
-        if (!image)
-            return reject('Image not found in database');
-        image = sharp_1.default(image).rotate();
-        if (saveoriginal) {
-            image
-                .jpeg({ quality: 95 })
-                .toFile(originalpath);
+            console.log('generating fragment', options);
         }
         let data = await image
-            .resize({ width: options.width, height: options.height })
+            .resize({
+            width: options.width,
+            height: options.height,
+            fit: options.fit || 'cover',
+        })
             .jpeg({
-            quality: options.quality || 80,
+            quality: options.quality || 90,
         })
             .toFile(savepath);
         fs_1.default.promises.readFile(savepath)
@@ -189,6 +269,69 @@ exports.getImage = (requestedImagePath) => {
     });
 };
 //# sourceMappingURL=imager.js.map
+});
+___scope___.file("server/get-base-image.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = require("fs");
+const sharp_1 = require("sharp");
+const path_1 = require("path");
+const dropbox_1 = require("./dropbox");
+const isProduction = process.env.NODE_ENV === 'production';
+// gets image locally, or downloads from dropbox and returns the saved image
+exports.getBaseImage = async (requestedImagePath) => {
+    return new Promise(async function (resolve, reject) {
+        let decodedPath = decodeURI(requestedImagePath);
+        let revisionId = decodedPath.replace(/.*?(\w+).*/g, '$1');
+        // begin: save final output and stream output to response
+        let savefolder = path_1.default.join(__dirname, `../${isProduction ? 'dist' : '.dist-dev'}/client/i`);
+        let savepath = savefolder + requestedImagePath;
+        let originalpath = savefolder + '/' + revisionId + '.jpg';
+        let image = await fs_1.default.promises.readFile(originalpath)
+            .catch((err) => console.log('loading image from dropbox...'));
+        if (!image) {
+            let binary = await dropbox_1.download(revisionId);
+            // ensure folder exists before file stream opening
+            await fs_1.default.promises.mkdir(savefolder, { recursive: true }).catch(e => e);
+            let image = await sharp_1.default(binary)
+                .rotate()
+                .jpeg({ quality: 95 })
+                .toFile(originalpath);
+        }
+        fs_1.default.promises.readFile(savepath)
+            .then(resolve)
+            .catch(reject);
+    });
+};
+//# sourceMappingURL=get-base-image.js.map
+});
+___scope___.file("server/cache-warmer.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const dropbox_1 = require("./dropbox");
+const get_base_image_1 = require("./get-base-image");
+const imager_1 = require("./imager");
+const loadImages = async (images) => {
+    for (var image of images) {
+        await get_base_image_1.getBaseImage(`/${image.id}.jpg`);
+        await imager_1.getImage(`/${image.id}::width=400,height=400,preview.jpg`);
+        await imager_1.getImage(`/${image.id}::width=400,height=400.jpg`);
+        await imager_1.getImage(`/${image.id}::width=1000,preview.jpg`);
+        await imager_1.getImage(`/${image.id}::width=1000.jpg`);
+    }
+    console.log('image loads complete.');
+};
+exports.cacheWarmer = async () => {
+    console.log('warming the cache...');
+    await dropbox_1.getIndex()
+        .then((entries) => {
+        loadImages(entries.filter(e => e.type === 'file'));
+        return entries;
+    });
+};
+//# sourceMappingURL=cache-warmer.js.map
 });
 return ___scope___.entry = "server/index.js";
 });
