@@ -176,6 +176,8 @@ exports.getBaseImage = async (requestedImagePath) => {
             .catch((err) => console.log('loading image from dropbox...'));
         if (!image) {
             let binary = await dropbox_1.download(revisionId);
+            // ensure folder exists before file stream opening
+            await fs_1.default.promises.mkdir(savefolder, { recursive: true }).catch(e => e);
             let image = await sharp_1.default(binary)
                 .rotate()
                 .jpeg({ quality: 95 })

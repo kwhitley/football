@@ -26,6 +26,9 @@ export const getBaseImage = async (requestedImagePath) => {
     if (!image) {
       let binary = await download(revisionId)
 
+      // ensure folder exists before file stream opening
+      await fs.promises.mkdir(savefolder, { recursive: true }).catch(e => e)
+
       let image = await sharp(binary)
         .rotate()
         .jpeg({ quality: 95 })
