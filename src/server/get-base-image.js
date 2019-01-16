@@ -17,10 +17,6 @@ export const getBaseImage = async (requestedImagePath) => {
     let originalpath = savefolder + '/' + revisionId + '.jpg'
 
     let image = await fs.promises.readFile(originalpath)
-                        .then((file) => {
-                          console.log(`${requestedImagePath} found locally.`)
-                          return file
-                        })
                         .catch((err) => console.log('loading image from dropbox...'))
 
     if (!image) {
@@ -33,11 +29,7 @@ export const getBaseImage = async (requestedImagePath) => {
         .rotate()
         .jpeg({ quality: 95 })
         .toFile(originalpath)
-
-      console.log('loaded.')
     }
-
-    console.log(process.memoryUsage())
 
     fs.promises.readFile(savepath)
       .then(resolve)

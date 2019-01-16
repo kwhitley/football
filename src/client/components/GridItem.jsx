@@ -12,7 +12,6 @@ export const GridItem = ({ item }) =>
           id={item.id}
           width={400}
           height={400}
-          quality={90}
           />
       </NavLink>
     </div>

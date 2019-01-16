@@ -44,6 +44,7 @@ export const getImage = (requestedImagePath) => {
         options.height = 75
       }
 
+      options.quality = 70
       options.fit = (options.height && options.width ? 'cover' : 'inside'
 
       console.log('generating preview', options)
@@ -58,7 +59,7 @@ export const getImage = (requestedImagePath) => {
         fit: options.fit || 'cover',
       })
       .jpeg({
-        quality: options.quality || 80,
+        quality: options.quality || 90,
       })
       .toFile(savepath)
 

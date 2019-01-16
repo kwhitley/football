@@ -250,6 +250,7 @@ exports.getImage = (requestedImagePath) => {
             if (options.height) {
                 options.height = 75;
             }
+            options.quality = 70;
             options.fit = (options.height && options.width ? 'cover' : 'inside');
             console.log('generating preview', options);
         }
@@ -263,7 +264,7 @@ exports.getImage = (requestedImagePath) => {
             fit: options.fit || 'cover',
         })
             .jpeg({
-            quality: options.quality || 80,
+            quality: options.quality || 90,
         })
             .toFile(savepath);
         fs_1.default.promises.readFile(savepath)
@@ -292,10 +293,6 @@ exports.getBaseImage = async (requestedImagePath) => {
         let savepath = savefolder + requestedImagePath;
         let originalpath = savefolder + '/' + revisionId + '.jpg';
         let image = await fs_1.default.promises.readFile(originalpath)
-            .then((file) => {
-            console.log(`${requestedImagePath} found locally.`);
-            return file;
-        })
             .catch((err) => console.log('loading image from dropbox...'));
         if (!image) {
             let binary = await dropbox_1.download(revisionId);
@@ -305,9 +302,7 @@ exports.getBaseImage = async (requestedImagePath) => {
                 .rotate()
                 .jpeg({ quality: 95 })
                 .toFile(originalpath);
-            console.log('loaded.');
         }
-        console.log(process.memoryUsage());
         fs_1.default.promises.readFile(savepath)
             .then(resolve)
             .catch(reject);
@@ -321,9 +316,14 @@ ___scope___.file("server/cache-warmer.js", function(exports, require, module, __
 Object.defineProperty(exports, "__esModule", { value: true });
 const dropbox_1 = require("./dropbox");
 const get_base_image_1 = require("./get-base-image");
+const imager_1 = require("./imager");
 const loadImages = async (images) => {
     for (var image of images) {
         await get_base_image_1.getBaseImage(`/${image.id}.jpg`);
+        await imager_1.getImage(`/${image.id}::width=400,height=400,preview.jpg`);
+        await imager_1.getImage(`/${image.id}::width=400,height=400.jpg`);
+        await imager_1.getImage(`/${image.id}::width=1000,preview.jpg`);
+        await imager_1.getImage(`/${image.id}::width=1000.jpg`);
     }
     console.log('image loads complete.');
 };
