@@ -71,23 +71,19 @@ app.get('/list', cache('30 seconds'), (req, res) => {
     dropbox_1.getIndex().then((response) => res.json(response));
 });
 app.get('/images', async (req, res) => {
-    let imageCollection = await mongo_1.collection('images')
-        .catch(res.status(500).json);
-    let images = await imageCollection
+    let images = await mongo_1.collection('images')
         .find({})
         .catch(res.status(500).json);
     res.json(images);
 });
 app.get('/images/:image_id', async (req, res) => {
     let { image_id } = req.params;
-    let imageCollection = await mongo_1.collection('images')
-        .catch(res.status(500).json);
     // insert doc
-    await imageCollection
+    await mongo_1.collection('images')
         .update(image_id, { image_id, bar: 'baz' })
         .catch(res.status(500).json);
     // get updated/created doc
-    let doc = await imageCollection
+    let doc = await mongo_1.collection('images')
         .find({ image_id })
         .catch(res.status(500).json);
     res.json(doc);
@@ -143,13 +139,15 @@ ___scope___.file("server/mongo.js", function(exports, require, module, __filenam
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongodb_1 = require("mongodb");
-console.log('loading mongo interface');
 const { DB_USER, DB_PASSWORD, DB_CLUSTER, DB_DATABASE, } = process.env;
 const connectionStr = `mongodb+srv://${DB_USER}:${DB_PASSWORD}@personal-gallery-8rxci.gcp.mongodb.net/test?retryWrites=true`;
-// Connect to your MongoDB instance(s)
-exports.getDatabase = () => mongodb_1.MongoClient
+let database = undefined;
+mongodb_1.MongoClient
     .connect(connectionStr, { useNewUrlParser: true })
-    .then(client => client.db(DB_DATABASE))
+    .then((client) => {
+    console.log('connected to database.');
+    database = client.db(DB_DATABASE);
+})
     .catch(console.error);
 const find = (collection) => {
     return (match) => {
@@ -165,10 +163,10 @@ const find = (collection) => {
     };
 };
 const update = (collection) => {
-    return (id, update = {}) => {
+    return (image_id, update = {}) => {
         return new Promise((resolve, reject) => {
             collection
-                .update({ id }, update, { upsert: true }, (err, status) => {
+                .update({ image_id }, update, { upsert: true }, (err, status) => {
                 err
                     ? reject(err)
                     : resolve(status);
@@ -176,12 +174,10 @@ const update = (collection) => {
         });
     };
 };
-exports.collection = async (name) => {
-    let db = await exports.getDatabase();
-    let col = db.collection(name);
+exports.collection = (name) => {
     return {
-        find: find(col),
-        update: update(col),
+        find: find(database.collection(name)),
+        update: update(database.collection(name)),
     };
 };
 //# sourceMappingURL=mongo.js.map

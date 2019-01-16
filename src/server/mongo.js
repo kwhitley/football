@@ -1,7 +1,5 @@
 import { MongoClient } from 'mongodb'
 
-console.log('loading mongo interface')
-
 const {
   DB_USER,
   DB_PASSWORD,
@@ -11,12 +9,15 @@ const {
 
 const connectionStr = `mongodb+srv://${DB_USER}:${DB_PASSWORD}@personal-gallery-8rxci.gcp.mongodb.net/test?retryWrites=true`
 
-// Connect to your MongoDB instance(s)
-export const getDatabase = () =>
-  MongoClient
-    .connect(connectionStr, { useNewUrlParser: true })
-    .then(client => client.db(DB_DATABASE))
-    .catch(console.error)
+let database = undefined
+
+MongoClient
+  .connect(connectionStr, { useNewUrlParser: true })
+  .then((client) => {
+    console.log('connected to database.')
+    database = client.db(DB_DATABASE)
+  })
+  .catch(console.error)
 
 const find = (collection) => {
   return (match) => {
@@ -33,11 +34,11 @@ const find = (collection) => {
 }
 
 const update = (collection) => {
-  return (id, update = {}) => {
+  return (image_id, update = {}) => {
     return new Promise((resolve, reject) => {
       collection
         .update(
-          { id },
+          { image_id },
           update,
           { upsert: true },
           (err, status) => {
@@ -50,12 +51,9 @@ const update = (collection) => {
   })
 }
 
-export const collection = async (name) => {
-  let db = await getDatabase()
-  let col = db.collection(name)
-
+export const collection = (name) => {
   return {
-    find: find(col),
-    update: update(col),
+    find: find(database.collection(name)),
+    update: update(database.collection(name)),
   }
 }

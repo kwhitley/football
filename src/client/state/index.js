@@ -2,8 +2,10 @@ import images from './images'
 import routing from './routing'
 import scroll from './scroll'
 
-export default {
+let store = {
   images,
   routing,
   scroll,
 }
+
+export default store

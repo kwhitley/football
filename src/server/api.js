@@ -26,9 +26,7 @@ app.get('/list', cache('30 seconds'), (req, res) => {
 })
 
 app.get('/images', async (req, res) => {
-  let imageCollection = await collection('images')
-                                .catch(res.status(500).json)
-  let images = await imageCollection
+  let images = await collection('images')
                       .find({})
                       .catch(res.status(500).json)
 
@@ -37,16 +35,14 @@ app.get('/images', async (req, res) => {
 
 app.get('/images/:image_id', async (req, res) => {
   let { image_id } = req.params
-  let imageCollection = await collection('images')
-                                .catch(res.status(500).json)
 
   // insert doc
-  await imageCollection
+  await collection('images')
           .update(image_id, { image_id, bar: 'baz' })
           .catch(res.status(500).json)
 
   // get updated/created doc
-  let doc = await imageCollection
+  let doc = await collection('images')
                     .find({ image_id })
                     .catch(res.status(500).json)
 
