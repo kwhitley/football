@@ -12,6 +12,7 @@ import favicon from 'serve-favicon'
 
 import api from './api'
 import imager from './imager-api'
+import { cacheWarmer } from './cache-warmer'
 
 // instantiate express
 const app = express()
@@ -41,3 +42,6 @@ const server = http.createServer(app)
 
 server.listen(serverPort)
 console.log(`Express server @ http://localhost:${serverPort} (${isProduction ? 'production' : 'development'})\n`)
+
+// warm the cache
+cacheWarmer()

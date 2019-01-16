@@ -2,6 +2,7 @@ import fs from 'fs'
 import sharp from 'sharp'
 import Path from 'path'
 import { download } from './dropbox'
+import { getBaseImage } from './get-base-image'
 
 const isProduction = process.env.NODE_ENV === 'production'
 
@@ -29,26 +30,10 @@ export const getImage = (requestedImagePath) => {
     // begin: save final output and stream output to response
     let savefolder = Path.join(__dirname, `../${isProduction ? 'dist' : '.dist-dev'}/client/i`)
     let savepath = savefolder + requestedImagePath
-    let originalpath = savefolder + '/' + revisionId + '.jpg'
-    let saveoriginal = false
+    let file = await getBaseImage(`/${revisionId}.jpg`)
+      .catch((err) => console.error('failure fetching image', err))
 
-    // ensure folder exists before file stream opening
-    await fs.promises.mkdir(savefolder, { recursive: true }).catch(e => e)
-
-    let image = await fs.promises.readFile(originalpath)
-                        .catch((err) => console.log('loading image from dropbox...'))
-
-    if (!image) {
-      image = await download(revisionId)
-      console.log('loaded.')
-      saveoriginal = true
-    } else {
-      console.log('original image loaded from local content')
-    }
-
-    if (!image) return reject('Image not found in database')
-
-    image = sharp(image).rotate()
+    let image = sharp(file).rotate()
 
     if (options.preview) {
       if (options.width) {
@@ -62,12 +47,8 @@ export const getImage = (requestedImagePath) => {
       options.fit = (options.height && options.width ? 'cover' : 'inside'
 
       console.log('generating preview', options)
-    }
-
-    if (saveoriginal) {
-      image
-        .jpeg({ quality: 95 })
-        .toFile(originalpath)
+    } else {
+      console.log('generating fragment', options)
     }
 
     let data = await image

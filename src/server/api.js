@@ -1,6 +1,6 @@
 import express from 'express'
 import globby from 'globby'
-import { list, download } from './dropbox'
+import { getIndex, download } from './dropbox'
 import dropboxFs from 'dropbox-fs'
 import apicache from 'apicache'
 
@@ -22,7 +22,7 @@ app.get('/env', (req, res) => {
 })
 
 app.get('/list', cache('30 seconds'), (req, res) => {
-  list().then((response) => res.json(response))
+  getIndex().then((response) => res.json(response))
 })
 
 app.get('/images', async (req, res) => {
