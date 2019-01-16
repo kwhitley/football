@@ -37,6 +37,8 @@ export const getBaseImage = async (requestedImagePath) => {
       console.log('loaded.')
     }
 
+    console.log(process.memoryUsage())
+
     fs.promises.readFile(savepath)
       .then(resolve)
       .catch(reject)
