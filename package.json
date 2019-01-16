@@ -9,7 +9,7 @@
   "main": "dist/server.js",
   "target": "esnext",
   "scripts": {
-    "start": "node dist/server.js",
+    "start": "node --optimize_for_size --max_old_space_size=460 dist/server.js",
     "test": "mocha -r esm -r ts-node/register src/**/*.spec.*",
     "predev": "rm -rf .fusebox cache",
     "dev": "node fuse",
