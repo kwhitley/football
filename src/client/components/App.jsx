@@ -13,6 +13,7 @@ import {
 import ImageCollection from './ImageCollection'
 import Viewer from './Viewer'
 import Back from './Back'
+import AdminToggle from './AdminToggle'
 
 const App = ({ history }) =>
   <Router history={history}>
@@ -22,10 +23,11 @@ const App = ({ history }) =>
           history={history}
           location={location}
           />
-          <Switch>
-            <Route path="/view/:id" component={Viewer} />
-            <Route path="/" component={ImageCollection} />
-          </Switch>
+        <Switch>
+          <Route path="/view/:id" component={Viewer} />
+          <Route path="/" component={ImageCollection} />
+        </Switch>
+        <AdminToggle />
       </div>
     }>
     </Route>
