@@ -1,9 +1,9 @@
 $trackHeight: 1em;
 $trackWidth: $trackHeight * 2;
-$transitionDelay: 0.05s;
+$transitionDelay: 0.1s;
 
 .toggle {
-  padding-left: ($trackWidth + 0.25em);
+  padding-left: ($trackWidth + 0.3em);
   line-height: $trackHeight;
   cursor: pointer;
   color: #ccc;

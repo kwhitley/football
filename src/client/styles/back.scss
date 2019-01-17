@@ -1,0 +1,26 @@
+.back {
+  padding: 1em;
+  background: #ccc;
+  cursor: pointer;
+  margin-bottom: 0.2em;
+  position: relative;
+  border-radius: 0.2em;
+  color: white;
+
+  &:before {
+    content: '\2039 return';
+    text-transform: lowercase;
+    font-size: 3.8em;
+    line-height: 0;
+    position: relative;
+    margin-right: 0.05em;
+    position: absolute;
+    top: 0.19em;
+    left: 0;
+    margin-left: 0.1em;
+  }
+
+  &:hover {
+    background-color: #aaa;
+  }
+}
