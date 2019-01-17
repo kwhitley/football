@@ -1,5 +1,6 @@
 $trackHeight: 1em;
 $trackWidth: $trackHeight * 2;
+$transitionDelay: 0.05s;
 
 .toggle {
   padding-left: ($trackWidth + 0.25em);
@@ -28,6 +29,7 @@ $trackWidth: $trackHeight * 2;
     width: $trackWidth;
     left: 0;
     cursor: pointer;
+    transition: background-color $transitionDelay ease-in;
   }
 
   &.active:before {
@@ -36,13 +38,16 @@ $trackWidth: $trackHeight * 2;
 
   // handle
   &:after {
-    width: $trackHeight;
-    left: 0;
+    height: calc(#{$trackHeight} - 2px);
+    width: calc(#{$trackHeight} - 2px);
+    top: 1px;
+    left: 1px;
     box-shadow: 0 0 1px 1px #ccc;
+    transition: all $transitionDelay ease-in;
   }
 
   &.active:after {
-    left: ($trackWidth - $trackHeight);
+    left: calc(#{$trackWidth - $trackHeight} + 1px);
   }
 
   &.active:after {
