@@ -1,23 +1,27 @@
+$backButtonHeight: 3em;
+
 .back {
-  padding: 1em;
+  height: 3em;
   background: #ccc;
   cursor: pointer;
   margin-bottom: 0.2em;
   position: relative;
   border-radius: 0.2em;
   color: white;
+  overflow: hidden;
+  display: flex;
+  flex-flow: column wrap;
+  justify-content: center;
 
   &:before {
+    flex: 0;
+    text-align: center;
     content: '\2039 return';
     text-transform: lowercase;
-    font-size: 3.8em;
+    display: inline-block;
     line-height: 0;
-    position: relative;
-    margin-right: 0.05em;
-    position: absolute;
-    top: 0.19em;
-    left: 0;
-    margin-left: 0.1em;
+    font-size: $backButtonHeight * 2;
+    margin-top: -0.19em;
   }
 
   &:hover {
