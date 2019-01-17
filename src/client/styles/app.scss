@@ -1,4 +1,11 @@
+.page-content {
+  display: flex;
+  flex-direction: column;
 
+  > * {
+    flex: auto;
+  }
+}
 
 .grid {
   display: grid;
@@ -73,6 +80,8 @@
   display: inline-block;
   float: right;
   width: 3em;
+  align-self: flex-end;
+  flex: 0;
 }
 
 @import './back';
