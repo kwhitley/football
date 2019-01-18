@@ -1,4 +1,5 @@
 .live-edit, .live-edit:active, .live-edit:focus {
+  box-sizing: border-box;
   position: relative;
   border: none;
   border-bottom: 2px dashed transparent;
