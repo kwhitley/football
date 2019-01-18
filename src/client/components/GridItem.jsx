@@ -8,18 +8,14 @@ export const GridItem = ({ app, item }) => {
 
   return (
     <article>
-      <div className="content">
-        {
-          app.editMode ? <label>{ item.name || item.filename }</label> : null
-        }
-        <NavLink to={`/view/${item.id}`}>
-          <Imager
-            id={item.id}
-            width={400}
-            height={400}
-            />
-        </NavLink>
-      </div>
+      <NavLink to={`/view/${item.id}`}>
+        <Imager
+          id={item.id}
+          width={400}
+          height={400}
+          />
+        <label><span>{ item.name || item.filename }</span></label>
+      </NavLink>
     </article>
   )
 }
