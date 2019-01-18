@@ -1,6 +1,6 @@
 import React from 'react'
 import { inject, observer } from 'mobx-react'
-import { MarkdownPreview } from 'react-marked-markdown'
+import md from 'react-markings'
 import LiveEdit from '../Controls/LiveEdit'
 
 export const ImageDetails = ({ app, image, editing }) =>
@@ -25,13 +25,9 @@ export const ImageDetails = ({ app, image, editing }) =>
           placeholder="(image story)"
           rows={3}
           />
-      : <MarkdownPreview
-          className="story"
-          value={image.story}
-          markedOptions={{
-            sanitize: false,
-          }}
-          />
+      : <div className="story">
+          { md([image.story]) }
+        </div>
     }
   </div>
 

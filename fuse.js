@@ -39,6 +39,7 @@ const clientConfig = (isProduction, basePath = DEV_BUILD_PATH) => ({
   cache: !isProduction,
   sourceMaps: true,
   plugins: [
+    JSONPlugin(),
     [
       SassPlugin(),
       CSSResourcePlugin({
