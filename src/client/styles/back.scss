@@ -1,12 +1,12 @@
-$backButtonHeight: 3em;
+$backButtonHeight: 4.6rem;
 
 .back {
-  flex: 0 0 3em;
+  flex: 0 0 $backButtonHeight;
   background: #ccc;
   cursor: pointer;
   margin-bottom: 0.2em;
   position: relative;
-  border-radius: 0.2em;
+  border-radius: $borderRadius;
   color: white;
   overflow: hidden;
   display: flex;

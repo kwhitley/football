@@ -3,6 +3,7 @@ $baseFontSize: 1.5em;
 $gridItemMargin: 0.25rem;
 $maxPageWidth: 900px;
 $gutterSize: 0.2em;
+$borderRadius: 0.3rem;
 
 @mixin grid($itemsPerRow) {
   flex: 0 0 calc(100% / (#{$itemsPerRow}));
@@ -61,6 +62,10 @@ blockquote {
     @media screen and (min-width: $maxPageWidth) {
       padding: 1em;
     }
+  }
+
+  @media screen and (max-width: 30rem) {
+    font-size: 0.7em;
   }
 }
 

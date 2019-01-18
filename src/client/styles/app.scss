@@ -12,7 +12,7 @@
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   grid-gap: $gutterSize;
   overflow: hidden;
-  border-radius: 0.5em;
+  border-radius: $borderRadius;
 
   article {
     position: relative;
@@ -78,6 +78,7 @@
   img {
     max-width: 100%;
     width: 100%;
+    border-radius: $borderRadius;
   }
 }
 
@@ -104,6 +105,7 @@
   width: 3em;
   align-self: flex-end;
   flex: 0;
+  font-size: 0.9em;
 }
 
 @import './back';
