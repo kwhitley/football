@@ -1,4 +1,4 @@
-import React, { h, Component } from 'react'
+import React from 'react'
 import { observer, inject } from 'mobx-react'
 import Imager from './Imager'
 import ImageDetails from './ImageDetails'

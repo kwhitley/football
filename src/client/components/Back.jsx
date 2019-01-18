@@ -1,4 +1,4 @@
-import React, { h, Component } from 'react'
+import React from 'react'
 
 export const Back = ({ history, location }) =>
   location.pathname !== '/' &&
