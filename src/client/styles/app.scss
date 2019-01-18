@@ -93,7 +93,7 @@
     content: ' loading...';
     display: block;
     position: absolute;
-    top: 40%;
+    top: calc(50% - 0.5em);
     width: 100%;
   }
 }

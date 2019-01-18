@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { h, Component } from 'react'
 import { observer } from 'mobx-react'
 import classNames from 'classnames'
 import TextArea from 'react-autosize-textarea'

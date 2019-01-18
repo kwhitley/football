@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { h, Component } from 'react'
 import ImageService from '../services/images.js'
 import { observer, inject } from 'mobx-react'
 
-@observer class Image extends React.Component {
+@observer class Image extends Component {
   componentWillMount() {
     let { width, height, quality, id } = this.props
     let params = []

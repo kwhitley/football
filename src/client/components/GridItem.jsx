@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { h, Component } from 'react'
 import { inject, observer } from 'mobx-react'
 import Imager from './Imager'
 import { NavLink } from 'react-router-dom'

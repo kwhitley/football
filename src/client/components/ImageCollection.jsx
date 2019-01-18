@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { h, Component } from 'react'
 import { inject, observer } from 'mobx-react'
 import Grid from './Grid'
 
-export class ImageCollection extends React.Component {
+export class ImageCollection extends Component {
   componentWillUnmount() {
     // console.log('window position', window.scrollY)
     this.props.scroll.save(window.scrollX, window.scrollY)

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { h, Component } from 'react'
 import {
   Switch,
   Route,
