@@ -14,7 +14,7 @@ export const GridItem = ({ app, item }) => {
           width={400}
           height={400}
           />
-        <label>{ item.name }</label>
+        <label><span>{ item.name }</span></label>
       </NavLink>
     </article>
   )

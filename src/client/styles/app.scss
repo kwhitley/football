@@ -41,17 +41,32 @@
     label {
       position: absolute;
       z-index: 1;
-      color: white;
-      font-size: 0.9em;
-      bottom: 1em;
-      left: 1em;
-      text-transform: uppercase;
-      white-space: pre-line;
-      text-shadow: 1px 0 0.8em rgba(0,0,0,0.4);
+      top: 0;
+      bottom: 0;
+      right: 0;
+      left: 0;
+      opacity: 0;
+      background-color: rgba(0,0,0,0.3);
+      transition: all 0.1s ease-in;
+
+      > span {
+        position: absolute;
+        display: inline-block;
+        color: white;
+        font-size: 0.9em;
+        bottom: 1em;
+        left: 1em;
+        text-transform: uppercase;
+        white-space: pre-line;
+      }
 
       &:empty {
         display: none;
       }
+    }
+
+    &:hover label {
+      opacity: 1;
     }
   }
 }

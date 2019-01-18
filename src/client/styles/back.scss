@@ -22,6 +22,10 @@ $backButtonHeight: 3em;
     line-height: 0;
     font-size: $backButtonHeight * 2;
     margin-top: -0.17em;
+
+    @media screen and (max-width: 30rem) {
+      content: 'return';
+    }
   }
 
   &:hover {

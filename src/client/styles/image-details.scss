@@ -6,6 +6,10 @@
     text-transform: uppercase;
     white-space: pre-line;
     width: 100%;
+
+    @media screen and (max-width: 30rem) {
+      font-size: 2rem;
+    }
   }
 
   h1:empty {
@@ -13,13 +17,17 @@
   }
 
   .story {
-    font-size: 1em;
+    font-size: 1.2rem;
     margin-top: 0.6rem;
     width: 100%;
 
     > *:last-child {
       margin-bottom: 0;
       padding-bottom: 0;
+    }
+
+    @media screen and (max-width: 30rem) {
+      font-size: 1rem;
     }
   }
 
