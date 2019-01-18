@@ -1,10 +1,10 @@
 import { observable, action } from 'mobx'
 
 export class AppState {
-  @observable adminMode = false
+  @observable editMode = true
 
   @action toggleMode = (which) => this[`${which}Mode`] = !this[`${which}Mode`]
-  @action toggleAdmin = () => this.toggleMode('admin')
+  @action toggleEdit = () => this.toggleMode('edit')
 }
 
 export default window.images = new AppState()

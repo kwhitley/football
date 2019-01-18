@@ -7,8 +7,8 @@ const loadImages = async (images) => {
     await getBaseImage(`/${image.id}.jpg`)
     await getImage(`/${image.id}::width=400,height=400,preview.jpg`)
     await getImage(`/${image.id}::width=400,height=400.jpg`)
-    await getImage(`/${image.id}::width=1000,preview.jpg`)
-    await getImage(`/${image.id}::width=1000.jpg`)
+    await getImage(`/${image.id}::width=900,preview.jpg`)
+    await getImage(`/${image.id}::width=900.jpg`)
   }
 
   console.log('image loads complete.')

@@ -13,7 +13,7 @@ import {
 import ImageCollection from './ImageCollection'
 import Viewer from './Viewer'
 import Back from './Back'
-import AdminToggle from './AdminToggle'
+import AdminToggle from './Controls/AdminToggle'
 
 const App = ({ history }) =>
   <Router history={history}>

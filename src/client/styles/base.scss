@@ -20,6 +20,13 @@ body {
   position: relative;
 }
 
+h1, .h1 {
+  font-weight: 200;
+  letter-spacing: -0.05em;
+  margin: 0;
+  padding: 0;
+}
+
 #app {
   display: flex;
   flex-flow: row wrap;

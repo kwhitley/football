@@ -29,6 +29,7 @@ $transitionDelay: 0.1s;
   // track
   &:before {
     background-color: #777;
+    box-shadow: inset 0.1em 0.05em 0.4em 0.01em rgba(0,0,0,0.1);
   }
 
   &.active:before {

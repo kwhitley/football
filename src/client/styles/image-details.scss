@@ -1,0 +1,23 @@
+.image-details {
+  h1, .h1 {
+    margin-top: 0.5em;
+    font-size: 2em;
+    text-transform: uppercase;
+    white-space: pre-line;
+    width: 100%;
+  }
+
+  h1:empty {
+    display: none;
+  }
+
+  .story {
+    font-size: 1em;
+    margin-top: 0.5em;
+    width: 100%;
+  }
+
+  @media screen and (max-width: 900px) {
+    margin: 0 1em;
+  }
+}

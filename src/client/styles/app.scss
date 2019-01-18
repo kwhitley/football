@@ -45,6 +45,7 @@
       padding: 0.8em 1em;
       background-color: rgba(0,0,0,0.1);
       color: white;
+      text-transform: uppercase;
     }
   }
 }
@@ -75,7 +76,7 @@
   }
 }
 
-.admin.toggle {
+.edit.toggle {
   margin: 0.5em;
   display: inline-block;
   float: right;
@@ -85,3 +86,5 @@
 }
 
 @import './back';
+@import './live-edit';
+@import './image-details';

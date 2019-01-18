@@ -10,7 +10,7 @@ export const GridItem = ({ app, item }) => {
     <article>
       <div className="content">
         {
-          app.adminMode ? <label>{ item.filename }</label> : null
+          app.editMode ? <label>{ item.name || item.filename }</label> : null
         }
         <NavLink to={`/view/${item.id}`}>
           <Imager
