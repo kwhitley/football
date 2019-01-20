@@ -1,0 +1,14 @@
+button, .button {
+  background: none;
+  border-radius: $borderRadius;
+  border: 1px solid #333;
+  font-size: 1rem;
+  padding: 0.8em 1em;
+  color: #333;
+  opacity: 0.7;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 1;
+  }
+}

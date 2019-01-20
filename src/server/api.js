@@ -28,23 +28,33 @@ app.get('/list', cache('30 seconds'), (req, res) => {
                       .find({})
                       .catch(res.status(500).json)
 
-    let existingIds = images.map(i => i.image_id)
+    let existingIds = images.map(i => i.id)
     let dropboxIds = dropboxImages.map(i => i.id).filter(i => i)
     let changes = false
 
-    for (var image_id of existingIds) {
+    for (var id of existingIds) {
       if (!dropboxIds.includes(id)) {
+        await collection('images').remove({ id })
         console.log('deleting database and local content for image', id)
       }
     }
 
-    for (var image_id of dropboxIds) {
-      if (!existingIds.includes(image_id)) {
-        await collection('images').update(image_id, { image_id })
-        console.log('add database and local content for image', image_id)
+    for (var id of dropboxIds) {
+      if (!existingIds.includes(id)) {
+        await collection('images').update(id, { id })
+        console.log('add database and local content for image', id)
         changes = true
       }
     }
+
+    if (changes) {
+      images = await collection('images')
+                      .find({})
+                      .catch(res.status(500).json)
+    }
+
+    dropboxImages = dropboxImages
+      .map(dimage => Object.assign(dimage, images.find(i => i.id === dimage.id)))
 
     res.json(dropboxImages)
   })
@@ -58,26 +68,30 @@ app.get('/images', async (req, res) => {
   res.json(images)
 })
 
-app.patch('/images/:image_id', async (req, res) => {
-  let { image_id } = req.params
-  let image = await collection('images')
-                      .update(image_id, req.body)
-                      .catch(res.status(400).json)
+app.patch('/images/:id', async (req, res) => {
+  let { id } = req.params
 
-  res.json(image)
+  console.log('patching image', id, req.body)
+  // res.json(req.body)
+  let image = await collection('images')
+                      .update(id, req.body)
+                      .then((response) => res.json(response))
+                      .catch((err) => res.status(400).json(err))
+
+  // res.json({ success: true })
 })
 
-app.get('/images/:image_id', async (req, res) => {
-  let { image_id } = req.params
+app.get('/images/:id', async (req, res) => {
+  let { id } = req.params
 
   // insert doc
   await collection('images')
-          .update(image_id, { image_id, bar: 'baz' })
+          .update(id, { id, bar: 'baz' })
           .catch(res.status(500).json)
 
   // get updated/created doc
   let doc = await collection('images')
-                    .find({ image_id })
+                    .find({ id })
                     .catch(res.status(500).json)
 
   res.json(doc)

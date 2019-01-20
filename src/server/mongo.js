@@ -24,41 +24,23 @@ MongoClient
     console.log('error', err)
   })
 
-const find = (collection) => {
-  return (match) => {
-    return new Promise((resolve, reject) => {
-      collection
-        .find(match)
-        .toArray(function(err, data) {
-          err
-            ? reject(err)
-            : resolve(data);
-         })
-    }
-  })
-}
+const find = (collection) => (match) => collection.find(match).toArray()
 
-const update = (collection) => {
-  return (image_id, update = {}) => {
-    return new Promise((resolve, reject) => {
-      collection
-        .update(
-          { image_id },
-          update,
-          { upsert: true },
-          (err, status) => {
-            err
-              ? reject(err)
-              : resolve(status)
-          },
-        )
-    }
-  })
-}
+const remove = (collection) => collection.deleteOne(condition || { safe: true })
+
+const update = (collection) =>
+  (id, content = {}) =>
+    collection
+      .updateOne(
+        { id },
+        { $set: content },
+        { upsert: true }
+      )
 
 export const collection = (name) => {
   return {
     find: find(database.collection(name)),
     update: update(database.collection(name)),
+    remove: remove(database.collection(name)),
   }
 }

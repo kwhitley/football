@@ -29,6 +29,17 @@ export const ImageDetails = ({ app, image, editing }) =>
           { md([image.story]) }
         </div>
     }
+
+    {
+      app.editMode && image.isDirty
+      ? <button
+          className="save"
+          onClick={image.save}
+          >
+          Save Changes
+        </button>
+      : null
+    }
   </div>
 
 export default inject('app')(observer(ImageDetails))

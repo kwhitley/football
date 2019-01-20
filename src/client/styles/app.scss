@@ -108,6 +108,10 @@
   font-size: 0.9em;
 }
 
+button.save {
+  margin-top: 1em;
+}
+
 @import './back';
 @import './live-edit';
 @import './image-details';

@@ -77,21 +77,29 @@ app.get('/list', cache('30 seconds'), (req, res) => {
         let images = await mongo_1.collection('images')
             .find({})
             .catch(res.status(500).json);
-        let existingIds = images.map(i => i.image_id);
+        let existingIds = images.map(i => i.id);
         let dropboxIds = dropboxImages.map(i => i.id).filter(i => i);
         let changes = false;
-        for (var image_id of existingIds) {
+        for (var id of existingIds) {
             if (!dropboxIds.includes(id)) {
+                await mongo_1.collection('images').remove({ id });
                 console.log('deleting database and local content for image', id);
             }
         }
-        for (var image_id of dropboxIds) {
-            if (!existingIds.includes(image_id)) {
-                await mongo_1.collection('images').update(image_id, { image_id });
-                console.log('add database and local content for image', image_id);
+        for (var id of dropboxIds) {
+            if (!existingIds.includes(id)) {
+                await mongo_1.collection('images').update(id, { id });
+                console.log('add database and local content for image', id);
                 changes = true;
             }
         }
+        if (changes) {
+            images = await mongo_1.collection('images')
+                .find({})
+                .catch(res.status(500).json);
+        }
+        dropboxImages = dropboxImages
+            .map(dimage => Object.assign(dimage, images.find(i => i.id === dimage.id)));
         res.json(dropboxImages);
     });
 });
@@ -101,22 +109,25 @@ app.get('/images', async (req, res) => {
         .catch(res.status(500).json);
     res.json(images);
 });
-app.patch('/images/:image_id', async (req, res) => {
-    let { image_id } = req.params;
+app.patch('/images/:id', async (req, res) => {
+    let { id } = req.params;
+    console.log('patching image', id, req.body);
+    // res.json(req.body)
     let image = await mongo_1.collection('images')
-        .update(image_id, req.body)
-        .catch(res.status(400).json);
-    res.json(image);
+        .update(id, req.body)
+        .then((response) => res.json(response))
+        .catch((err) => res.status(400).json(err));
+    // res.json({ success: true })
 });
-app.get('/images/:image_id', async (req, res) => {
-    let { image_id } = req.params;
+app.get('/images/:id', async (req, res) => {
+    let { id } = req.params;
     // insert doc
     await mongo_1.collection('images')
-        .update(image_id, { image_id, bar: 'baz' })
+        .update(id, { id, bar: 'baz' })
         .catch(res.status(500).json);
     // get updated/created doc
     let doc = await mongo_1.collection('images')
-        .find({ image_id })
+        .find({ id })
         .catch(res.status(500).json);
     res.json(doc);
 });
@@ -185,35 +196,15 @@ mongodb_1.MongoClient
     .catch((err) => {
     console.log('error', err);
 });
-const find = (collection) => {
-    return (match) => {
-        return new Promise((resolve, reject) => {
-            collection
-                .find(match)
-                .toArray(function (err, data) {
-                err
-                    ? reject(err)
-                    : resolve(data);
-            });
-        });
-    };
-};
-const update = (collection) => {
-    return (image_id, update = {}) => {
-        return new Promise((resolve, reject) => {
-            collection
-                .update({ image_id }, update, { upsert: true }, (err, status) => {
-                err
-                    ? reject(err)
-                    : resolve(status);
-            });
-        });
-    };
-};
+const find = (collection) => (match) => collection.find(match).toArray();
+const remove = (collection) => collection.deleteOne(condition || { safe: true });
+const update = (collection) => (id, content = {}) => collection
+    .updateOne({ id }, { $set: content }, { upsert: true });
 exports.collection = (name) => {
     return {
         find: find(database.collection(name)),
         update: update(database.collection(name)),
+        remove: remove(database.collection(name)),
     };
 };
 //# sourceMappingURL=mongo.js.map

@@ -1,4 +1,4 @@
-import { observable, action, computed } from 'mobx'
+import { observable, action, computed, reaction, toJS } from 'mobx'
 
 const sortByDate = (a,b) =>
   a.date < b.date ? 1 : (a.date > b.date ? -1 : 0)
@@ -9,8 +9,36 @@ export class ImageItem {
 
   Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.`
   @observable viewing = false
+  @observable isDirty = false
 
-  @action set = (attr) => (value) => this[attr] = value
+  @action set = (attr) => (value) => {
+    this[attr] = value
+    this.isDirty = true
+  }
+
+  @action save = () => {
+    fetch(`/api/images/${this.id}`, {
+      method: 'PATCH', // *GET, POST, PUT, DELETE, etc.
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(this.saveable),
+    })
+      .then(r => r.json())
+      .then(console.log)
+      .catch(err => console.warn(err))
+
+    isDirty = false
+    console.log('saving...')
+  }
+
+  @computed get saveable() {
+    return {
+      name: this.name,
+      story: this.story,
+      dateModified: new Date(),
+    }
+  }
 
   constructor(meta) {
     Object.assign(this, meta)

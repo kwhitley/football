@@ -4,7 +4,7 @@ import { getImage } from './imager'
 
 const loadImages = async (images) => {
   for (var image of images) {
-    await getBaseImage(`/${image.id}.jpg`)
+    await getBaseImage(`/${image.image_id}.jpg`)
     await getImage(`/${image.id}::width=400,height=400,preview.jpg`)
     await getImage(`/${image.id}::width=400,height=400.jpg`)
     await getImage(`/${image.id}::width=900,preview.jpg`)
