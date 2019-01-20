@@ -5,6 +5,7 @@ import dropboxFs from 'dropbox-fs'
 import apicache from 'apicache'
 
 import { collection } from './mongo'
+import { isAuthenticated } from './users'
 
 // create an express app
 const app = express()
@@ -22,7 +23,31 @@ app.get('/env', (req, res) => {
 })
 
 app.get('/list', cache('30 seconds'), (req, res) => {
-  getIndex().then((response) => res.json(response))
+  getIndex().then(async (dropboxImages) => {
+    let images = await collection('images')
+                      .find({})
+                      .catch(res.status(500).json)
+
+    let existingIds = images.map(i => i.image_id)
+    let dropboxIds = dropboxImages.map(i => i.id).filter(i => i)
+    let changes = false
+
+    for (var image_id of existingIds) {
+      if (!dropboxIds.includes(id)) {
+        console.log('deleting database and local content for image', id)
+      }
+    }
+
+    for (var image_id of dropboxIds) {
+      if (!existingIds.includes(image_id)) {
+        await collection('images').update(image_id, { image_id })
+        console.log('add database and local content for image', image_id)
+        changes = true
+      }
+    }
+
+    res.json(dropboxImages)
+  })
 })
 
 app.get('/images', async (req, res) => {
@@ -31,6 +56,15 @@ app.get('/images', async (req, res) => {
                       .catch(res.status(500).json)
 
   res.json(images)
+})
+
+app.patch('/images/:image_id', async (req, res) => {
+  let { image_id } = req.params
+  let image = await collection('images')
+                      .update(image_id, req.body)
+                      .catch(res.status(400).json)
+
+  res.json(image)
 })
 
 app.get('/images/:image_id', async (req, res) => {

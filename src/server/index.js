@@ -5,6 +5,8 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import compression from 'compression'
+import session from 'express-session'
+
 import path from 'path'
 import http from 'http'
 import fs from 'fs'
@@ -17,6 +19,12 @@ import { cacheWarmer } from './cache-warmer'
 // instantiate express
 const app = express()
 const isProduction = process.env.NODE_ENV === 'production'
+
+app.use(session({
+  secret: 'my cat',
+  resave: false,
+  saveUninitialized: true,
+}))
 app.use(cookieParser())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -44,4 +52,4 @@ server.listen(serverPort)
 console.log(`Express server @ http://localhost:${serverPort} (${isProduction ? 'production' : 'development'})\n`)
 
 // warm the cache
-cacheWarmer()
+// cacheWarmer()
