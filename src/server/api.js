@@ -22,11 +22,11 @@ app.get('/env', (req, res) => {
   res.json(process.env)
 })
 
-app.get('/list', cache('30 seconds'), (req, res) => {
+app.get('/images', cache('30 seconds'), (req, res) => {
   getIndex().then(async (dropboxImages) => {
     let images = await collection('images')
                       .find({})
-                      .catch(res.status(500).json)
+                      .catch((err) => res.status(500).json(err))
 
     let existingIds = images.map(i => i.id)
     let dropboxIds = dropboxImages.map(i => i.id).filter(i => i)
@@ -47,10 +47,11 @@ app.get('/list', cache('30 seconds'), (req, res) => {
       }
     }
 
+    // get latest image list after patching
     if (changes) {
       images = await collection('images')
                       .find({})
-                      .catch(res.status(500).json)
+                      .catch((err) => res.status(500).json(err))
     }
 
     dropboxImages = dropboxImages
@@ -58,14 +59,6 @@ app.get('/list', cache('30 seconds'), (req, res) => {
 
     res.json(dropboxImages)
   })
-})
-
-app.get('/images', async (req, res) => {
-  let images = await collection('images')
-                      .find({})
-                      .catch(res.status(500).json)
-
-  res.json(images)
 })
 
 app.patch('/images/:id', async (req, res) => {

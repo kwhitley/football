@@ -73,11 +73,11 @@ app.get('/tmp', async (req, res) => {
 app.get('/env', (req, res) => {
     res.json(process.env);
 });
-app.get('/list', cache('30 seconds'), (req, res) => {
+app.get('/images', cache('30 seconds'), (req, res) => {
     dropbox_1.getIndex().then(async (dropboxImages) => {
         let images = await mongo_1.collection('images')
             .find({})
-            .catch(res.status(500).json);
+            .catch((err) => res.status(500).json(err));
         let existingIds = images.map(i => i.id);
         let dropboxIds = dropboxImages.map(i => i.id).filter(i => i);
         let changes = false;
@@ -94,21 +94,16 @@ app.get('/list', cache('30 seconds'), (req, res) => {
                 changes = true;
             }
         }
+        // get latest image list after patching
         if (changes) {
             images = await mongo_1.collection('images')
                 .find({})
-                .catch(res.status(500).json);
+                .catch((err) => res.status(500).json(err));
         }
         dropboxImages = dropboxImages
             .map(dimage => Object.assign(dimage, images.find(i => i.id === dimage.id)));
         res.json(dropboxImages);
     });
-});
-app.get('/images', async (req, res) => {
-    let images = await mongo_1.collection('images')
-        .find({})
-        .catch(res.status(500).json);
-    res.json(images);
 });
 app.patch('/images/:id', async (req, res) => {
     let { id } = req.params;
