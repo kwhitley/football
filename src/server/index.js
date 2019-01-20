@@ -52,4 +52,4 @@ server.listen(serverPort)
 console.log(`Express server @ http://localhost:${serverPort} (${isProduction ? 'production' : 'development'})\n`)
 
 // warm the cache
-// cacheWarmer()
+cacheWarmer()

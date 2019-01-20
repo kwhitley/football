@@ -20,6 +20,7 @@ const http_1 = require("http");
 const serve_favicon_1 = require("serve-favicon");
 const api_1 = require("./api");
 const imager_api_1 = require("./imager-api");
+const cache_warmer_1 = require("./cache-warmer");
 // instantiate express
 const app = express_1.default();
 const isProduction = process.env.NODE_ENV === 'production';
@@ -49,7 +50,7 @@ const server = http_1.default.createServer(app);
 server.listen(serverPort);
 console.log(`Express server @ http://localhost:${serverPort} (${isProduction ? 'production' : 'development'})\n`);
 // warm the cache
-// cacheWarmer()
+cache_warmer_1.cacheWarmer();
 //# sourceMappingURL=index.js.map
 });
 ___scope___.file("server/api.js", function(exports, require, module, __filename, __dirname){
@@ -332,6 +333,33 @@ exports.getBaseImage = async (requestedImagePath) => {
     });
 };
 //# sourceMappingURL=get-base-image.js.map
+});
+___scope___.file("server/cache-warmer.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const dropbox_1 = require("./dropbox");
+const get_base_image_1 = require("./get-base-image");
+const imager_1 = require("./imager");
+const loadImages = async (images) => {
+    for (var image of images) {
+        await get_base_image_1.getBaseImage(`/${image.image_id}.jpg`);
+        await imager_1.getImage(`/${image.id}::width=400,height=400,preview.jpg`);
+        await imager_1.getImage(`/${image.id}::width=400,height=400.jpg`);
+        await imager_1.getImage(`/${image.id}::width=900,preview.jpg`);
+        await imager_1.getImage(`/${image.id}::width=900.jpg`);
+    }
+    console.log('image loads complete.');
+};
+exports.cacheWarmer = async () => {
+    console.log('warming the cache...');
+    await dropbox_1.getIndex()
+        .then((entries) => {
+        loadImages(entries.filter(e => e.type === 'file'));
+        return entries;
+    });
+};
+//# sourceMappingURL=cache-warmer.js.map
 });
 return ___scope___.entry = "server/index.js";
 });
