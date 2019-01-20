@@ -25,11 +25,9 @@ export class ImageItem {
       body: JSON.stringify(this.saveable),
     })
       .then(r => r.json())
-      .then(console.log)
       .catch(err => console.warn(err))
 
-    isDirty = false
-    console.log('saving...')
+    this.isDirty = false
   }
 
   @computed get saveable() {

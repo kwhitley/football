@@ -8,18 +8,18 @@
     "relativePath": "f416a760-vendor.js"
   },
   "app": {
-    "fileName": "26db2cde-app.js",
-    "hash": "26db2cde",
+    "fileName": "4cd55170-app.js",
+    "hash": "4cd55170",
     "type": "js",
-    "absPath": "/Users/kevinwhitley/dev/kwhitley/dropbox-gallery/dist/client/26db2cde-app.js",
+    "absPath": "/Users/kevinwhitley/dev/kwhitley/dropbox-gallery/dist/client/4cd55170-app.js",
     "webIndexed": true,
-    "relativePath": "26db2cde-app.js"
+    "relativePath": "4cd55170-app.js"
   },
   "styles.css": {
-    "fileName": "ef2e4a76-styles.css",
+    "fileName": "49d58e9-styles.css",
     "type": "css",
-    "hash": "ef2e4a76",
-    "absPath": "/Users/kevinwhitley/dev/kwhitley/dropbox-gallery/dist/client/ef2e4a76-styles.css",
+    "hash": "49d58e9",
+    "absPath": "/Users/kevinwhitley/dev/kwhitley/dropbox-gallery/dist/client/49d58e9-styles.css",
     "webIndexed": true
   }
 }

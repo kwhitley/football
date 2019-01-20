@@ -198,7 +198,7 @@ mongodb_1.MongoClient
     console.log('error', err);
 });
 const find = (collection) => (match) => collection.find(match).toArray();
-const remove = (collection) => collection.deleteOne(condition || { safe: true });
+const remove = (collection) => (condition) => collection.deleteOne(condition || { safe: true });
 const update = (collection) => (id, content = {}) => collection
     .updateOne({ id }, { $set: content }, { upsert: true });
 exports.collection = (name) => {
@@ -343,7 +343,7 @@ const get_base_image_1 = require("./get-base-image");
 const imager_1 = require("./imager");
 const loadImages = async (images) => {
     for (var image of images) {
-        await get_base_image_1.getBaseImage(`/${image.image_id}.jpg`);
+        await get_base_image_1.getBaseImage(`/${image.id}.jpg`);
         await imager_1.getImage(`/${image.id}::width=400,height=400,preview.jpg`);
         await imager_1.getImage(`/${image.id}::width=400,height=400.jpg`);
         await imager_1.getImage(`/${image.id}::width=900,preview.jpg`);

@@ -26,7 +26,7 @@ MongoClient
 
 const find = (collection) => (match) => collection.find(match).toArray()
 
-const remove = (collection) => collection.deleteOne(condition || { safe: true })
+const remove = (collection) => (condition) => collection.deleteOne(condition || { safe: true })
 
 const update = (collection) =>
   (id, content = {}) =>
