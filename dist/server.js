@@ -14,15 +14,20 @@ const express_1 = require("express");
 const body_parser_1 = require("body-parser");
 const cookie_parser_1 = require("cookie-parser");
 const compression_1 = require("compression");
+const express_session_1 = require("express-session");
 const path_1 = require("path");
 const http_1 = require("http");
 const serve_favicon_1 = require("serve-favicon");
 const api_1 = require("./api");
 const imager_api_1 = require("./imager-api");
-const cache_warmer_1 = require("./cache-warmer");
 // instantiate express
 const app = express_1.default();
 const isProduction = process.env.NODE_ENV === 'production';
+app.use(express_session_1.default({
+    secret: 'my cat',
+    resave: false,
+    saveUninitialized: true,
+}));
 app.use(cookie_parser_1.default());
 app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({ extended: false }));
@@ -44,7 +49,7 @@ const server = http_1.default.createServer(app);
 server.listen(serverPort);
 console.log(`Express server @ http://localhost:${serverPort} (${isProduction ? 'production' : 'development'})\n`);
 // warm the cache
-cache_warmer_1.cacheWarmer();
+// cacheWarmer()
 //# sourceMappingURL=index.js.map
 });
 ___scope___.file("server/api.js", function(exports, require, module, __filename, __dirname){
@@ -68,13 +73,40 @@ app.get('/env', (req, res) => {
     res.json(process.env);
 });
 app.get('/list', cache('30 seconds'), (req, res) => {
-    dropbox_1.getIndex().then((response) => res.json(response));
+    dropbox_1.getIndex().then(async (dropboxImages) => {
+        let images = await mongo_1.collection('images')
+            .find({})
+            .catch(res.status(500).json);
+        let existingIds = images.map(i => i.image_id);
+        let dropboxIds = dropboxImages.map(i => i.id).filter(i => i);
+        let changes = false;
+        for (var image_id of existingIds) {
+            if (!dropboxIds.includes(id)) {
+                console.log('deleting database and local content for image', id);
+            }
+        }
+        for (var image_id of dropboxIds) {
+            if (!existingIds.includes(image_id)) {
+                await mongo_1.collection('images').update(image_id, { image_id });
+                console.log('add database and local content for image', image_id);
+                changes = true;
+            }
+        }
+        res.json(dropboxImages);
+    });
 });
 app.get('/images', async (req, res) => {
     let images = await mongo_1.collection('images')
         .find({})
         .catch(res.status(500).json);
     res.json(images);
+});
+app.patch('/images/:image_id', async (req, res) => {
+    let { image_id } = req.params;
+    let image = await mongo_1.collection('images')
+        .update(image_id, req.body)
+        .catch(res.status(400).json);
+    res.json(image);
 });
 app.get('/images/:image_id', async (req, res) => {
     let { image_id } = req.params;
@@ -139,16 +171,20 @@ ___scope___.file("server/mongo.js", function(exports, require, module, __filenam
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongodb_1 = require("mongodb");
-const { DB_USER, DB_PASSWORD, DB_CLUSTER, DB_DATABASE, } = process.env;
-const connectionStr = `mongodb+srv://${DB_USER}:${DB_PASSWORD}@personal-gallery-8rxci.gcp.mongodb.net/test?retryWrites=true`;
+const { DB_USER, DB_PASSWORD, DB_DATABASE, DB_URI, } = process.env;
+const shards = (uri) => Array(3).fill(0).map((v, i) => uri.replace(/^(.*)?-(.*)$/, `$1-shard-00-0${i}-$2`));
+const replicaSet = (uri) => uri.replace(/^(.*)?-(.*)$/, `$1-shard-0`);
+exports.URI = `mongodb://${DB_USER}:${DB_PASSWORD}@${shards(DB_URI).join(',')}/${DB_DATABASE}?replicaSet=${replicaSet(DB_URI)}&ssl=true&authSource=admin`;
 let database = undefined;
 mongodb_1.MongoClient
-    .connect(connectionStr, { useNewUrlParser: true })
+    .connect(exports.URI, { useNewUrlParser: true })
     .then((client) => {
     console.log('connected to database.');
     database = client.db(DB_DATABASE);
 })
-    .catch(console.error);
+    .catch((err) => {
+    console.log('error', err);
+});
 const find = (collection) => {
     return (match) => {
         return new Promise((resolve, reject) => {
@@ -305,33 +341,6 @@ exports.getBaseImage = async (requestedImagePath) => {
     });
 };
 //# sourceMappingURL=get-base-image.js.map
-});
-___scope___.file("server/cache-warmer.js", function(exports, require, module, __filename, __dirname){
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const dropbox_1 = require("./dropbox");
-const get_base_image_1 = require("./get-base-image");
-const imager_1 = require("./imager");
-const loadImages = async (images) => {
-    for (var image of images) {
-        await get_base_image_1.getBaseImage(`/${image.id}.jpg`);
-        await imager_1.getImage(`/${image.id}::width=400,height=400,preview.jpg`);
-        await imager_1.getImage(`/${image.id}::width=400,height=400.jpg`);
-        await imager_1.getImage(`/${image.id}::width=900,preview.jpg`);
-        await imager_1.getImage(`/${image.id}::width=900.jpg`);
-    }
-    console.log('image loads complete.');
-};
-exports.cacheWarmer = async () => {
-    console.log('warming the cache...');
-    await dropbox_1.getIndex()
-        .then((entries) => {
-        loadImages(entries.filter(e => e.type === 'file'));
-        return entries;
-    });
-};
-//# sourceMappingURL=cache-warmer.js.map
 });
 return ___scope___.entry = "server/index.js";
 });
