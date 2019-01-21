@@ -10,7 +10,7 @@ import ImageCollection from './ImageCollection'
 import Viewer from './Viewer'
 import Login from './User/Login'
 import Back from './Back'
-import UserActionLink from './User/UserActionLink'
+import UserActions from './User/UserActions'
 
 const App = ({ history }) =>
   <Router history={history}>
@@ -31,7 +31,7 @@ const App = ({ history }) =>
             render={({ location, history }) => <ImageCollection location={location} history={history} />}
             />
         </Switch>
-        <UserActionLink history={history} location={location} />
+        <UserActions history={history} location={location} />
       </div>
     }>
     </Route>

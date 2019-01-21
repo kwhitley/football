@@ -51,6 +51,20 @@ export class UserState {
                         })
                         .catch(err => console.warn(err))
   }
+
+  @action getProfile = async () =>
+    await fetch('/user/profile')
+            .then(r => r.json())
+            .then(profile => {
+              console.log('logged in as', profile)
+              this.profile = profile
+              this.isLoggedIn = true
+            })
+            .catch(err => console.log('user not logged in...'))
+
+  constructor() {
+    this.getProfile()
+  }
 }
 
 export default window.images = new UserState()

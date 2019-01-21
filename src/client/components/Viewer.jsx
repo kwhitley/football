@@ -2,8 +2,6 @@ import React from 'react'
 import { observer, inject } from 'mobx-react'
 import Imager from './Imager'
 import ImageDetails from './ImageDetails'
-import Back from './Back'
-import AdminToggle from './Controls/AdminToggle'
 
 export const Viewer = ({ images, user, match, history, location }) => {
   let image = images.getById(match.params.id)
@@ -17,10 +15,8 @@ export const Viewer = ({ images, user, match, history, location }) => {
       {
         image && <ImageDetails image={image} />
       }
-      <AdminToggle visible={user.isLoggedIn} />
     </div>
   )
 }
-
 
 export default inject('images', 'user')(observer(Viewer))
