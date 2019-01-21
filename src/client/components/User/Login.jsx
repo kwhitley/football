@@ -9,6 +9,7 @@ export const LoginForm = ({ user, location, history }) =>
       onChange={(value) => user.credentials.email = value}
       placeholder="email address"
       disabled={user.isValidating}
+      autocapitalize="none"
       required
       />
     <Input
@@ -17,6 +18,7 @@ export const LoginForm = ({ user, location, history }) =>
       placeholder="password"
       type="password"
       disabled={user.isValidating}
+      autocapitalize="none"
       required
       />
 

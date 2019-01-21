@@ -6,8 +6,8 @@ import UserActionLink from './UserActionLink'
 export const UserActions = ({ location }) =>
   location.pathname !== '/login'
   ? <div className="user-actions">
-      <ToggleEditMode />
       <UserActionLink />
+      <ToggleEditMode />
     </div>
   : null
 

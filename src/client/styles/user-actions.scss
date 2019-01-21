@@ -1,13 +1,14 @@
 .user-actions {
   flex: 0 2em;
   display: flex;
-  flex-flow: row wrap;
+  flex-flow: row-reverse wrap;
   justify-content: space-between;
   font-size: 0.9rem;
   padding: 1em;
   text-transform: uppercase;
   white-space: nowrap;
   align-items: flex-end;
+  align-content: flex-end;
 
   * {
     -webkit-tap-highlight-color: rgba(0,0,0,0);
@@ -18,7 +19,7 @@
   }
 
   .userlink {
-    align-self: flex-end;
+    // align-self: flex-end;
   }
 
   .toggle.edit {
