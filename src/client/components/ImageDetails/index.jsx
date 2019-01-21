@@ -23,7 +23,6 @@ export const ImageDetails = ({ app, image, editing }) =>
           value={image.story}
           onChange={image.set('story')}
           placeholder="Tell the story"
-          rows={3}
           />
       : <div className="story">
           { md([image.story]) }
