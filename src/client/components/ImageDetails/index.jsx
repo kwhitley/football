@@ -11,7 +11,7 @@ export const ImageDetails = ({ app, image, editing }) =>
           className="h1 title"
           value={image.name}
           onChange={image.set('name')}
-          placeholder={image.filename}
+          placeholder="Give the image a title"
           />
       : <h1>{ image.name }</h1>
     }
@@ -22,7 +22,7 @@ export const ImageDetails = ({ app, image, editing }) =>
           className="story"
           value={image.story}
           onChange={image.set('story')}
-          placeholder="(image story)"
+          placeholder="Tell the story"
           rows={3}
           />
       : <div className="story">

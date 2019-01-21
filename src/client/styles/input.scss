@@ -1,0 +1,54 @@
+input, textarea {
+  font-size: 1.1rem;
+  border-radius: $borderRadius;
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 1em 0.8em;
+  letter-spacing: -0.03em;
+  outline: none;
+
+  &:disabled {
+    color: #999;
+  }
+
+  + label {
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    position: absolute;
+    left: 0.3rem;
+    top: -0.4rem;
+    color: #aaa;
+    letter-spacing: -0.03em;
+    background-color: white;
+    display: inline-block;
+    opacity: 0;
+    padding: 0 0.2rem;
+  }
+
+  &:focus {
+    border-color: #07a2f7;
+  }
+
+  &:not(:placeholder-shown) + label {
+    opacity: 1;
+  }
+
+  &:not(:placeholder-shown):focus + label {
+    color: #07a2f7;
+  }
+}
+
+.input-group {
+  position: relative;
+
+  input {
+    display: block;
+    width: 100%;
+  }
+
+  textarea ~ label {
+    left: 0;
+    top: -1em;
+  }
+}
+

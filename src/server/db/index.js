@@ -28,6 +28,8 @@ const find = (collection) => (match) => collection.find(match).toArray()
 
 const remove = (collection) => (condition) => collection.deleteOne(condition || { safe: true })
 
+const create = (collection) => (content = {}) => collection.insert(content)
+
 const update = (collection) =>
   (id, content = {}) =>
     collection
@@ -39,6 +41,7 @@ const update = (collection) =>
 
 export const collection = (name) => {
   return {
+    create: create(database.collection(name)),
     find: find(database.collection(name)),
     update: update(database.collection(name)),
     remove: remove(database.collection(name)),

@@ -1,6 +1,6 @@
 import { getIndex } from './dropbox'
 import { getBaseImage } from './get-base-image'
-import { getImage } from './imager'
+import { getImage } from './imager.js'
 
 const loadImages = async (images) => {
   for (var image of images) {

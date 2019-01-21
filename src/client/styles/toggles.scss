@@ -33,7 +33,7 @@ $transitionDelay: 0.1s;
   }
 
   &.active:before {
-    background-color: #2185d0;
+    background-color: $primaryFormColor;
   }
 
   // handle

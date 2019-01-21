@@ -13,8 +13,9 @@ import fs from 'fs'
 import favicon from 'serve-favicon'
 
 import api from './api'
-import imager from './imager-api'
-import { cacheWarmer } from './cache-warmer'
+import imagerApi from './imager/api'
+import usersApi from './users/api'
+import { cacheWarmer } from './imager/cache-warmer'
 
 // instantiate express
 const app = express()
@@ -38,7 +39,8 @@ app.use(favicon(path.join(__dirname, '../src/client/images', 'favicon.ico')))
 
 // add api layers
 app.use('/api', api)
-app.use('/i', imager)
+app.use('/user', usersApi)
+app.use('/i', imagerApi)
 
 // 404
 app.get('*', (req, res) => {

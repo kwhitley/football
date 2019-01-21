@@ -1,11 +1,10 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import classNames from 'classnames'
-import TextArea from 'react-autosize-textarea'
 
 const valueOnly = (fn) => (e) => fn(e.target.value)
 
-export const LiveEdit = ({
+export const Input = ({
   value,
   placeholder,
   onChange,
@@ -13,15 +12,19 @@ export const LiveEdit = ({
   ...props,
 }) =>
   <div className="input-group">
-    <TextArea
-      className={classNames('live-edit', className)}
+    <input
+      className={classNames('input', className)}
       type="text"
       onChange={valueOnly(onChange)}
       value={value}
       placeholder={placeholder}
       {...props}
       />
-    <label>{ placeholder }</label>
+    {
+      placeholder
+      ? <label>{ placeholder }</label>
+      : null
+    }
   </div>
 
-export default observer(LiveEdit)
+export default observer(Input)

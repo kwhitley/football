@@ -16,7 +16,7 @@ export class ImageItem {
 
   @action save = () => {
     fetch(`/api/images/${this.id}`, {
-      method: 'PATCH', // *GET, POST, PUT, DELETE, etc.
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },

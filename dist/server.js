@@ -19,8 +19,9 @@ const path_1 = require("path");
 const http_1 = require("http");
 const serve_favicon_1 = require("serve-favicon");
 const api_1 = require("./api");
-const imager_api_1 = require("./imager-api");
-const cache_warmer_1 = require("./cache-warmer");
+const api_2 = require("./imager/api");
+const api_3 = require("./users/api");
+const cache_warmer_1 = require("./imager/cache-warmer");
 // instantiate express
 const app = express_1.default();
 const isProduction = process.env.NODE_ENV === 'production';
@@ -40,7 +41,8 @@ app.use(express_1.default.static(staticPath));
 app.use(serve_favicon_1.default(path_1.default.join(__dirname, '../src/client/images', 'favicon.ico')));
 // add api layers
 app.use('/api', api_1.default);
-app.use('/i', imager_api_1.default);
+app.use('/user', api_3.default);
+app.use('/i', api_2.default);
 // 404
 app.get('*', (req, res) => {
     res.sendStatus(404);
@@ -59,9 +61,10 @@ ___scope___.file("server/api.js", function(exports, require, module, __filename,
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const globby_1 = require("globby");
-const dropbox_1 = require("./dropbox");
+const dropbox_1 = require("./imager/dropbox");
 const apicache_1 = require("apicache");
-const mongo_1 = require("./mongo");
+const db_1 = require("./db");
+const users_1 = require("./users/users");
 // create an express app
 const app = express_1.default();
 const cache = apicache_1.default.middleware;
@@ -75,7 +78,7 @@ app.get('/env', (req, res) => {
 });
 app.get('/images', cache('30 seconds'), (req, res) => {
     dropbox_1.getIndex().then(async (dropboxImages) => {
-        let images = await mongo_1.collection('images')
+        let images = await db_1.collection('images')
             .find({})
             .catch((err) => res.status(500).json(err));
         let existingIds = images.map(i => i.id);
@@ -83,20 +86,20 @@ app.get('/images', cache('30 seconds'), (req, res) => {
         let changes = false;
         for (var id of existingIds) {
             if (!dropboxIds.includes(id)) {
-                await mongo_1.collection('images').remove({ id });
+                await db_1.collection('images').remove({ id });
                 console.log('deleting database and local content for image', id);
             }
         }
         for (var id of dropboxIds) {
             if (!existingIds.includes(id)) {
-                await mongo_1.collection('images').update(id, { id });
+                await db_1.collection('images').update(id, { id });
                 console.log('add database and local content for image', id);
                 changes = true;
             }
         }
         // get latest image list after patching
         if (changes) {
-            images = await mongo_1.collection('images')
+            images = await db_1.collection('images')
                 .find({})
                 .catch((err) => res.status(500).json(err));
         }
@@ -105,11 +108,11 @@ app.get('/images', cache('30 seconds'), (req, res) => {
         res.json(dropboxImages);
     });
 });
-app.patch('/images/:id', async (req, res) => {
+app.patch('/images/:id', users_1.isAuthenticated, async (req, res) => {
     let { id } = req.params;
     console.log('patching image', id, req.body);
     // res.json(req.body)
-    let image = await mongo_1.collection('images')
+    let image = await db_1.collection('images')
         .update(id, req.body)
         .then((response) => res.json(response))
         .catch((err) => res.status(400).json(err));
@@ -118,11 +121,11 @@ app.patch('/images/:id', async (req, res) => {
 app.get('/images/:id', async (req, res) => {
     let { id } = req.params;
     // insert doc
-    await mongo_1.collection('images')
+    await db_1.collection('images')
         .update(id, { id, bar: 'baz' })
         .catch(res.status(500).json);
     // get updated/created doc
-    let doc = await mongo_1.collection('images')
+    let doc = await db_1.collection('images')
         .find({ id })
         .catch(res.status(500).json);
     res.json(doc);
@@ -135,7 +138,7 @@ app.get('*', (req, res) => {
 exports.default = app;
 //# sourceMappingURL=api.js.map
 });
-___scope___.file("server/dropbox.js", function(exports, require, module, __filename, __dirname){
+___scope___.file("server/imager/dropbox.js", function(exports, require, module, __filename, __dirname){
 
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -173,7 +176,7 @@ exports.download = (path) => {
 };
 //# sourceMappingURL=dropbox.js.map
 });
-___scope___.file("server/mongo.js", function(exports, require, module, __filename, __dirname){
+___scope___.file("server/db/index.js", function(exports, require, module, __filename, __dirname){
 
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -194,27 +197,48 @@ mongodb_1.MongoClient
 });
 const find = (collection) => (match) => collection.find(match).toArray();
 const remove = (collection) => (condition) => collection.deleteOne(condition || { safe: true });
+const create = (collection) => (content = {}) => collection.insert(content);
 const update = (collection) => (id, content = {}) => collection
     .updateOne({ id }, { $set: content }, { upsert: true });
 exports.collection = (name) => {
     return {
+        create: create(database.collection(name)),
         find: find(database.collection(name)),
         update: update(database.collection(name)),
         remove: remove(database.collection(name)),
     };
 };
-//# sourceMappingURL=mongo.js.map
+//# sourceMappingURL=index.js.map
 });
-___scope___.file("server/imager-api.js", function(exports, require, module, __filename, __dirname){
+___scope___.file("server/users/users.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const db_1 = require("../db");
+exports.getUsersList = () => db_1.collection('users').find({});
+exports.createUser = async ({ email, password, username }) => await db_1.collection('users')
+    .create({
+    email,
+    password,
+    username,
+    dateCreated: new Date(),
+});
+exports.getUser = async (match) => db_1.collection('users').find(match);
+exports.isAuthenticated = (req, res, next) => req.session.user
+    ? next()
+    : res.sendStatus(401);
+//# sourceMappingURL=users.js.map
+});
+___scope___.file("server/imager/api.js", function(exports, require, module, __filename, __dirname){
 
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const imager_1 = require("./imager");
+const imager_js_1 = require("./imager.js");
 const app = express_1.default();
 // single route catches all requests to imager and passes them to worker
 app.get('*.(png|jpg)', (req, res) => {
-    imager_1.getImage(req.path)
+    imager_js_1.getImage(req.path)
         .then((image) => {
         res.type('image/jpeg');
         res.set('Cache-Control', "public, max-age=345600"); // 4 days
@@ -227,9 +251,9 @@ app.get('*.(png|jpg)', (req, res) => {
     });
 });
 exports.default = app;
-//# sourceMappingURL=imager-api.js.map
+//# sourceMappingURL=api.js.map
 });
-___scope___.file("server/imager.js", function(exports, require, module, __filename, __dirname){
+___scope___.file("server/imager/imager.js", function(exports, require, module, __filename, __dirname){
 
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -239,6 +263,7 @@ const path_1 = require("path");
 const get_base_image_1 = require("./get-base-image");
 const isProduction = process.env.NODE_ENV === 'production';
 exports.getImage = (requestedImagePath) => {
+    console.log('getImage:', requestedImagePath);
     return new Promise(async function (resolve, reject) {
         let decodedPath = decodeURI(requestedImagePath);
         let optionsSegment = decodedPath.replace(/^.*::(.*)\.\w{3,4}$/i, '$1') || '';
@@ -257,7 +282,7 @@ exports.getImage = (requestedImagePath) => {
             return a;
         }, {});
         // begin: save final output and stream output to response
-        let savefolder = path_1.default.join(__dirname, `../${isProduction ? 'dist' : '.dist-dev'}/client/i`);
+        let savefolder = path_1.default.join(__dirname, `../../${isProduction ? 'dist' : '.dist-dev'}/client/i`);
         let savepath = savefolder + requestedImagePath;
         let file = await get_base_image_1.getBaseImage(`/${revisionId}.jpg`)
             .catch((err) => console.error('failure fetching image', err));
@@ -293,7 +318,7 @@ exports.getImage = (requestedImagePath) => {
 };
 //# sourceMappingURL=imager.js.map
 });
-___scope___.file("server/get-base-image.js", function(exports, require, module, __filename, __dirname){
+___scope___.file("server/imager/get-base-image.js", function(exports, require, module, __filename, __dirname){
 
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -308,20 +333,23 @@ exports.getBaseImage = async (requestedImagePath) => {
         let decodedPath = decodeURI(requestedImagePath);
         let revisionId = decodedPath.replace(/.*?(\w+).*/g, '$1');
         // begin: save final output and stream output to response
-        let savefolder = path_1.default.join(__dirname, `../${isProduction ? 'dist' : '.dist-dev'}/client/i`);
+        let savefolder = path_1.default.join(__dirname, `../../${isProduction ? 'dist' : '.dist-dev'}/client/i`);
         let savepath = savefolder + requestedImagePath;
         let originalpath = savefolder + '/' + revisionId + '.jpg';
         let image = await fs_1.default.promises.readFile(originalpath)
             .catch((err) => console.log('loading image from dropbox...'));
         if (!image) {
             let binary = await dropbox_1.download(revisionId);
+            console.log('making savefolder', savefolder);
             // ensure folder exists before file stream opening
             await fs_1.default.promises.mkdir(savefolder, { recursive: true }).catch(e => e);
+            console.log('saving base image', originalpath);
             let image = await sharp_1.default(binary)
                 .rotate()
                 .jpeg({ quality: 95 })
                 .toFile(originalpath);
         }
+        console.log('returning', savepath);
         fs_1.default.promises.readFile(savepath)
             .then(resolve)
             .catch(reject);
@@ -329,20 +357,75 @@ exports.getBaseImage = async (requestedImagePath) => {
 };
 //# sourceMappingURL=get-base-image.js.map
 });
-___scope___.file("server/cache-warmer.js", function(exports, require, module, __filename, __dirname){
+___scope___.file("server/users/api.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const users_1 = require("./users");
+const app = express_1.default();
+// app.post('/signup', async (req, res) => {
+//   let user = await createUser(req.body)
+//   if (user) {
+//     res.json(req.session.user)
+//   }
+// })
+app.get('/all', users_1.isAuthenticated, async (req, res) => {
+    let users = await users_1.getUsersList()
+        .catch((err) => res.status(400).json(err));
+    console.log('users', users);
+    res.json(users);
+});
+app.get('/profile', users_1.isAuthenticated, (req, res) => {
+    res.json(req.session.user);
+});
+// app.get('/login', async (req, res) => {
+//   createUser({
+//     email: 'krwhitley@gmail.com',
+//     username: 'krwhitley',
+//     password: 'T5mvjFsIvy%#6KsipKLeiY@F@MS8a2',
+//   }).then(() => res.sendStatus(200))
+//     .catch((err) => res.status(400).json(err))
+// })
+app.get('/logout', (req, res) => {
+    delete req.session.user;
+    res.sendStatus(200);
+});
+app.post('/login', async (req, res) => {
+    let { email, password } = req.body;
+    if (!email || !password) {
+        return res.sendStatus(400);
+    }
+    let user = await users_1.getUser({ email, password })
+        .then(users => users[0])
+        .then(user => {
+        delete user.password;
+        delete user._id;
+        return user;
+    })
+        .catch(() => res.sendStatus(401));
+    if (user) {
+        req.session.user = user;
+        res.json(user);
+    }
+});
+exports.default = app;
+//# sourceMappingURL=api.js.map
+});
+___scope___.file("server/imager/cache-warmer.js", function(exports, require, module, __filename, __dirname){
 
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const dropbox_1 = require("./dropbox");
 const get_base_image_1 = require("./get-base-image");
-const imager_1 = require("./imager");
+const imager_js_1 = require("./imager.js");
 const loadImages = async (images) => {
     for (var image of images) {
         await get_base_image_1.getBaseImage(`/${image.id}.jpg`);
-        await imager_1.getImage(`/${image.id}::width=400,height=400,preview.jpg`);
-        await imager_1.getImage(`/${image.id}::width=400,height=400.jpg`);
-        await imager_1.getImage(`/${image.id}::width=900,preview.jpg`);
-        await imager_1.getImage(`/${image.id}::width=900.jpg`);
+        await imager_js_1.getImage(`/${image.id}::width=400,height=400,preview.jpg`);
+        await imager_js_1.getImage(`/${image.id}::width=400,height=400.jpg`);
+        await imager_js_1.getImage(`/${image.id}::width=900,preview.jpg`);
+        await imager_js_1.getImage(`/${image.id}::width=900.jpg`);
     }
     console.log('image loads complete.');
 };

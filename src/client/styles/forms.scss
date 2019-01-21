@@ -1,0 +1,55 @@
+$primaryFormColor: #2185d0;
+
+@import './toggles';
+@import './button';
+@import './input';
+
+.input-group {
+  margin-top: 0.5em;
+}
+
+input + input, .input-group + .input-group {
+  margin-top: 1em;
+}
+
+.error:not(:empty) {
+  font-size: 0.9rem;
+  color: #e88;
+  text-align: left;
+  line-height: 1.3em;
+
+  &:before {
+    content: 'ERROR: ';
+    font-size: 0.9em;
+    font-weight: 600;
+  }
+}
+
+.user-login {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+
+  .error:not(:empty) {
+    margin-top: 2em;
+    width: calc(20% + 8rem);
+  }
+
+  .input-group {
+    margin-top: 0.6em;
+    width: calc(20% + 10rem);
+    text-align: center;
+  }
+
+  button {
+    margin-top: 2em;
+    width: 8em;
+  }
+}
+
+*::placeholder {
+  color: #ccc;
+  text-transform: uppercase;
+}

@@ -1,5 +1,5 @@
 import express from 'express'
-import { getImage } from './imager'
+import { getImage } from './imager.js'
 
 const app = express()
 

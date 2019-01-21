@@ -12,7 +12,7 @@ export const getBaseImage = async (requestedImagePath) => {
     let revisionId = decodedPath.replace(/.*?(\w+).*/g, '$1')
 
     // begin: save final output and stream output to response
-    let savefolder = Path.join(__dirname, `../${isProduction ? 'dist' : '.dist-dev'}/client/i`)
+    let savefolder = Path.join(__dirname, `../../${isProduction ? 'dist' : '.dist-dev'}/client/i`)
     let savepath = savefolder + requestedImagePath
     let originalpath = savefolder + '/' + revisionId + '.jpg'
 
@@ -22,14 +22,18 @@ export const getBaseImage = async (requestedImagePath) => {
     if (!image) {
       let binary = await download(revisionId)
 
+      console.log('making savefolder', savefolder)
       // ensure folder exists before file stream opening
       await fs.promises.mkdir(savefolder, { recursive: true }).catch(e => e)
 
+      console.log('saving base image', originalpath)
       let image = await sharp(binary)
         .rotate()
         .jpeg({ quality: 95 })
         .toFile(originalpath)
     }
+
+    console.log('returning', savepath)
 
     fs.promises.readFile(savepath)
       .then(resolve)

@@ -1,11 +1,11 @@
 import express from 'express'
 import globby from 'globby'
-import { getIndex, download } from './dropbox'
+import { getIndex, download } from './imager/dropbox'
 import dropboxFs from 'dropbox-fs'
 import apicache from 'apicache'
 
-import { collection } from './mongo'
-import { isAuthenticated } from './users'
+import { collection } from './db'
+import { isAuthenticated } from './users/users'
 
 // create an express app
 const app = express()
@@ -61,7 +61,7 @@ app.get('/images', cache('30 seconds'), (req, res) => {
   })
 })
 
-app.patch('/images/:id', async (req, res) => {
+app.patch('/images/:id', isAuthenticated, async (req, res) => {
   let { id } = req.params
 
   console.log('patching image', id, req.body)
