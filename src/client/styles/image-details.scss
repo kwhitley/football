@@ -31,9 +31,16 @@ $storyPaddingRight: 1em;
     padding-right: $storyPaddingRight;
     margin-bottom: 1em;
 
-    > *:last-child {
-      margin-bottom: 0;
-      padding-bottom: 0;
+    > div {
+      @media screen and (min-width: 50rem) {
+        column-count: 2;
+        column-gap: 3rem;
+      }
+
+      > *:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
     }
   }
 
