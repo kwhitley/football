@@ -9,7 +9,7 @@ export const LoginForm = ({ user, location, history, signup = false }) =>
       onChange={(value) => user.credentials.email = value}
       className="email"
       placeholder="email address"
-      pattern=".*@.{2,}\..{2,}"
+      pattern=".+@.{2,}\..{2,}"
       disabled={user.isValidating}
       autocapitalize="none"
       required

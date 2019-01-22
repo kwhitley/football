@@ -6,6 +6,7 @@ import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import compression from 'compression'
 import session from 'express-session'
+import sslRedirect from 'heroku-ssl-redirect'
 
 import path from 'path'
 import http from 'http'
@@ -20,6 +21,12 @@ import { cacheWarmer } from './imager/cache-warmer'
 // instantiate express
 const app = express()
 const isProduction = process.env.NODE_ENV === 'production'
+
+// force SSL on production
+app.use(sslRedirect([
+  'development',
+  'production',
+]))
 
 app.use(session({
   secret: 'my cat',

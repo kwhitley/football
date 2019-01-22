@@ -15,6 +15,7 @@ const body_parser_1 = require("body-parser");
 const cookie_parser_1 = require("cookie-parser");
 const compression_1 = require("compression");
 const express_session_1 = require("express-session");
+const heroku_ssl_redirect_1 = require("heroku-ssl-redirect");
 const path_1 = require("path");
 const http_1 = require("http");
 const serve_favicon_1 = require("serve-favicon");
@@ -25,6 +26,11 @@ const cache_warmer_1 = require("./imager/cache-warmer");
 // instantiate express
 const app = express_1.default();
 const isProduction = process.env.NODE_ENV === 'production';
+// force SSL on production
+app.use(heroku_ssl_redirect_1.default([
+    'development',
+    'production',
+]));
 app.use(express_session_1.default({
     secret: 'my cat',
     resave: false,
