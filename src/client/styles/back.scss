@@ -2,7 +2,7 @@ $backButtonHeight: 4.6rem;
 
 .back {
   flex: 0 0 $backButtonHeight;
-  background: #ccc;
+  background: rgba(200,200,200,0.9);
   cursor: pointer;
   margin-bottom: 0.2em;
   position: relative;
@@ -20,7 +20,10 @@ $backButtonHeight: 4.6rem;
     left: $gutterSize;
     right: $gutterSize;
     height: $backButtonHeight;
-    box-shadow: 0 -4 * $gutterSize 0 $gutterSize * 5 rgba(255,255,255,1);
+    box-shadow:
+      0 -4 * $gutterSize 0 $gutterSize * 5 rgba(255,255,255,1),
+      // 0 4 * $gutterSize $gutterSize * 9 rgba(0,0,0,0.1)
+    ;
 
     + * {
       margin-top: calc(#{$backButtonHeight} + #{$gutterSize});
@@ -39,6 +42,7 @@ $backButtonHeight: 4.6rem;
 
     @media screen and (max-width: 30rem) {
       content: 'return';
+      letter-spacing: -0.05em;
     }
   }
 
