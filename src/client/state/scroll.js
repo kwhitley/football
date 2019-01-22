@@ -1,18 +1,35 @@
-import { observable, action, computed } from 'mobx'
+import { observable, action, computed, reaction } from 'mobx'
 
 export class Scroller {
-  @observable x
-  @observable y
+  @observable x = 0
+  @observable y = 0
+  @observable isTracking = false
 
-  @action save = (x, y) => {
-    console.log('saving x y coordinates', x, y)
-    this.x = x
-    this.y = y
+  @action save = () => {
+    var doc = document.documentElement
+    var top = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0)
+
+    this.y = top
+    // console.log('saving y coordinate', top)
   }
 
-  @action restore = () => {
-    console.log('restoring x y coordinates', this.x, this.y)
-    window.scrollTo(this.x, this.y)
+  @action restore = (delay = 10) => {
+    // console.log('restoring y coordinate', this.y)
+
+    setTimeout(() => window.scrollTo(this.x, this.y), delay)
+  }
+
+  constructor() {
+    reaction(
+      () => this.isTracking,
+      (tracking) => {
+        if (tracking) {
+          setTimeout(() => window.addEventListener('scroll', this.save), 10)
+        } else {
+          window.removeEventListener('scroll', this.save)
+        }
+      }
+    )
   }
 }
 

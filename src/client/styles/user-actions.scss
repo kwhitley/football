@@ -3,12 +3,18 @@
   display: flex;
   flex-flow: row-reverse wrap;
   justify-content: space-between;
-  font-size: 0.9rem;
+  font-size: 1.1rem;
   padding: 1em;
   text-transform: uppercase;
   white-space: nowrap;
   align-items: flex-end;
   align-content: flex-end;
+  opacity: 0.3;
+  transition: opacity 0.3s ease-in-out;
+
+  &:hover {
+    opacity: 1;
+  }
 
   * {
     -webkit-tap-highlight-color: rgba(0,0,0,0);
@@ -18,25 +24,17 @@
     flex: 0 0;
   }
 
-  .userlink {
-    // align-self: flex-end;
-  }
-
   .login-signup {
     * + *:before {
       content: 'or';
       display: inline-block;
       margin: 0 0.5em;
       text-transform: lowercase;
-      color: #aaa;
+      opacity: 0.4;
     }
   }
 
   .toggle.edit {
     padding-top: 0.05em;
-  }
-
-  .signup {
-    // color: #64cc69;
   }
 }

@@ -46,13 +46,11 @@ export class UserState {
                     .catch(() => {})
 
     if (this.profile) {
-      console.log('successfully logged in as', toJS(this.profile))
+      console.log('user', this.profile.email, 'logged in')
       this.isLoggedIn = true
       history.push('/')
     } else {
-      console.log('error status', this.statusCode)
       this.error = errorMessage(this.statusCode)
-      console.log('failed login with credentials', this.credentials)
     }
 
     this.isValidating = false

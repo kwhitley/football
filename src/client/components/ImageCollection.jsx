@@ -4,13 +4,13 @@ import Grid from './Grid'
 
 export class ImageCollection extends Component {
   componentWillUnmount() {
-    this.props.scroll.save(window.scrollX, window.scrollY)
-    console.log('ImageCollection:scrolling to top')
+    this.props.scroll.isTracking = false
     window.scrollTo(0, 0)
   }
 
   componentDidMount() {
     this.props.scroll.restore()
+    this.props.scroll.isTracking = true
   }
 
   render() {
