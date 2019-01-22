@@ -15,6 +15,12 @@ input, textarea {
     color: #999;
   }
 
+  &:invalid + label:after {
+    content: ' *';
+    font-weight: bold;
+    color: #e88;
+  }
+
   + label {
     text-transform: uppercase;
     font-size: 0.7rem;
@@ -50,9 +56,10 @@ input, textarea {
     width: 100%;
   }
 
-  textarea ~ label {
+  textarea + label {
     left: 0;
     top: -1em;
+    padding: 0;
   }
 }
 

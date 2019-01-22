@@ -60,7 +60,6 @@ ___scope___.file("server/api.js", function(exports, require, module, __filename,
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const globby_1 = require("globby");
 const dropbox_1 = require("./imager/dropbox");
 const apicache_1 = require("apicache");
 const db_1 = require("./db");
@@ -68,12 +67,7 @@ const users_1 = require("./users/users");
 // create an express app
 const app = express_1.default();
 const cache = apicache_1.default.middleware;
-// add a route
-app.get('/tmp', async (req, res) => {
-    const paths = await globby_1.default(['/Users/kevinwhitley/Documents/*.*']);
-    res.json(paths);
-});
-app.get('/env', (req, res) => {
+app.get('/env', users_1.isAdmin, (req, res) => {
     res.json(process.env);
 });
 app.get('/images', cache('30 seconds'), (req, res) => {
@@ -111,12 +105,10 @@ app.get('/images', cache('30 seconds'), (req, res) => {
 app.patch('/images/:id', users_1.isAuthenticated, async (req, res) => {
     let { id } = req.params;
     console.log('patching image', id, req.body);
-    // res.json(req.body)
     let image = await db_1.collection('images')
         .update(id, req.body)
         .then((response) => res.json(response))
         .catch((err) => res.status(400).json(err));
-    // res.json({ success: true })
 });
 app.get('/images/:id', async (req, res) => {
     let { id } = req.params;
@@ -216,15 +208,15 @@ ___scope___.file("server/users/users.js", function(exports, require, module, __f
 Object.defineProperty(exports, "__esModule", { value: true });
 const db_1 = require("../db");
 exports.getUsersList = () => db_1.collection('users').find({});
-exports.createUser = async ({ email, password, username }) => await db_1.collection('users')
-    .create({
-    email,
-    password,
-    username,
-    dateCreated: new Date(),
-});
+exports.createUser = async (profile) => await db_1.collection('users')
+    .create(Object.assign({
+    dateCreated: new Date()
+}, profile));
 exports.getUser = async (match) => db_1.collection('users').find(match);
 exports.isAuthenticated = (req, res, next) => req.session.user
+    ? next()
+    : res.sendStatus(401);
+exports.isAdmin = (req, res, next) => req.session.user & req.session.user.email === 'krwhitley@gmail.com'
     ? next()
     : res.sendStatus(401);
 //# sourceMappingURL=users.js.map
@@ -362,7 +354,9 @@ ___scope___.file("server/users/api.js", function(exports, require, module, __fil
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const xs_blowfish_1 = require("xs-blowfish");
 const users_1 = require("./users");
+const security_1 = require("./security");
 const app = express_1.default();
 // app.post('/signup', async (req, res) => {
 //   let user = await createUser(req.body)
@@ -376,17 +370,13 @@ app.get('/all', users_1.isAuthenticated, async (req, res) => {
     console.log('users', users);
     res.json(users);
 });
+app.get('/hash/:password', async (req, res) => {
+    let hash = await security_1.getHash(req.params.password);
+    res.send(hash);
+});
 app.get('/profile', users_1.isAuthenticated, (req, res) => {
     res.json(req.session.user);
 });
-// app.get('/login', async (req, res) => {
-//   createUser({
-//     email: 'krwhitley@gmail.com',
-//     username: 'krwhitley',
-//     password: 'T5mvjFsIvy%#6KsipKLeiY@F@MS8a2',
-//   }).then(() => res.sendStatus(200))
-//     .catch((err) => res.status(400).json(err))
-// })
 app.get('/logout', (req, res) => {
     delete req.session.user;
     res.sendStatus(200);
@@ -396,11 +386,59 @@ app.post('/login', async (req, res) => {
     if (!email || !password) {
         return res.sendStatus(400);
     }
+    let user = await users_1.getUser({ email })
+        .then(users => users[0])
+        .catch(() => {
+        console.log('user not found with email', email);
+        res.sendStatus(401);
+    });
+    if (user) {
+        console.log('user found', user);
+        let valid = await security_1.checkPassword(password, user.password);
+        if (valid) {
+            // decrpyt API token
+            // let bf = new Blowfish(user.password)
+            // user.apiKey = bf.decrypt(user.apiKey)
+            // console.log('decrypted API key', user.apiKey)
+            delete user.password;
+            delete user._id;
+            delete user.apiKey;
+            req.session.user = user;
+            res.json(user);
+        }
+        else {
+            res.sendStatus(401);
+        }
+    }
+    else {
+        res.sendStatus(401);
+    }
+});
+app.post('/signup', async (req, res) => {
+    let { email, password, passwordConfirmation, apiKey } = req.body;
+    if (!email || !password) {
+        return res.sendStatus(400);
+    }
+    let existingUser = await users_1.getUser({ email })
+        .then(users => users[0])
+        .catch(() => { });
+    if (existingUser) {
+        return res.sendStatus(409);
+    }
+    password = await security_1.getHash(password);
+    console.log('hash', password);
+    // encrypt apiKey based on new password
+    let bf = new xs_blowfish_1.default(password);
+    console.log('apiKey', apiKey);
+    apiKey = apiKey ? bf.encrypt(apiKey) : undefined;
+    console.log('encrypted apiKey', apiKey);
+    await users_1.createUser({ email, password, apiKey }).catch(() => res.sendStatus(401));
     let user = await users_1.getUser({ email, password })
         .then(users => users[0])
         .then(user => {
         delete user.password;
         delete user._id;
+        delete user.apiKey;
         return user;
     })
         .catch(() => res.sendStatus(401));
@@ -411,6 +449,16 @@ app.post('/login', async (req, res) => {
 });
 exports.default = app;
 //# sourceMappingURL=api.js.map
+});
+___scope___.file("server/users/security.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const bcryptjs_1 = require("bcryptjs");
+const saltRounds = 8;
+exports.getHash = (password) => bcryptjs_1.default.hash(password, saltRounds);
+exports.checkPassword = (password, hash) => bcryptjs_1.default.compare(password, hash);
+//# sourceMappingURL=security.js.map
 });
 ___scope___.file("server/imager/cache-warmer.js", function(exports, require, module, __filename, __dirname){
 

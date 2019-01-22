@@ -5,20 +5,13 @@ import dropboxFs from 'dropbox-fs'
 import apicache from 'apicache'
 
 import { collection } from './db'
-import { isAuthenticated } from './users/users'
+import { isAuthenticated, isAdmin } from './users/users'
 
 // create an express app
 const app = express()
 const cache = apicache.middleware
 
-// add a route
-app.get('/tmp', async (req, res) => {
-  const paths = await globby(['/Users/kevinwhitley/Documents/*.*']);
-
-  res.json(paths)
-})
-
-app.get('/env', (req, res) => {
+app.get('/env', isAdmin, (req, res) => {
   res.json(process.env)
 })
 
@@ -65,13 +58,11 @@ app.patch('/images/:id', isAuthenticated, async (req, res) => {
   let { id } = req.params
 
   console.log('patching image', id, req.body)
-  // res.json(req.body)
+
   let image = await collection('images')
                       .update(id, req.body)
                       .then((response) => res.json(response))
                       .catch((err) => res.status(400).json(err))
-
-  // res.json({ success: true })
 })
 
 app.get('/images/:id', async (req, res) => {

@@ -22,7 +22,21 @@
     // align-self: flex-end;
   }
 
+  .login-signup {
+    * + *:before {
+      content: 'or';
+      display: inline-block;
+      margin: 0 0.5em;
+      text-transform: lowercase;
+      color: #aaa;
+    }
+  }
+
   .toggle.edit {
     padding-top: 0.05em;
+  }
+
+  .signup {
+    // color: #64cc69;
   }
 }

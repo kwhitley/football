@@ -23,6 +23,10 @@ const App = ({ history }) =>
             render={({ location, history }) => <Login location={location} history={history} />}
             />
           <Route
+            path="/signup"
+            render={({ location, history }) => <Login location={location} history={history} signup />}
+            />
+          <Route
             path="/view/:id"
             render={({ location, history, match }) => <Viewer location={location} history={history} match={match} />}
             />

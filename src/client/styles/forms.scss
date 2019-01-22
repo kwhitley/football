@@ -18,11 +18,11 @@ input + input, .input-group + .input-group {
   text-align: left;
   line-height: 1.3em;
 
-  &:before {
-    content: 'ERROR: ';
-    font-size: 0.9em;
-    font-weight: 600;
-  }
+  // &:before {
+  //   content: 'ERROR: ';
+  //   font-size: 0.9em;
+  //   font-weight: 600;
+  // }
 }
 
 .user-login {
@@ -31,6 +31,7 @@ input + input, .input-group + .input-group {
   text-align: center;
   justify-content: center;
   align-items: center;
+  padding-bottom: 10%;
 
   .error:not(:empty) {
     margin-top: 2em;

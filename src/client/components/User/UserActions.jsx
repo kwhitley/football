@@ -1,12 +1,16 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import ToggleEditMode from './ToggleEditMode'
-import UserActionLink from './UserActionLink'
+import LoginLogoutLink from './LoginLogoutLink'
+import SignupLink from './SignupLink'
 
 export const UserActions = ({ location }) =>
-  location.pathname !== '/login'
+  !['/login', '/signup'].includes(location.pathname)
   ? <div className="user-actions">
-      <UserActionLink />
+      <div className="login-signup">
+        <LoginLogoutLink />
+        <SignupLink />
+      </div>
       <ToggleEditMode />
     </div>
   : null
