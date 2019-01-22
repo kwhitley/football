@@ -13,6 +13,20 @@ $backButtonHeight: 4.6rem;
   flex-flow: column wrap;
   justify-content: center;
 
+  @media screen and (max-aspect-ratio: 5/4) {
+    position: fixed;
+    z-index: 100;
+    top: $gutterSize;
+    left: $gutterSize;
+    right: $gutterSize;
+    height: $backButtonHeight;
+    box-shadow: 0 -4 * $gutterSize 0 $gutterSize * 5 rgba(255,255,255,1);
+
+    + * {
+      margin-top: calc(#{$backButtonHeight} + #{$gutterSize});
+    }
+  }
+
   &:before {
     flex: 0;
     text-align: center;
