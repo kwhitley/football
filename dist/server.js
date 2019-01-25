@@ -19,9 +19,11 @@ const heroku_ssl_redirect_1 = require("heroku-ssl-redirect");
 const path_1 = require("path");
 const http_1 = require("http");
 const serve_favicon_1 = require("serve-favicon");
+// API
 const api_1 = require("./api");
 const api_2 = require("./imager/api");
 const api_3 = require("./users/api");
+// other
 const cache_warmer_1 = require("./imager/cache-warmer");
 // instantiate express
 const app = express_1.default();
@@ -49,9 +51,10 @@ app.use(serve_favicon_1.default(path_1.default.join(__dirname, '../src/client/im
 app.use('/api', api_1.default);
 app.use('/user', api_3.default);
 app.use('/i', api_2.default);
-// 404
-app.get('*', (req, res) => {
-    res.sendStatus(404);
+// all other client requests that lack an extension redirected to client
+app.get(/.*(?<!\.\w{1,4})$/, (req, res) => {
+    console.log('redirecting request for', req.path, 'to', staticPath + '/index.html');
+    res.sendFile('/index.html', { root: staticPath });
 });
 const serverPort = process.env.PORT || 3000;
 const server = http_1.default.createServer(app);
