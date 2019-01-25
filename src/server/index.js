@@ -7,15 +7,17 @@ import cookieParser from 'cookie-parser'
 import compression from 'compression'
 import session from 'express-session'
 import sslRedirect from 'heroku-ssl-redirect'
-
 import path from 'path'
 import http from 'http'
 import fs from 'fs'
 import favicon from 'serve-favicon'
 
+// API
 import api from './api'
 import imagerApi from './imager/api'
 import usersApi from './users/api'
+
+// other
 import { cacheWarmer } from './imager/cache-warmer'
 
 // instantiate express
@@ -49,9 +51,10 @@ app.use('/api', api)
 app.use('/user', usersApi)
 app.use('/i', imagerApi)
 
-// 404
-app.get('*', (req, res) => {
-  res.sendStatus(404)
+// all other client requests that lack an extension redirected to client
+app.get(/.*(?<!\.\w{1,4})$/, (req, res) => {
+  console.log('redirecting request for', req.path, 'to', staticPath + '/index.html')
+  res.sendFile('/index.html', { root: staticPath })
 })
 
 const serverPort = process.env.PORT || 3000
