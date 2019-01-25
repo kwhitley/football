@@ -18,3 +18,7 @@ This build uses a fuse-box build process, rather than webpack.  This includes th
 - `fuse.js` - build config
 - `.eslint.json` - linting config
 
+
+Notes
+- Routes
+  - /:gallery-slug/i/:uuid
