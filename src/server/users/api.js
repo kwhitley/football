@@ -1,19 +1,22 @@
 import express from 'express'
 import Blowfish from 'xs-blowfish'
-import { isAuthenticated, validateUser, createUser, getUser, getUsersList } from './users'
+import { isAuthenticated, isAdmin, validateUser, createUser, getUser, getUsersList } from './users'
+import { getCollections } from '../collections/collections'
 import { getHash, checkPassword } from './security'
 
 const app = express()
 
-// app.post('/signup', async (req, res) => {
-//   let user = await createUser(req.body)
+const safeUserProfile = (user) => {
+  let response = Object.assign({}, user)
 
-//   if (user) {
-//     res.json(req.session.user)
-//   }
-// })
+  delete response._id
+  delete response.apiKey
+  delete response.password
 
-app.get('/all', isAuthenticated, async (req, res) => {
+  return response
+}
+
+app.get('/all', isAuthenticated, isAdmin, async (req, res) => {
   let users = await getUsersList()
     .catch((err) => res.status(400).json(err))
 
@@ -22,14 +25,14 @@ app.get('/all', isAuthenticated, async (req, res) => {
   res.json(users)
 })
 
-app.get('/hash/:password', async (req, res) => {
-  let hash = await getHash(req.params.password)
-
-  res.send(hash)
+app.get('/profile', isAuthenticated, (req, res) => {
+  res.json(safeUserProfile(req.session.user))
 })
 
-app.get('/profile', isAuthenticated, (req, res) => {
-  res.json(req.session.user)
+app.get('/collections', isAuthenticated, async (req, res) => {
+  await getCollections({ owner: String(req.session.user._id) })
+          .then(res.json)
+          .catch(e => res.sendStatus(400))
 })
 
 app.get('/logout', (req, res) => {
@@ -62,13 +65,15 @@ app.post('/login', async (req, res) => {
       // user.apiKey = bf.decrypt(user.apiKey)
 
       // console.log('decrypted API key', user.apiKey)
+      console.log('getting collections where', { owner: String(user._id) })
+      let collections = await getCollections({ owner: String(user._id) })
 
-      delete user.password
-      delete user._id
-      delete user.apiKey
+      console.log('matching collections', collections)
 
+      user.collections = collections
       req.session.user = user
-      res.json(user)
+
+      res.json(safeUserProfile(user))
     } else {
       res.sendStatus(401)
     }

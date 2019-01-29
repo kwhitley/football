@@ -1,41 +1,30 @@
 import React from 'react'
 import { observer, inject } from 'mobx-react'
 import Input from '../Controls/Input'
+import InputPassword from '../Controls/InputPassword'
+import InputEmail from '../Controls/InputEmail'
 
 export const LoginForm = ({ user, location, history, signup = false }) =>
   <div className="form full-page user-login">
-    <Input
+    <InputEmail
       value={user.credentials.email}
       onChange={(value) => user.credentials.email = value}
-      className="email"
-      placeholder="email address"
-      pattern=".+@.{2,}\..{2,}"
       disabled={user.isValidating}
-      autocapitalize="none"
-      required
       />
-    <Input
+    <InputPassword
       value={user.credentials.password}
       onChange={(value) => user.credentials.password = value}
-      placeholder="password"
-      pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-      type="password"
       disabled={user.isValidating}
-      autocapitalize="none"
-      required
-      />
+    />
 
     {
       signup
-      ? <Input
+      ? <InputPassword
           value={user.credentials.passwordConfirmation}
           onChange={(value) => user.credentials.passwordConfirmation = value}
           placeholder="password (confirmation)"
-          type="password"
           disabled={user.isValidating}
-          autocapitalize="none"
-          required
-          />
+        />
       : null
     }
     {

@@ -14,28 +14,28 @@ import UserActions from './User/UserActions'
 
 const App = ({ history }) =>
   <Router history={history}>
-    <Route render={({ location, history }) =>
+    <Route render={(props) =>
       <div className="page-content">
-        <Back history={history} location={location} />
+        <Back {...props} />
         <Switch>
           <Route
             path="/login"
-            render={({ location, history }) => <Login location={location} history={history} />}
+            render={() => <Login {...props} />}
             />
           <Route
             path="/signup"
-            render={({ location, history }) => <Login location={location} history={history} signup />}
+            render={() => <Login {...props} signup />}
             />
           <Route
             path="/view/:id"
-            render={({ location, history, match }) => <Viewer location={location} history={history} match={match} />}
+            render={() => <Viewer {...props} />}
             />
           <Route
             path="/"
-            render={({ location, history }) => <ImageCollection location={location} history={history} />}
+            render={() => <ImageCollection {...props} />}
             />
         </Switch>
-        <UserActions history={history} location={location} />
+        <UserActions {...props} />
       </div>
     }>
     </Route>

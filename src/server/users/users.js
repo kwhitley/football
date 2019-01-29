@@ -13,7 +13,7 @@ export const getUser = async (match) => collection('users').find(match)
 
 export const isAuthenticated = (req, res, next) =>
   req.session.user
-  ? next()
+  ? (req.user = req.session.user) && next()
   : res.sendStatus(401)
 
 export const isAdmin = (req, res, next) =>

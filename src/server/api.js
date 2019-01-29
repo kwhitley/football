@@ -6,10 +6,13 @@ import apicache from 'apicache'
 
 import { collection } from './db'
 import { isAuthenticated, isAdmin } from './users/users'
+import collectionsApi from './collections/api'
 
 // create an express app
 const app = express()
 const cache = apicache.middleware
+
+app.use('/collections', collectionsApi)
 
 app.get('/env', isAdmin, (req, res) => {
   res.json(process.env)
