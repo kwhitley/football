@@ -43,6 +43,16 @@ h1, .h1 {
   letter-spacing: -0.05em;
   margin: 0;
   padding: 0;
+
+  small {
+    font-size: 0.6em;
+    margin-left: 0.5em;
+    opacity: 0.5;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
 }
 
 blockquote {

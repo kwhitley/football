@@ -24,20 +24,27 @@ MongoClient
     console.log('error', err)
   })
 
-const find = (collection) => (match) => collection.find(match).toArray()
+const find = (collection) => (match) =>
+  collection
+    .find(match)
+    .toArray()
 
-const remove = (collection) => (condition) => collection.deleteOne(condition || { safe: true })
+const remove = (collection) => (condition) => {
+  console.log('deleting from', collection, 'where', condition)
+  return collection.deleteOne(condition || { safe: true })
+}
 
-const create = (collection) => (content = {}) => collection.insert(content)
+const create = (collection) => (content = {}) => collection.insertOne(content)
 
 const update = (collection) =>
-  (id, content = {}) =>
+  (slug, content = {}) =>
     collection
       .updateOne(
-        { id },
+        { slug },
         { $set: content },
-        { upsert: true }
+        // { upsert: true },
       )
+      .then(find(collection)({ slug }))
 
 export const collection = (name) => {
   return {

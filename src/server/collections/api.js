@@ -27,35 +27,36 @@ app.get('/check-availability/:slug', async (req, res) => {
   res.sendStatus(available ? 200 : 409)
 })
 
-app.patch('/:id', isAuthenticated, async (req, res) => {
+app.patch('/:slug', isAuthenticated, async (req, res) => {
   const collections = collection('collections')
-  const { id } = req.body
+  const { slug } = req.params
+  const { user } = req
 
-  await collections.update(id, req.body)
+  await collections.update(slug, req.body)
           .catch((err) => {
             console.error(err)
             res.sendStatus(400)
           })
 
-  let collection = await getCollection({ _id: id })
+  let response = await getCollections({ slug })
+  user.collections = await getCollections({ owner: String(user._id) })
 
-  if (collection) {
-    res.json(collection)
+  if (response) {
+    res.json(response)
   } else {
     res.sendStatus(400)
   }
 })
 
-app.delete('/:id', isAuthenticated, async (req, res) => {
+app.delete('/:slug', isAuthenticated, async (req, res) => {
   const collections = collection('collections')
-  const { id } = req.params
+  const { slug } = req.params
   const { user } = req
 
-  let response = await collections
-                        .remove({ slug: id, owner: user._id })
+  let response = await collections.remove({ slug, owner: String(user._id) })
+  user.collections = await getCollections({ owner: String(user._id) })
 
-
-  console.log('delete response', { id }, response)
+  // console.log('delete response', { slug }, response)
 
   if (response) {
     res.json(response)
@@ -68,7 +69,7 @@ app.post('/', isAuthenticated, async (req, res) => {
   let { name, slug } = req.body
   let { user } = req
 
-  let available = await getCollection({ slug }).then(match => !match.length)
+  let available = await isAvailable(slug)
 
   if (!available) {
     return res.sendStatus(409)
@@ -80,8 +81,10 @@ app.post('/', isAuthenticated, async (req, res) => {
                             res.sendStatus(400)
                           })
 
+  user.collections = await getCollections({ owner: String(user._id) })
+
   if (response) {
-    res.json(response)
+    res.json(response.ops[0])
   } else {
     res.sendStatus(400)
   }

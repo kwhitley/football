@@ -14,7 +14,8 @@ export class ImageCollection extends Component {
   }
 
   render() {
-    let { images } = this.props
+    let { images, match } = this.props
+    console.log('match', match)
 
     return (
       <React.Fragment>

@@ -111,13 +111,6 @@ app.post('/signup', async (req, res) => {
 
   let user = await getUser({ email, password })
                     .then(users => users[0])
-                    .then(user => {
-                      delete user.password
-                      delete user._id
-                      delete user.apiKey
-
-                      return user
-                    })
                     .catch(() => res.sendStatus(401))
 
   if (user) {

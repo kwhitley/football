@@ -15,10 +15,13 @@ input, textarea {
     color: #999;
   }
 
-  &:invalid + label:after {
-    content: ' *';
-    font-weight: bold;
-    color: #e88;
+  &[valid] + label:after {
+    content: ' \2713';
+    color: #40d040;
+  }
+
+  &:invalid + label:after, &[invalid] + label:after {
+    content: ' x';
   }
 
   + label {
@@ -33,6 +36,11 @@ input, textarea {
     display: inline-block;
     opacity: 0;
     padding: 0 0.2rem;
+
+    &:after {
+      font-weight: bold;
+      color: #e88;
+    }
   }
 
   &:focus {

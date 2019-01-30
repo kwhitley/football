@@ -5,7 +5,7 @@ import { NavLink } from 'react-router-dom'
 export const LoginLogoutLink = ({ user }) =>
   user.isLoggedIn && user.profile
   ? <a className="link login-logout" onClick={user.logout}>
-      Logout <span className="hide-mobile">({ user.profile.email }</span>
+      Logout
     </a>
   : <NavLink className="login-logout" to="/login">Login</NavLink>
 

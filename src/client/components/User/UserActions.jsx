@@ -1,12 +1,15 @@
 import React from 'react'
-import { observer } from 'mobx-react'
+import { observer, inject } from 'mobx-react'
 import ToggleEditMode from './ToggleEditMode'
 import LoginLogoutLink from './LoginLogoutLink'
+import { NavLink } from 'react-router-dom'
 import SignupLink from './SignupLink'
+import CollectionsNav from './CollectionsNav'
 
-export const UserActions = ({ location }) =>
+export const UserActions = ({ user, location }) =>
   !['/login', '/signup'].includes(location.pathname)
   ? <div className="user-actions">
+      { user.isLoggedIn && <CollectionsNav collections={user.collections} /> }
       <div className="login-signup">
         <LoginLogoutLink />
         <SignupLink />
@@ -15,4 +18,4 @@ export const UserActions = ({ location }) =>
     </div>
   : null
 
-export default observer(UserActions)
+export default inject('user')(observer(UserActions))

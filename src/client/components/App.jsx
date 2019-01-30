@@ -9,6 +9,7 @@ import {
 import ImageCollection from './ImageCollection'
 import Viewer from './Viewer'
 import Login from './User/Login'
+import CreateCollection from './Collection/CreateForm'
 import Back from './Back'
 import UserActions from './User/UserActions'
 
@@ -23,6 +24,10 @@ const App = ({ history }) =>
             render={() => <Login {...props} />}
             />
           <Route
+            path="/collections/create"
+            render={() => <CreateCollection {...props} />}
+            />
+          <Route
             path="/signup"
             render={() => <Login {...props} signup />}
             />
@@ -31,8 +36,12 @@ const App = ({ history }) =>
             render={() => <Viewer {...props} />}
             />
           <Route
-            path="/"
+            path="/:collection"
             render={() => <ImageCollection {...props} />}
+            />
+          <Route
+            path="/"
+            render={() => <ImageCollection slug="krwhitley" {...props} />}
             />
         </Switch>
         <UserActions {...props} />

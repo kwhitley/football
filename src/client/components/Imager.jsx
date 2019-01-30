@@ -19,7 +19,8 @@ import { observer, inject } from 'mobx-react'
   }
 
   render() {
-    let src = ImageService.getImage(this.path)
+    // let src = ImageService.getImage(this.path)
+    let src = false
 
     return src ? <img src={src} /> : <div className="loading" />
   }
