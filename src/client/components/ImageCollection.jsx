@@ -9,13 +9,24 @@ export class ImageCollection extends Component {
   }
 
   componentDidMount() {
-    this.props.scroll.restore()
-    this.props.scroll.isTracking = true
+    let { collection, scroll, match } = this.props
+    let { params } = match
+
+    scroll.restore()
+    scroll.isTracking = true
+    collection.load(params.collection || 'krwhitley')
   }
 
   render() {
     let { images, match } = this.props
-    console.log('match', match)
+    let { params } = match
+
+    // if (params.collection) {
+    //   console.log('load collection', params.collection)
+    // } else {
+    //   console.log('load default "krwhitley"')
+    // }
+    // console.log('match', match)
 
     return (
       <React.Fragment>
@@ -29,4 +40,4 @@ export class ImageCollection extends Component {
   }
 }
 
-export default inject('images', 'scroll')(observer(ImageCollection))
+export default inject('collection', 'images', 'scroll')(observer(ImageCollection))

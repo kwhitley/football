@@ -33,22 +33,6 @@ export class Image {
         }
       }, 10)
     }
-
-    // reaction(
-    //   () => parent.previewsLoading,
-    //   (pending, reaction) => {
-    //     if (pending === 0) {
-    //       // console.log(pending, 'pending previews, loading image')
-    //       full.src = path
-    //       full.onload = () => {
-    //         // console.log('full image loaded')
-    //         this.src = path
-    //       }
-
-    //       reaction.dispose()
-    //     }
-    //   }
-    // )
   }
 }
 

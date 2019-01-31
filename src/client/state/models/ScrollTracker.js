@@ -1,6 +1,6 @@
 import { observable, action, computed, reaction } from 'mobx'
 
-export class Scroller {
+export default class ScrollTracker {
   @observable x = 0
   @observable y = 0
   @observable isTracking = false
@@ -32,5 +32,3 @@ export class Scroller {
     )
   }
 }
-
-export default window.scroll = new Scroller()

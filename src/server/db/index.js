@@ -12,13 +12,15 @@ const replicaSet = (uri) => uri.replace(/^(.*)?-(.*)$/, `$1-shard-0`)
 
 export const URI = `mongodb://${DB_USER}:${DB_PASSWORD}@${shards(DB_URI).join(',')}/${DB_DATABASE}?replicaSet=${replicaSet(DB_URI)}&ssl=true&authSource=admin`
 
-let database = undefined
+const db = {
+  connection: undefined,
+}
 
 MongoClient
   .connect(URI, { useNewUrlParser: true })
   .then((client) => {
     console.log('connected to database.')
-    database = client.db(DB_DATABASE)
+    db.connection = client.db(DB_DATABASE)
   })
   .catch((err) => {
     console.log('error', err)
@@ -48,9 +50,17 @@ const update = (collection) =>
 
 export const collection = (name) => {
   return {
-    create: create(database.collection(name)),
-    find: find(database.collection(name)),
-    update: update(database.collection(name)),
-    remove: remove(database.collection(name)),
+    create: create(db.connection.collection(name)),
+    find: find(db.connection.collection(name)),
+    update: update(db.connection.collection(name)),
+    remove: remove(db.connection.collection(name)),
   }
+}
+
+export default (collectionName) => {
+  if (!db.connection) {
+    return throw new Error('database connection not instantiated before use')
+  }
+
+  return db.connection.collection(collectionName)
 }

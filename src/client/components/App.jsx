@@ -32,16 +32,16 @@ const App = ({ history }) =>
             render={() => <Login {...props} signup />}
             />
           <Route
-            path="/view/:id"
+            path="/:collection"
+            component={ImageCollection}
+            />
+          <Route
+            path="/:collection/:id"
             render={() => <Viewer {...props} />}
             />
           <Route
-            path="/:collection"
-            render={() => <ImageCollection {...props} />}
-            />
-          <Route
-            path="/"
-            render={() => <ImageCollection slug="krwhitley" {...props} />}
+            path="*"
+            render={() => <div>Page not found</div>}
             />
         </Switch>
         <UserActions {...props} />

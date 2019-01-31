@@ -15,6 +15,7 @@ export default class Collection {
   @observable images = []
   @observable source = new Source()
   @observable isAvailable = false
+  @observable isPending = false
   @observable checkAvailability = true
 
   @action setSlug = (value) => {
@@ -25,9 +26,13 @@ export default class Collection {
   }
 
   @computed get saveable() {
-    let { name, description, slug, source } = this
+    let { name, description, slug, source, items } = this
 
-    return { name, description, slug, source }
+    return { name, description, slug, source, items }
+  }
+
+  @computed get json() {
+    return toJS(this)
   }
 
   @action handeStatus(res) {
@@ -41,6 +46,8 @@ export default class Collection {
       return console.warn('a collection must have a name to be deleted')
     }
 
+    this.isPending = true
+
     let response = await fetch(`/api/collections/${this.slug}`, {
                     method: 'DELETE',
                   })
@@ -50,6 +57,8 @@ export default class Collection {
                       return r.json()
                     })
                     .catch(() => {})
+
+    this.isPending = false
 
     if (response) {
       console.log('collection deletion success', response)
@@ -66,6 +75,8 @@ export default class Collection {
       return console.warn('a collection must have a name before saving')
     }
 
+    this.isPending = true
+
     let response = await fetch(`/api/collections${this._id ? ('/' + this.slug) : ''}`, {
                     method: this._id ? 'PATCH' : 'POST',
                     headers: {
@@ -79,6 +90,8 @@ export default class Collection {
                       return r.json()
                     })
                     .catch(() => {})
+
+    this.isPending = false
 
     if (response) {
       console.log('collection creation success', response)
@@ -98,12 +111,14 @@ export default class Collection {
     }
 
     this.checkAvailability = false
+    this.isPending = true
 
     await fetch(`/api/collections/${slug}`)
                   .then(r => r.json())
                   .then(r => this.initialize(r))
                   .catch((err) => console.error(err))
 
+    this.isPending = false
     this.checkAvailability = true
 
     return this
@@ -135,7 +150,7 @@ export default class Collection {
       () => this.slug,
       async (slug) => {
         if (this.checkAvailability && slug && slug.length > 2) {
-          await fetch(`/api/collections/check-availability/${this.slug}`)
+          await fetch(`/api/collections/${this.slug}/available`)
                   .then(r => this.isAvailable = r.status === 200)
                   .catch(() => {})
         } else {

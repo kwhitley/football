@@ -68,6 +68,14 @@ blockquote {
   }
 }
 
+pre {
+  background-color: #eee;
+  padding: 1.2em;
+  font-size: 1rem;
+  border-radius: $borderRadius;
+  text-align: left;
+}
+
 #app {
   display: flex;
   flex-flow: row wrap;

@@ -3,11 +3,12 @@ import { observer, inject } from 'mobx-react'
 import Input from '../Controls/Input'
 
 export class CreateForm extends React.Component {
-  submit = () => {
-    let { user } = this.props
+  submit = async () => {
+    let { user, history } = this.props
     console.log('this submit', this, user.json)
 
-    user.createCollection()
+    let created = await user.createCollection()
+    history.push('/' + created.slug)
   }
 
   render() {
@@ -20,27 +21,36 @@ export class CreateForm extends React.Component {
           placeholder="Collection Name"
           value={newCollection.name}
           onChange={(value) => newCollection.name = value}
-          disabled={newCollection.isValidating}
+          disabled={newCollection.isPending}
           />
 
         <Input
           placeholder="Collection URL (link)"
           value={newCollection.slug}
           onChange={newCollection.setSlug}
-          disabled={newCollection.isValidating}
+          disabled={newCollection.isPending}
+          invalid={!newCollection.isAvailable}
+          valid={newCollection.isAvailable}
+          />
+
+        <Input
+          placeholder="API Key (Dropbox)"
+          value={newCollection.source.apiKey}
+          onChange={(value) => newCollection.source.apiKey = value}
+          disabled={newCollection.isPending}
           invalid={!newCollection.isAvailable}
           valid={newCollection.isAvailable}
           />
 
         <pre>
-          { JSON.stringify(user.newCollection, null, 2) }
+        { JSON.stringify(newCollection.json, null, 2) }
         </pre>
 
         <div className="error">{ user.error }</div>
 
         <button
           onClick={this.submit}
-          disabled={newCollection.isValidating}
+          disabled={newCollection.isPending}
           >
           Create
         </button>

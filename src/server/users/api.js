@@ -1,6 +1,13 @@
 import express from 'express'
 import Blowfish from 'xs-blowfish'
-import { isAuthenticated, isAdmin, validateUser, createUser, getUser, getUsersList } from './users'
+import {
+  isAuthenticated,
+  isAdmin,
+  validateUser,
+  createUser,
+  getUser,
+  getUsersList,
+} from './users'
 import { getCollections } from '../collections/collections'
 import { getHash, checkPassword } from './security'
 
@@ -25,14 +32,19 @@ app.get('/all', isAuthenticated, isAdmin, async (req, res) => {
   res.json(users)
 })
 
-app.get('/profile', isAuthenticated, (req, res) => {
-  res.json(safeUserProfile(req.session.user))
+app.get('/profile', isAuthenticated, async (req, res) => {
+  let { user } = req
+  let response = safeUserProfile(user)
+  response.collections = await getCollections({ owner: user._id })
+
+  res.json(response)
 })
 
 app.get('/collections', isAuthenticated, async (req, res) => {
-  await getCollections({ owner: String(req.session.user._id) })
-          .then(res.json)
-          .catch(e => res.sendStatus(400))
+  let { user } = req
+  let response = await getCollections({ owner: user._id })
+
+  response ? res.json(response) : res.sendStatus(400)
 })
 
 app.get('/logout', (req, res) => {

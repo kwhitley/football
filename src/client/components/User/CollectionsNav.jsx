@@ -17,7 +17,7 @@ export const CollectionsNav = ({ collections }) => {
             <NavLink
               key={c._id}
               className="collection"
-              to={`/collections/${c.slug}`}
+              to={`/${c.slug}`}
             >
               { c.name || c.slug }
             </NavLink>

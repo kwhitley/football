@@ -9,6 +9,7 @@ export const Viewer = ({ images, user, match, history, location }) => {
   return (
     <div className="viewer">
       <Imager
+        collection={match.params.collection}
         id={match.params.id}
         width={900}
         />

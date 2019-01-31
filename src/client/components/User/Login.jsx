@@ -52,9 +52,6 @@ export const LoginForm = ({ user, location, history, signup = false }) => {
 
       <div className="error">{ user.error }</div>
 
-      <pre>
-        { JSON.stringify(user, null, 2)}
-      </pre>
       <button
         onClick={() => user.login(history, signup)}
         disabled={user.isValidating}

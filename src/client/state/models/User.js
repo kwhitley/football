@@ -123,7 +123,7 @@ export default class User {
       this.newCollection = new Collection()
     }
 
-    console.log('savedCollection', savedCollection)
+    return savedCollection
   }
 
   @action getProfile = async () => {

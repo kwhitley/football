@@ -6,6 +6,7 @@ export const LoginLogoutLink = ({ user }) =>
   user.isLoggedIn && user.profile
   ? <a className="link login-logout" onClick={user.logout}>
       Logout
+      ({ user.profile.email })
     </a>
   : <NavLink className="login-logout" to="/login">Login</NavLink>
 

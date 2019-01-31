@@ -4,14 +4,14 @@ import { observer, inject } from 'mobx-react'
 
 @observer class Image extends Component {
   componentWillMount() {
-    let { width, height, quality, id } = this.props
+    let { width, height, quality, id, collection } = this.props
     let params = []
 
     if (width) params.push(`width=${width}`)
     if (height) params.push(`height=${height}`)
     if (quality) params.push(`quality=${quality}`)
 
-    this.path = `/i/${id}::${params.join(',')}.jpg`
+    this.path = `/i/${collection}/${id}::${params.join(',')}.jpg`
   }
 
   componentWillUnmount() {

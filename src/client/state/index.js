@@ -1,17 +1,17 @@
 import app from './app'
 import images from './images'
 import routing from './routing'
-import scroll from './scroll'
-import user from './user'
-import collections from './collections'
+import ScrollTracker from './models/ScrollTracker'
+import User from './models/User'
+import Collection from './models/Collection'
 
 let store = {
   app,
   images,
   routing,
-  scroll,
-  user,
-  collections,
+  scroll: new ScrollTracker(),
+  user: new User(),
+  collection: new Collection(),
 }
 
 export default store

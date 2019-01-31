@@ -17,15 +17,9 @@ input + input, .input-group + .input-group {
   color: #e88;
   text-align: left;
   line-height: 1.3em;
-
-  // &:before {
-  //   content: 'ERROR: ';
-  //   font-size: 0.9em;
-  //   font-weight: 600;
-  // }
 }
 
-.user-login {
+.form {
   display: flex;
   flex-direction: column;
   text-align: center;
