@@ -6,7 +6,7 @@ export const CollectionsNav = ({ collections }) => {
   return (
     <div className="collections">
       <h1>My Collections</h1>
-      <div className="nav horizontal">
+      <nav className="horizontal">
         {
           collections.map(c =>
             <NavLink
@@ -19,7 +19,7 @@ export const CollectionsNav = ({ collections }) => {
           )
         }
         <NavLink className="create" to="/collections/create">Create New</NavLink>
-      </div>
+      </nav>
     </div>
   )
 }

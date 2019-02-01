@@ -6,7 +6,7 @@ export const LoginLogoutLink = ({ user }) =>
   user.isLoggedIn && user.profile
   ? <a className="link login-logout" onClick={user.logout}>
       Logout
-      ({ user.profile.email.replace(/@.*/gi, '') })
+      <span className="hide-mobile">({ user.profile.email.replace(/@.*/gi, '') })</span>
     </a>
   : <NavLink className="login-logout" to="/login">Login</NavLink>
 
