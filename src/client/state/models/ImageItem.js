@@ -15,7 +15,7 @@ export default class ImageItem {
   }
 
   @action save = () => {
-    fetch(`/api/collections/${this.collectionSlug}/${this.id}`, {
+    fetch(`/api/collections/${this.collectionSlug}/items/${this.id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',

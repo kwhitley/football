@@ -6,7 +6,7 @@ const toFileItem = (i) => ({
   filename: i.name,
   folder: i.path_display.replace(/(.*\/).*/gi, '$1'),
   size: i.size,
-  date: i.server_modified,
+  dateCreated: i.server_modified,
 })
 
 export const getIndex = (accessToken) => {

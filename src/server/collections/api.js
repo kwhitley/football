@@ -50,23 +50,33 @@ app.get('/:slug/sync', async (req, res) => {
   response ? res.json(await response) : res.sendStatus(400)
 })
 
-app.get('/:slug/add/:item', async (req, res) => {
-  let { slug, item } = req.params
+// app.get('/:slug/add/:item', async (req, res) => {
+//   let { slug, item } = req.params
 
-  let update = await addItemToCollection(slug)(item)
+//   let update = await addItemToCollection(slug)(item)
+//                       .catch(err => console.error(err))
+
+//   let results = await getCollection({ slug })
+//                       .catch(err => res.sendStatus(500))
+
+//   res.json(await results)
+// })
+
+app.get('/:slug/items/:id', async (req, res) => {
+  let { slug, id } = req.params
+
+  let allItems = await getCollectionItems({ slug })
                       .catch(err => console.error(err))
 
-  let results = await getCollection({ slug })
-                      .catch(err => res.sendStatus(500))
-
-  res.json(await results)
+  res.json(allItems.find(i => i.id === id))
 })
 
-app.patch('/:slug/:id', async (req, res) => {
+app.patch('/:slug/items/:id', isAuthenticated, async (req, res) => {
   let { slug, id } = req.params
+  let { user } = req
   let content = req.body
 
-  let update = await updateItemInCollection(slug)(id)(content)
+  let update = await updateItemInCollection({ slug, owner: user._id })(id)(content)
                       .catch(err => console.error(err))
 
   let results = await getCollection({ slug })
@@ -75,31 +85,15 @@ app.patch('/:slug/:id', async (req, res) => {
   res.json(await results)
 })
 
-app.get('/:slug/remove/:item', async (req, res) => {
-  let { slug, item } = req.params
+// app.delete('/:slug/items/:id', isAuthenticated, async (req, res) => {
+//   let { slug, id } = req.params
+//   let { user } = req
 
-  let update = await removeItemFromCollection(slug)(item)
-                      .catch(err => res.sendStatus(500))
-  let results = await getCollection({ slug })
-                      .catch(err => res.sendStatus(500))
+//   let update = await removeItemFromCollection({ slug, owner: user._id })({ id })
+//                       .catch(err => res.sendStatus(500))
 
-  res.json(results)
-})
-
-app.get('/:slug/remove/:item', async (req, res) => {
-  let { slug, item } = req.params
-
-  let update = await addItemToCollection(slug)(item)
-
-  console.log('updated', slug, item, update)
-
-  let results = await db('collections')
-                      .find({ slug })
-                      .toArray()
-                      .catch(err => res.sendStatus(500))
-
-  res.json(results)
-})
+//   res.json(update)
+// })
 
 app.get('/:slug', async (req, res) => {
   let { slug } = req.params
@@ -109,12 +103,24 @@ app.get('/:slug', async (req, res) => {
     return res.sendStatus(404)
   }
 
+  delete result.source
+  delete result.owner
+  delete result._id
+  result.items = result.items.map(i => {
+    delete i.filename
+    delete i.size
+
+    return i
+  })
+
+
+
   res.json(result)
 })
 
 // app.get('/:slug/items', getImageIndex)
-app.get('/:slug/items/:id', getImage)
-app.patch('/:slug/items/:id', updateImage)
+// app.get('/:slug/items/:id', getImage)
+// app.patch('/:slug/items/:id', updateImage)
 
 app.get('/:slug/available', async (req, res) => {
   let available = await isAvailable(req.params.slug)

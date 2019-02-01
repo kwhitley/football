@@ -37,20 +37,18 @@ export const addItemToCollection = (slug) => (item) => {
     )
 }
 
-export const removeItemFromCollection = (slug) => (item) =>
+export const removeItemFromCollection = ({ slug, owner }) => (where) =>
   db('collections')
     .updateMany(
-      { slug },
+      { slug, owner },
       {
         $pull: {
-          items: { item },
+          items: where,
         }
       }
     )
 
-export const updateItemInCollection = (slug) => (id) => (content) => {
-  console.log('updateItemInCollection', slug, content)
-
+export const updateItemInCollection = ({ slug, owner }) => (id) => (content) => {
   const updateify = (content) => {
     let base = Object.keys(content).reduce((obj, key) => {
       obj[`items.$.${key}`] = content[key]
@@ -70,6 +68,7 @@ export const updateItemInCollection = (slug) => (id) => (content) => {
     .updateOne(
       {
         slug,
+        owner,
         'items.id': id,
       },
       {
@@ -92,6 +91,10 @@ export const getCollectionList = (where = {}) => db('collections')
 
 export const getCollectionItems = (where = {}) => db('collections')
                                           .findOne(where)
+                                          .then(r => r.items || [])
+
+export const getCollectionItem = (where = {}) => (itemWhere = {}) => db('collections')
+                                          .findOne(where, { foo: 1, dateCreated: 0 })
                                           .then(r => r.items || [])
 
 export const syncCollection = async (where = {}) => {
