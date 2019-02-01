@@ -1,11 +1,11 @@
 import React from 'react'
 import { observer, inject } from 'mobx-react'
 import Input from '../Controls/Input'
+import Back from '../Back'
 
 export class CreateForm extends React.Component {
   submit = async () => {
     let { user, history } = this.props
-    console.log('this submit', this, user.json)
 
     let created = await user.createCollection()
     history.push('/' + created.slug)
@@ -41,10 +41,6 @@ export class CreateForm extends React.Component {
           invalid={!newCollection.isAvailable}
           valid={newCollection.isAvailable}
           />
-
-        <pre>
-        { JSON.stringify(newCollection.json, null, 2) }
-        </pre>
 
         <div className="error">{ user.error }</div>
 

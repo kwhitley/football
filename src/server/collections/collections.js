@@ -22,13 +22,14 @@ export const isAvailable = (slug) => db('collections')
                                       .findOne({ slug })
                                       .then(r => !r)
 
-export const addItemToCollection = (slug) => (item) => {
+export const addItemToCollection = ({ slug, owner }) => (item) => {
   console.log('adding item to collection', slug, item)
 
   return db('collections')
     .updateOne(
       {
         slug,
+        owner,
         'items.item.id': { $ne: item.id },
       },
       {
@@ -103,7 +104,7 @@ export const syncCollection = async (where = {}) => {
     let collectionItems = collection.items || []
 
     console.log('collection', where, '-->', collection)
-    let { source } = collection
+    let { source, owner, slug } = collection
 
     if (!source || !source.apiKey) return false
 
@@ -112,13 +113,15 @@ export const syncCollection = async (where = {}) => {
     for (var dbItem of dropboxItems) {
       if (!collectionItems.find(i => i.id === dbItem.id)) {
         console.log('id', dbItem.id, 'not found in collection... inserting', dbItem)
-        await addItemToCollection(collection.slug)(dbItem)
+        await addItemToCollection({ slug, owner })(dbItem)
       }
     }
 
     for (var collectionItem of collectionItems) {
       if (!dropboxItems.find(i => i.id === collectionItem.id)) {
         console.log('id', collectionItem.id, 'not found in dropbox... removing from collection/archiving')
+        removeItemFromCollection({ slug, owner })({ id: collectionItem.id })
+        // TODO: clean up files
       }
     }
 

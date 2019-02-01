@@ -13,10 +13,10 @@ import {
 } from './collections'
 import { isAuthenticated } from '../users/users'
 import db, { collection } from '../db'
-import { getImageIndex, getImage, updateImage } from './images-api'
 
 const app = express()
 
+// GET colections index
 app.get('/', async (req, res) => {
   let result = await getCollections()
 
@@ -27,6 +27,34 @@ app.get('/', async (req, res) => {
   res.json(result)
 })
 
+// GET collection
+app.get('/:slug', async (req, res) => {
+  let { slug } = req.params
+
+  let result = await getCollection({ slug })
+
+  if (!result) {
+    return res.sendStatus(404)
+  }
+
+  delete result.source
+  delete result.owner
+  delete result._id
+  result.items = result.items || []
+  result.items = result.items.map(i => {
+    delete i.filename
+    delete i.size
+
+    return i
+  })
+
+  res.json(result)
+
+  let syncResponse = await syncCollection({ slug })
+                            .catch(err => console.error(err))
+})
+
+// GET collection items
 app.get('/:slug/items', async (req, res) => {
   let { slug, item } = req.params
 
@@ -36,41 +64,17 @@ app.get('/:slug/items', async (req, res) => {
   items ? res.json(await items) : res.sendStatus(400)
 })
 
-app.get('/:slug/sync', async (req, res) => {
-  let { slug } = req.params
-
-  let syncResponse = await syncCollection({ slug })
-                            .catch(err => console.error(err))
-
-  return res.json(syncResponse)
-  console.log('syncResponse = ', syncResponse)
-
-  let response = await getCollection({ slug }).catch(err => console.error(err))
-
-  response ? res.json(await response) : res.sendStatus(400)
-})
-
-// app.get('/:slug/add/:item', async (req, res) => {
-//   let { slug, item } = req.params
-
-//   let update = await addItemToCollection(slug)(item)
-//                       .catch(err => console.error(err))
-
-//   let results = await getCollection({ slug })
-//                       .catch(err => res.sendStatus(500))
-
-//   res.json(await results)
-// })
-
+// GET collection item (single) by id
 app.get('/:slug/items/:id', async (req, res) => {
   let { slug, id } = req.params
 
   let allItems = await getCollectionItems({ slug })
-                      .catch(err => console.error(err))
+                        .catch(err => console.error(err))
 
   res.json(allItems.find(i => i.id === id))
 })
 
+// PATCH collection item (single) by id
 app.patch('/:slug/items/:id', isAuthenticated, async (req, res) => {
   let { slug, id } = req.params
   let { user } = req
@@ -85,49 +89,29 @@ app.patch('/:slug/items/:id', isAuthenticated, async (req, res) => {
   res.json(await results)
 })
 
-// app.delete('/:slug/items/:id', isAuthenticated, async (req, res) => {
-//   let { slug, id } = req.params
-//   let { user } = req
-
-//   let update = await removeItemFromCollection({ slug, owner: user._id })({ id })
-//                       .catch(err => res.sendStatus(500))
-
-//   res.json(update)
-// })
-
-app.get('/:slug', async (req, res) => {
+// GET collection sync (trigger)
+app.get('/:slug/sync', async (req, res) => {
   let { slug } = req.params
-  let result = await getCollection({ slug })
 
-  if (!result) {
-    return res.sendStatus(404)
-  }
+  let syncResponse = await syncCollection({ slug })
+                            .catch(err => console.error(err))
 
-  delete result.source
-  delete result.owner
-  delete result._id
-  result.items = result.items.map(i => {
-    delete i.filename
-    delete i.size
+  return res.json(syncResponse)
+  console.log('syncResponse = ', syncResponse)
 
-    return i
-  })
+  let response = await getCollection({ slug }).catch(err => console.error(err))
 
-
-
-  res.json(result)
+  response ? res.json(await response) : res.sendStatus(400)
 })
 
-// app.get('/:slug/items', getImageIndex)
-// app.get('/:slug/items/:id', getImage)
-// app.patch('/:slug/items/:id', updateImage)
-
+// GET collection name is available (returns 200 || 409)
 app.get('/:slug/available', async (req, res) => {
   let available = await isAvailable(req.params.slug)
 
   res.sendStatus(available ? 200 : 409)
 })
 
+// PATCH collection update
 app.patch('/:slug', isAuthenticated, async (req, res) => {
   const collections = collection('collections')
   const { slug } = req.params
@@ -149,6 +133,7 @@ app.patch('/:slug', isAuthenticated, async (req, res) => {
   }
 })
 
+// DELETE collection
 app.delete('/:slug', isAuthenticated, async (req, res) => {
   const collections = collection('collections')
   const { slug } = req.params
@@ -157,8 +142,6 @@ app.delete('/:slug', isAuthenticated, async (req, res) => {
   let response = await collections.remove({ slug, owner: String(user._id) })
   user.collections = await getCollections({ owner: String(user._id) })
 
-  // console.log('delete response', { slug }, response)
-
   if (response) {
     res.json(response)
   } else {
@@ -166,6 +149,7 @@ app.delete('/:slug', isAuthenticated, async (req, res) => {
   }
 })
 
+// POST collection
 app.post('/', isAuthenticated, async (req, res) => {
   let { name, slug } = req.body
   let { user } = req

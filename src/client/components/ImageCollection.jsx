@@ -17,8 +17,18 @@ export class ImageCollection extends Component {
     collection.load(params.collection || 'krwhitley')
   }
 
+  componentDidUpdate(prev) {
+    let { match } = this.props
+    let { params } = match
+
+    if (prev.match !== match) {
+      collection.load(params.collection || 'krwhitley')
+      console.log('match update', match, prev)
+    }
+  }
+
   render() {
-    let { collection, images, match } = this.props
+    let { collection, history, images, match } = this.props
     let { params } = match
 
     return (

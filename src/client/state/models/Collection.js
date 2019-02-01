@@ -27,9 +27,9 @@ export default class Collection {
   }
 
   @computed get saveable() {
-    let { name, description, slug, source, items } = this
+    let { name, description, slug, source } = this
 
-    return { name, description, slug, source, items }
+    return { name, description, slug, source }
   }
 
   @computed get json() {
@@ -107,6 +107,10 @@ export default class Collection {
   }
 
   async load(slug = this.slug) {
+    if (slug === this.slug) {
+      return false
+    }
+
     if (!slug) {
       return console.warn('collection.load(slug) requires a slug or this.slug to be set')
     }

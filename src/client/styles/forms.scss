@@ -27,6 +27,10 @@ input + input, .input-group + .input-group {
   align-items: center;
   padding-bottom: 10%;
 
+  &.full-page {
+    flex: auto;
+  }
+
   .error:not(:empty) {
     margin-top: 2em;
     width: calc(20% + 8rem);

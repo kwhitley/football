@@ -14,12 +14,6 @@ export const Viewer = ({ collection, user, match, history, location }) => {
 
   return (
     <div className="viewer">
-    <pre>
-    { JSON.stringify(params, null, 2) }
-    </pre>
-    <pre>
-    { JSON.stringify(image, null, 2) }
-    </pre>
       <Imager
         collection={match.params.collection}
         id={match.params.id}
