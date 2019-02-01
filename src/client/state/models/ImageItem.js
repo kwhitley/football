@@ -15,7 +15,7 @@ export default class ImageItem {
   }
 
   @action save = () => {
-    fetch(`/api/images/${this.id}`, {
+    fetch(`/api/collections/${this.collectionSlug}/${this.id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -32,12 +32,12 @@ export default class ImageItem {
     return {
       name: this.name,
       story: this.story,
-      dateModified: new Date(),
     }
   }
 
-  constructor(meta) {
+  constructor(meta, collectionSlug) {
     Object.assign(this, meta)
     this.date = new Date(this.date)
+    this.collectionSlug = collectionSlug
   }
 }

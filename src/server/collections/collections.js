@@ -32,11 +32,7 @@ export const addItemToCollection = (slug) => (item) => {
         'items.item.id': { $ne: item.id },
       },
       {
-        $addToSet: {
-          items: Object.assign({
-            dateCreated: new Date(),
-          }, item),
-        },
+        $addToSet: { items: item },
       }
     )
 }
@@ -52,7 +48,7 @@ export const removeItemFromCollection = (slug) => (item) =>
       }
     )
 
-export const updateItemInCollection = (slug) => (content) => {
+export const updateItemInCollection = (slug) => (id) => (content) => {
   console.log('updateItemInCollection', slug, content)
 
   const updateify = (content) => {
@@ -74,7 +70,7 @@ export const updateItemInCollection = (slug) => (content) => {
     .updateOne(
       {
         slug,
-        'items.item': content.item,
+        'items.id': id,
       },
       {
         $set: updateify(content),

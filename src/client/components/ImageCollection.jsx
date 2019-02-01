@@ -18,20 +18,14 @@ export class ImageCollection extends Component {
   }
 
   render() {
-    let { images, match } = this.props
+    let { collection, images, match } = this.props
     let { params } = match
-
-    // if (params.collection) {
-    //   console.log('load collection', params.collection)
-    // } else {
-    //   console.log('load default "krwhitley"')
-    // }
-    // console.log('match', match)
 
     return (
       <React.Fragment>
         <Grid
-          items={images.itemsSorted}
+          items={collection.items.sorted}
+          collection={collection}
           location={location}
           history={history}
           />

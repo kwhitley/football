@@ -8,7 +8,15 @@ export default class ImageList {
   @observable items = []
   @observable enabled = false
 
-  @computed get itemsSorted() {
+  @computed get length() {
+    return this.items.length
+  }
+
+  map(...args) {
+    return this.items.map(...args)
+  }
+
+  @computed get sorted() {
     return this.items.slice().sort(sortByDate)
   }
 
@@ -26,11 +34,7 @@ export default class ImageList {
     }
   )
 
-  @action load = (collection) => {
-    fetch(`/api/collections/${collection}/images`)
-      .then(r => r.json())
-      .then(items => items.filter(e => e.type === 'file'))
-      .then(items => this.items = items.map(i => new ImageItem(i)))
-      .catch(err => console.warn(err))
+  constructor(items = [], collectionSlug) {
+    this.items = items.map(i => new ImageItem(i, collectionSlug))
   }
 }

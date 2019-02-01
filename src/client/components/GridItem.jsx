@@ -3,11 +3,12 @@ import { inject, observer } from 'mobx-react'
 import Imager from './Imager'
 import { NavLink } from 'react-router-dom'
 
-export const GridItem = ({ app, item }) =>
+export const GridItem = ({ app, item, collection }) =>
   <article>
-    <NavLink to={`/view/${item.id}`}>
+    <NavLink to={`/${collection.slug}/${item.id}`}>
       <Imager
         id={item.id}
+        collection={collection.slug}
         width={400}
         height={400}
         />

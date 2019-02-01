@@ -62,14 +62,11 @@ app.get('/:slug/add/:item', async (req, res) => {
   res.json(await results)
 })
 
-app.get('/:slug/update/:item/:content', async (req, res) => {
-  let { slug, item, content } = req.params
-  let newContent = {
-    item,
-    content,
-  }
+app.patch('/:slug/:id', async (req, res) => {
+  let { slug, id } = req.params
+  let content = req.body
 
-  let update = await updateItemInCollection(slug)(newContent)
+  let update = await updateItemInCollection(slug)(id)(content)
                       .catch(err => console.error(err))
 
   let results = await getCollection({ slug })

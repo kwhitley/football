@@ -5,12 +5,7 @@ import { NavLink } from 'react-router-dom'
 export const CollectionsNav = ({ collections }) => {
   return (
     <div className="collections">
-      <h1>
-        My Collections
-        <small>
-          <NavLink to="/collections/create">+</NavLink>
-        </small>
-      </h1>
+      <h1>My Collections</h1>
       <div className="nav horizontal">
         {
           collections.map(c =>
@@ -23,6 +18,7 @@ export const CollectionsNav = ({ collections }) => {
             </NavLink>
           )
         }
+        <NavLink className="create" to="/collections/create">Create New</NavLink>
       </div>
     </div>
   )

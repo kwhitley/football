@@ -21,28 +21,30 @@ const App = ({ history }) =>
         <Switch>
           <Route
             path="/login"
+            exact
             render={() => <Login {...props} />}
             />
           <Route
             path="/collections/create"
+            exact
             render={() => <CreateCollection {...props} />}
             />
           <Route
             path="/signup"
+            exact
             render={() => <Login {...props} signup />}
             />
           <Route
-            path="/:collection"
+            path="/:collection?"
+            exact
             component={ImageCollection}
             />
           <Route
             path="/:collection/:id"
-            render={() => <Viewer {...props} />}
+            exact
+            component={Viewer}
             />
-          <Route
-            path="*"
-            render={() => <div>Page not found</div>}
-            />
+          <Route render={() => <div>Page not found</div>} />
         </Switch>
         <UserActions {...props} />
       </div>

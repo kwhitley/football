@@ -1,5 +1,6 @@
 import { observable, box, computed, action, reaction, toJS } from 'mobx'
 import Source from './Collection.Source'
+import ImageList from './ImageList'
 
 const errorMessage = (statusCode) =>
   ({
@@ -12,7 +13,7 @@ export default class Collection {
   @observable description = undefined
   @observable slug = undefined
   @observable owner = undefined
-  @observable images = []
+  @observable items = new ImageList()
   @observable source = new Source()
   @observable isAvailable = false
   @observable isPending = false
@@ -126,6 +127,9 @@ export default class Collection {
 
   initialize(obj = {}) {
     console.log('creating new collection from', obj)
+
+    window.collection = this
+
     let {
       _id,
       name,
@@ -134,6 +138,7 @@ export default class Collection {
       source,
       dateCreated,
       dateModified,
+      items,
     } = obj
 
     Object.assign(this, {
@@ -145,6 +150,8 @@ export default class Collection {
       dateModified: new Date(dateModified),
       source: new Source(source),
     })
+
+    this.items = new ImageList(items, this.slug)
 
     reaction(
       () => this.slug,
