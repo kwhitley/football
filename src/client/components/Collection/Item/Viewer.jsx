@@ -1,7 +1,8 @@
 import React from 'react'
 import { observer, inject } from 'mobx-react'
-import Imager from './Imager'
-import ImageDetails from './ImageDetails'
+import Imager from '../../Imager'
+import Details from './Details'
+import Page from '../../Page'
 
 export const Viewer = ({ collection, user, match, history, location }) => {
   let { params } = match
@@ -13,16 +14,16 @@ export const Viewer = ({ collection, user, match, history, location }) => {
   let image = collection.items.getById(params.id)
 
   return (
-    <div className="viewer">
+    <Page back className="viewer" history={history}>
       <Imager
         collection={match.params.collection}
         id={match.params.id}
         width={900}
         />
       {
-        image && <ImageDetails image={image} />
+        image && <Details image={image} />
       }
-    </div>
+    </Page>
   )
 }
 

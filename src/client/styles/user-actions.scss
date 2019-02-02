@@ -3,7 +3,7 @@
   flex-flow: row-reverse wrap;
   justify-content: space-between;
   font-size: 1.1rem;
-  padding: 1.5em 1em 1em;
+  // padding: 1.5em 1em 1em;
   text-transform: uppercase;
   white-space: nowrap;
   align-items: flex-end;
@@ -11,6 +11,10 @@
   opacity: 0.3;
   transition: opacity 0.3s ease-in-out;
   flex: 0 auto;
+
+  @media screen and (max-width: 900px) {
+    margin: 1.1rem;
+  }
 
   &:hover {
     opacity: 1;
@@ -79,5 +83,13 @@
         content: ')';
       }
     }
+  }
+
+  @media screen and (min-width: 50rem) {
+    margin: 2rem;
+  }
+
+  @media screen and (min-width: 900px) {
+    margin: 1rem 0 1rem;
   }
 }

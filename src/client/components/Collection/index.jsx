@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { inject, observer } from 'mobx-react'
 import Grid from './Grid'
+import Page from '../Page'
 
 export class ImageCollection extends Component {
   componentWillUnmount() {
@@ -23,7 +24,7 @@ export class ImageCollection extends Component {
 
     if (prev.match !== match) {
       collection.load(params.collection || 'krwhitley')
-      console.log('match update', match, prev)
+      console.log('match update', match, prev, params.collection)
     }
   }
 
@@ -32,14 +33,15 @@ export class ImageCollection extends Component {
     let { params } = match
 
     return (
-      <React.Fragment>
+      <Page>
+        <h1 className="collection-title">{ collection.name || collection.slug }</h1>
         <Grid
           items={collection.items.sorted}
           collection={collection}
           location={location}
           history={history}
           />
-      </React.Fragment>
+      </Page>
     )
   }
 }

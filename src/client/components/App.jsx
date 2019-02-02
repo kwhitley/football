@@ -6,8 +6,8 @@ import {
   Router,
 } from 'react-router-dom'
 
-import ImageCollection from './ImageCollection'
-import Viewer from './Viewer'
+import CollectionIndex from './Collection'
+import ItemViewer from './Collection/Item/Viewer'
 import Login from './User/Login'
 import CreateCollection from './Collection/CreateForm'
 import Back from './Back'
@@ -17,7 +17,6 @@ const App = ({ history }) =>
   <Router history={history}>
     <Route render={(props) =>
       <div className="page-content">
-        <Back {...props} />
         <Switch>
           <Route
             path="/login"
@@ -37,12 +36,12 @@ const App = ({ history }) =>
           <Route
             path="/:collection?"
             exact
-            component={ImageCollection}
+            component={CollectionIndex}
             />
           <Route
             path="/:collection/:id"
             exact
-            component={Viewer}
+            component={ItemViewer}
             />
           <Route render={() => <div>Page not found</div>} />
         </Switch>

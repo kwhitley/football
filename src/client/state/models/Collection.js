@@ -106,10 +106,11 @@ export default class Collection {
     return this
   }
 
-  async load(slug = this.slug) {
-    if (slug === this.slug) {
-      return false
-    }
+  @action async load(slug) {
+    console.log('loading collection', slug, this.slug)
+    // if (!slug || slug === this.slug) {
+    //   return false
+    // }
 
     if (!slug) {
       return console.warn('collection.load(slug) requires a slug or this.slug to be set')
@@ -129,7 +130,7 @@ export default class Collection {
     return this
   }
 
-  initialize(obj = {}) {
+  @action initialize(obj = {}) {
     console.log('creating new collection from', obj)
 
     window.collection = this

@@ -1,7 +1,7 @@
 import React from 'react'
 import { inject, observer } from 'mobx-react'
-import Imager from './Imager'
 import { NavLink } from 'react-router-dom'
+import Imager from '../../Imager'
 
 export const GridItem = ({ app, item, collection }) =>
   <article>

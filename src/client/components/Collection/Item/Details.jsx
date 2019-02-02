@@ -1,7 +1,7 @@
 import React from 'react'
 import { inject, observer } from 'mobx-react'
 import md from 'react-markings'
-import LiveEdit from '../Controls/LiveEdit'
+import LiveEdit from '../../Controls/LiveEdit'
 
 export const ImageDetails = ({ app, image, editing }) =>
   <div className="image-details">

@@ -1,12 +1,12 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import GridItem from './GridItem'
+import Item from './Item'
 
 export const Grid = ({ items, collection }) =>
   <div className="grid">
     {
       items.map((item, index) =>
-        <GridItem
+        <Item
           key={item.id}
           collection={collection}
           item={item}

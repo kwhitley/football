@@ -9,6 +9,11 @@ $mobile: 35rem;
   }
 }
 
+.page {
+  display: flex;
+  flex-direction: column;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -117,3 +122,4 @@ button.save {
 @import './live-edit';
 @import './image-details';
 @import './user-actions';
+@import './collection';

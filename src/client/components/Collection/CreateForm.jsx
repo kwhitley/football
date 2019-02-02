@@ -1,5 +1,6 @@
 import React from 'react'
 import { observer, inject } from 'mobx-react'
+import Page from '../Page'
 import Input from '../Controls/Input'
 import Back from '../Back'
 
@@ -16,41 +17,43 @@ export class CreateForm extends React.Component {
     const { newCollection } = user
 
     return (
-      <div className="form full-page create-collection">
-        <Input
-          placeholder="Collection Name"
-          value={newCollection.name}
-          onChange={(value) => newCollection.name = value}
-          disabled={newCollection.isPending}
-          />
+      <Page back history={history}>
+        <div className="form full-page create-collection">
+          <Input
+            placeholder="Collection Name"
+            value={newCollection.name}
+            onChange={(value) => newCollection.name = value}
+            disabled={newCollection.isPending}
+            />
 
-        <Input
-          placeholder="Collection URL (link)"
-          value={newCollection.slug}
-          onChange={newCollection.setSlug}
-          disabled={newCollection.isPending}
-          invalid={!newCollection.isAvailable}
-          valid={newCollection.isAvailable}
-          />
+          <Input
+            placeholder="Collection URL (link)"
+            value={newCollection.slug}
+            onChange={newCollection.setSlug}
+            disabled={newCollection.isPending}
+            invalid={!newCollection.isAvailable}
+            valid={newCollection.isAvailable}
+            />
 
-        <Input
-          placeholder="API Key (Dropbox)"
-          value={newCollection.source.apiKey}
-          onChange={(value) => newCollection.source.apiKey = value}
-          disabled={newCollection.isPending}
-          invalid={!newCollection.isAvailable}
-          valid={newCollection.isAvailable}
-          />
+          <Input
+            placeholder="API Key (Dropbox)"
+            value={newCollection.source.apiKey}
+            onChange={(value) => newCollection.source.apiKey = value}
+            disabled={newCollection.isPending}
+            invalid={!newCollection.isAvailable}
+            valid={newCollection.isAvailable}
+            />
 
-        <div className="error">{ user.error }</div>
+          <div className="error">{ user.error }</div>
 
-        <button
-          onClick={this.submit}
-          disabled={newCollection.isPending}
-          >
-          Create
-        </button>
-      </div>
+          <button
+            onClick={this.submit}
+            disabled={newCollection.isPending}
+            >
+            Create
+          </button>
+        </div>
+      </Page>
     )
   }
 }

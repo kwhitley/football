@@ -2,7 +2,7 @@ import { observable, action, computed, reaction, toJS } from 'mobx'
 import ImageItem from './ImageItem'
 
 const sortByDate = (a,b) =>
-  a.date < b.date ? 1 : (a.date > b.date ? -1 : 0)
+  a.dateCreated < b.dateCreated ? 1 : (a.dateCreated > b.dateCreated ? -1 : 0)
 
 export default class ImageList {
   @observable items = []
