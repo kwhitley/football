@@ -1,38 +1,74 @@
 $backButtonHeight: 4.6rem;
 
 .back {
-  flex: 0 0 $backButtonHeight;
+  position: fixed;
   background: rgba(200,200,200,0.9);
-  cursor: pointer;
   margin-bottom: 0.2em;
-  position: relative;
+  cursor: pointer;
   border-radius: $borderRadius;
   color: white;
   overflow: hidden;
+  z-index: 100;
   display: flex;
   flex-flow: column wrap;
   justify-content: center;
+  top: $gutterSize;
+  left: $gutterSize;
+  right: $gutterSize;
+  height: $backButtonHeight;
+  box-shadow:
+    0 -4 * $gutterSize 0 $gutterSize * 5 rgba(255,255,255,1),
+    // 0 4 * $gutterSize $gutterSize * 9 rgba(0,0,0,0.1)
+  ;
 
   + * {
     z-index: 1;
+    margin-top: calc(#{$backButtonHeight} + #{$gutterSize});
   }
 
-  @media screen and (max-aspect-ratio: 5/4) {
-    position: fixed;
-    z-index: 100;
-    top: $gutterSize;
-    left: $gutterSize;
-    right: $gutterSize;
-    height: $backButtonHeight;
-    box-shadow:
-      0 -4 * $gutterSize 0 $gutterSize * 5 rgba(255,255,255,1),
-      // 0 4 * $gutterSize $gutterSize * 9 rgba(0,0,0,0.1)
-    ;
+  // flex: 0 0 $backButtonHeight;
+  // background: rgba(200,200,200,0.9);
+  // cursor: pointer;
+  // margin-bottom: 0.2em;
+  // position: relative;
+  // border-radius: $borderRadius;
+  // color: white;
+  // overflow: hidden;
+  // display: flex;
+  // flex-flow: column wrap;
+  // justify-content: center;
+
+  // + * {
+  //   z-index: 1;
+  // }
+
+  @media screen and (min-aspect-ratio: 3/2), screen and (min-width: 900px) {
+    position: relative;
+    top: auto;
+    right: auto;
+    left: auto;
+    right: auto;
+    flex: 0 0 $backButtonHeight;
+    width: 100%;
 
     + * {
-      margin-top: calc(#{$backButtonHeight} + #{$gutterSize});
+      margin-top: auto;
     }
   }
+
+  // @media screen and (max-width: 900px) {
+  //   position: relative;
+  //   top: auto;
+  //   right: auto;
+  //   left: auto;
+  //   right: auto;
+  //   flex: 0 0 $backButtonHeight;
+  //   width: 100%;
+
+  //   + * {
+  //     margin-top: auto;
+  //   }
+  // }
 
   &:before {
     flex: 0;
@@ -52,5 +88,9 @@ $backButtonHeight: 4.6rem;
 
   &:hover {
     background-color: #aaa;
+  }
+
+  & + .form {
+    padding-top: 5%;
   }
 }

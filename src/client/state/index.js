@@ -1,12 +1,12 @@
-import app from './app'
 import images from './images'
 import routing from './routing'
+import AppSettings from './models/AppSettings'
+import Collection from './models/Collection'
 import ScrollTracker from './models/ScrollTracker'
 import User from './models/User'
-import Collection from './models/Collection'
 
 let store = {
-  app,
+  app: new AppSettings(),
   images,
   routing,
   scroll: new ScrollTracker(),

@@ -12,12 +12,12 @@ export default class Collection {
   @observable name = undefined
   @observable description = undefined
   @observable slug = undefined
-  @observable owner = undefined
   @observable items = new ImageList()
   @observable source = new Source()
   @observable isAvailable = false
   @observable isPending = false
   @observable checkAvailability = true
+  @observable isDirty = false
 
   @action setSlug = (value) => {
     this.slug = value
@@ -28,8 +28,14 @@ export default class Collection {
 
   @computed get saveable() {
     let { name, description, slug, source } = this
+    let results = { name, description, slug, source }
 
-    return { name, description, slug, source }
+    if (!this._id) {
+      // embed source when creating new collections
+      results.source = source
+    }
+
+    return results
   }
 
   @computed get json() {
@@ -71,9 +77,10 @@ export default class Collection {
     }
   }
 
-  @action async save() {
+  @action save = async () => {
+    console.log('saving', toJS(this))
     if (!this.slug || this.slug === '') {
-      return console.warn('a collection must have a name before saving')
+      return console.warn('a collection must have a name before saving', this.slug, this._id)
     }
 
     this.isPending = true
@@ -93,6 +100,7 @@ export default class Collection {
                     .catch(() => {})
 
     this.isPending = false
+    this.isDirty = false
 
     if (response) {
       console.log('collection creation success', response)
@@ -172,6 +180,11 @@ export default class Collection {
         console.log('collection', this.slug, 'available?', this.isAvailable)
       },
     )
+  }
+
+  @action set = (attr) => (value) => {
+    this[attr] = value
+    this.isDirty = true
   }
 
   constructor(obj) {

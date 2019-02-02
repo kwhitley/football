@@ -5,11 +5,11 @@ $primaryFormColor: #2185d0;
 @import './input';
 
 .input-group {
-  margin-top: 0.5em;
+  margin-bottom: 0.5em;
 }
 
-input + input, .input-group + .input-group {
-  margin-top: 1em;
+input + input {
+  margin-bottom: 1em;
 }
 
 .error:not(:empty) {
@@ -37,13 +37,16 @@ input + input, .input-group + .input-group {
   }
 
   .input-group {
-    margin-top: 0.6em;
     width: calc(20% + 10rem);
     text-align: center;
   }
 
+  .input-group + .input-group {
+    margin-top: 0.6em;
+  }
+
   button {
-    margin-top: 2em;
+    // margin-top: 2em;
     width: 8em;
   }
 }

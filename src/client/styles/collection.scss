@@ -1,7 +1,32 @@
 .collection-title {
   margin: 0.7rem 1.2rem 1rem;
+  white-space: pre-line;
+  font-size: 2em;
 
   @media screen and (min-width: 900px) {
     margin: 0 0 1rem;
+  }
+}
+
+h1.collection-title:empty {
+  display: none;
+}
+
+.edit-collection-details {
+  margin: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .collection-title {
+    margin-left: 0;
+  }
+
+  button {
+    white-space: nowrap;
+  }
+
+  > * {
+    flex: 0;
   }
 }

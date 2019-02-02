@@ -179,7 +179,6 @@ app.get('/:slug', async (req, res) => {
     }
     delete result.source;
     delete result.owner;
-    delete result._id;
     result.items = result.items || [];
     result.items = result.items.map(i => {
         delete i.filename;

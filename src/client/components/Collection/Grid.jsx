@@ -1,9 +1,10 @@
 import React from 'react'
 import { observer } from 'mobx-react'
+import classNames from 'classnames'
 import Item from './Item'
 
 export const Grid = ({ items, collection }) =>
-  <div className="grid">
+  <div className={classNames('grid', `items${items.length}`)}>
     {
       items.map((item, index) =>
         <Item
