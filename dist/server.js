@@ -23,8 +23,6 @@ const serve_favicon_1 = require("serve-favicon");
 const api_1 = require("./api");
 const api_2 = require("./imager/api");
 const api_3 = require("./users/api");
-// other
-const cache_warmer_1 = require("./imager/cache-warmer");
 // instantiate express
 const app = express_1.default();
 const isProduction = process.env.NODE_ENV === 'production';
@@ -61,7 +59,7 @@ const server = http_1.default.createServer(app);
 server.listen(serverPort);
 console.log(`Express server @ http://localhost:${serverPort} (${isProduction ? 'production' : 'development'})\n`);
 // warm the cache
-cache_warmer_1.cacheWarmer();
+// cacheWarmer()
 //# sourceMappingURL=index.js.map
 });
 ___scope___.file("server/api.js", function(exports, require, module, __filename, __dirname){
@@ -69,67 +67,15 @@ ___scope___.file("server/api.js", function(exports, require, module, __filename,
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const dropbox_1 = require("./imager/dropbox");
 const apicache_1 = require("apicache");
-const db_1 = require("./db");
 const users_1 = require("./users/users");
+const api_1 = require("./collections/api");
 // create an express app
 const app = express_1.default();
 const cache = apicache_1.default.middleware;
+app.use('/collections', api_1.default);
 app.get('/env', users_1.isAdmin, (req, res) => {
     res.json(process.env);
-});
-app.get('/images', cache('30 seconds'), (req, res) => {
-    dropbox_1.getIndex().then(async (dropboxImages) => {
-        let images = await db_1.collection('images')
-            .find({})
-            .catch((err) => res.status(500).json(err));
-        let existingIds = images.map(i => i.id);
-        let dropboxIds = dropboxImages.map(i => i.id).filter(i => i);
-        let changes = false;
-        for (var id of existingIds) {
-            if (!dropboxIds.includes(id)) {
-                await db_1.collection('images').remove({ id });
-                console.log('deleting database and local content for image', id);
-            }
-        }
-        for (var id of dropboxIds) {
-            if (!existingIds.includes(id)) {
-                await db_1.collection('images').update(id, { id });
-                console.log('add database and local content for image', id);
-                changes = true;
-            }
-        }
-        // get latest image list after patching
-        if (changes) {
-            images = await db_1.collection('images')
-                .find({})
-                .catch((err) => res.status(500).json(err));
-        }
-        dropboxImages = dropboxImages
-            .map(dimage => Object.assign(dimage, images.find(i => i.id === dimage.id)));
-        res.json(dropboxImages);
-    });
-});
-app.patch('/images/:id', users_1.isAuthenticated, async (req, res) => {
-    let { id } = req.params;
-    console.log('patching image', id, req.body);
-    let image = await db_1.collection('images')
-        .update(id, req.body)
-        .then((response) => res.json(response))
-        .catch((err) => res.status(400).json(err));
-});
-app.get('/images/:id', async (req, res) => {
-    let { id } = req.params;
-    // insert doc
-    await db_1.collection('images')
-        .update(id, { id, bar: 'baz' })
-        .catch(res.status(500).json);
-    // get updated/created doc
-    let doc = await db_1.collection('images')
-        .find({ id })
-        .catch(res.status(500).json);
-    res.json(doc);
 });
 // 404
 app.get('*', (req, res) => {
@@ -138,78 +84,6 @@ app.get('*', (req, res) => {
 // export the express app
 exports.default = app;
 //# sourceMappingURL=api.js.map
-});
-___scope___.file("server/imager/dropbox.js", function(exports, require, module, __filename, __dirname){
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const dropbox_1 = require("dropbox");
-const isomorphic_fetch_1 = require("isomorphic-fetch");
-const { DROPBOX_ACCESS_TOKEN } = process.env;
-const toFileItem = (i) => ({
-    id: i.rev,
-    type: i['.tag'],
-    filename: i.name,
-    folder: i.path_display.replace(/(.*\/).*/gi, '$1'),
-    size: i.size,
-    date: i.server_modified,
-});
-exports.getIndex = () => {
-    console.log('dropbox:filesListFolder');
-    var dbx = new dropbox_1.Dropbox({ accessToken: DROPBOX_ACCESS_TOKEN, fetch: isomorphic_fetch_1.default });
-    return dbx
-        .filesListFolder({
-        recursive: true,
-        path: '',
-    })
-        .then((r) => r.entries.map(toFileItem))
-        .catch(console.error);
-};
-exports.download = (path) => {
-    console.log('dropbox:filesDownload', { path: `rev:${path}` });
-    var dbx = new dropbox_1.Dropbox({ accessToken: DROPBOX_ACCESS_TOKEN, fetch: isomorphic_fetch_1.default });
-    return dbx.filesDownload({ path: `rev:${path}` })
-        .then((response) => {
-        console.log(`${path} downloaded`);
-        return response.fileBinary;
-    })
-        .catch(console.error);
-};
-//# sourceMappingURL=dropbox.js.map
-});
-___scope___.file("server/db/index.js", function(exports, require, module, __filename, __dirname){
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongodb_1 = require("mongodb");
-const { DB_USER, DB_PASSWORD, DB_DATABASE, DB_URI, } = process.env;
-const shards = (uri) => Array(3).fill(0).map((v, i) => uri.replace(/^(.*)?-(.*)$/, `$1-shard-00-0${i}-$2`));
-const replicaSet = (uri) => uri.replace(/^(.*)?-(.*)$/, `$1-shard-0`);
-exports.URI = `mongodb://${DB_USER}:${DB_PASSWORD}@${shards(DB_URI).join(',')}/${DB_DATABASE}?replicaSet=${replicaSet(DB_URI)}&ssl=true&authSource=admin`;
-let database = undefined;
-mongodb_1.MongoClient
-    .connect(exports.URI, { useNewUrlParser: true })
-    .then((client) => {
-    console.log('connected to database.');
-    database = client.db(DB_DATABASE);
-})
-    .catch((err) => {
-    console.log('error', err);
-});
-const find = (collection) => (match) => collection.find(match).toArray();
-const remove = (collection) => (condition) => collection.deleteOne(condition || { safe: true });
-const create = (collection) => (content = {}) => collection.insert(content);
-const update = (collection) => (id, content = {}) => collection
-    .updateOne({ id }, { $set: content }, { upsert: true });
-exports.collection = (name) => {
-    return {
-        create: create(database.collection(name)),
-        find: find(database.collection(name)),
-        update: update(database.collection(name)),
-        remove: remove(database.collection(name)),
-    };
-};
-//# sourceMappingURL=index.js.map
 });
 ___scope___.file("server/users/users.js", function(exports, require, module, __filename, __dirname){
 
@@ -223,12 +97,339 @@ exports.createUser = async (profile) => await db_1.collection('users')
 }, profile));
 exports.getUser = async (match) => db_1.collection('users').find(match);
 exports.isAuthenticated = (req, res, next) => req.session.user
-    ? next()
+    ? (req.user = req.session.user) && next()
     : res.sendStatus(401);
 exports.isAdmin = (req, res, next) => req.session.user & req.session.user.email === 'krwhitley@gmail.com'
     ? next()
     : res.sendStatus(401);
 //# sourceMappingURL=users.js.map
+});
+___scope___.file("server/db/index.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const mongodb_1 = require("mongodb");
+const { DB_USER, DB_PASSWORD, DB_DATABASE, DB_URI, } = process.env;
+const shards = (uri) => Array(3).fill(0).map((v, i) => uri.replace(/^(.*)?-(.*)$/, `$1-shard-00-0${i}-$2`));
+const replicaSet = (uri) => uri.replace(/^(.*)?-(.*)$/, `$1-shard-0`);
+exports.URI = `mongodb://${DB_USER}:${DB_PASSWORD}@${shards(DB_URI).join(',')}/${DB_DATABASE}?replicaSet=${replicaSet(DB_URI)}&ssl=true&authSource=admin`;
+const db = {
+    connection: undefined,
+};
+mongodb_1.MongoClient
+    .connect(exports.URI, { useNewUrlParser: true })
+    .then((client) => {
+    console.log('connected to database.');
+    db.connection = client.db(DB_DATABASE);
+})
+    .catch((err) => {
+    console.log('error', err);
+});
+const find = (collection) => (match) => collection
+    .find(match)
+    .toArray();
+const remove = (collection) => (condition) => {
+    console.log('deleting from', collection, 'where', condition);
+    return collection.deleteOne(condition || { safe: true });
+};
+const create = (collection) => (content = {}) => collection.insertOne(content);
+const update = (collection) => (slug, content = {}) => collection
+    .updateOne({ slug }, { $set: content })
+    .then(find(collection)({ slug }));
+exports.collection = (name) => {
+    return {
+        create: create(db.connection.collection(name)),
+        find: find(db.connection.collection(name)),
+        update: update(db.connection.collection(name)),
+        remove: remove(db.connection.collection(name)),
+    };
+};
+exports.default = (collectionName) => {
+    if (!db.connection) {
+        return ;
+        throw new Error('database connection not instantiated before use');
+    }
+    return db.connection.collection(collectionName);
+};
+//# sourceMappingURL=index.js.map
+});
+___scope___.file("server/collections/api.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const collections_1 = require("./collections");
+const users_1 = require("../users/users");
+const db_1 = require("../db");
+const app = express_1.default();
+// GET colections index
+app.get('/', async (req, res) => {
+    let result = await collections_1.getCollections();
+    if (!result) {
+        return res.sendStatus(404);
+    }
+    res.json(result);
+});
+// GET collection
+app.get('/:slug', async (req, res) => {
+    let { slug } = req.params;
+    let result = await collections_1.getCollection({ slug });
+    if (!result) {
+        return res.sendStatus(404);
+    }
+    delete result.source;
+    delete result.owner;
+    delete result._id;
+    result.items = result.items || [];
+    result.items = result.items.map(i => {
+        delete i.filename;
+        delete i.size;
+        return i;
+    });
+    res.json(result);
+    let syncResponse = await collections_1.syncCollection({ slug })
+        .catch(err => console.error(err));
+});
+// GET collection items
+app.get('/:slug/items', async (req, res) => {
+    let { slug, item } = req.params;
+    let items = await collections_1.getCollectionItems({ slug })
+        .catch(err => console.error(err));
+    items ? res.json(await items) : res.sendStatus(400);
+});
+// GET collection item (single) by id
+app.get('/:slug/items/:id', async (req, res) => {
+    let { slug, id } = req.params;
+    let allItems = await collections_1.getCollectionItems({ slug })
+        .catch(err => console.error(err));
+    res.json(allItems.find(i => i.id === id));
+});
+// PATCH collection item (single) by id
+app.patch('/:slug/items/:id', users_1.isAuthenticated, async (req, res) => {
+    let { slug, id } = req.params;
+    let { user } = req;
+    let content = req.body;
+    let update = await collections_1.updateItemInCollection({ slug, owner: user._id })(id)(content)
+        .catch(err => console.error(err));
+    let results = await collections_1.getCollection({ slug })
+        .catch(err => res.sendStatus(500));
+    res.json(await results);
+});
+// GET collection sync (trigger)
+app.get('/:slug/sync', async (req, res) => {
+    let { slug } = req.params;
+    let syncResponse = await collections_1.syncCollection({ slug })
+        .catch(err => console.error(err));
+    return res.json(syncResponse);
+    console.log('syncResponse = ', syncResponse);
+    let response = await collections_1.getCollection({ slug }).catch(err => console.error(err));
+    response ? res.json(await response) : res.sendStatus(400);
+});
+// GET collection name is available (returns 200 || 409)
+app.get('/:slug/available', async (req, res) => {
+    let available = await collections_1.isAvailable(req.params.slug);
+    res.sendStatus(available ? 200 : 409);
+});
+// PATCH collection update
+app.patch('/:slug', users_1.isAuthenticated, async (req, res) => {
+    const collections = db_1.collection('collections');
+    const { slug } = req.params;
+    const { user } = req;
+    await collections.update(slug, req.body)
+        .catch((err) => {
+        console.error(err);
+        res.sendStatus(400);
+    });
+    let response = await collections_1.getCollections({ slug });
+    user.collections = await collections_1.getCollections({ owner: String(user._id) });
+    if (response) {
+        res.json(response);
+    }
+    else {
+        res.sendStatus(400);
+    }
+});
+// DELETE collection
+app.delete('/:slug', users_1.isAuthenticated, async (req, res) => {
+    const collections = db_1.collection('collections');
+    const { slug } = req.params;
+    const { user } = req;
+    let response = await collections.remove({ slug, owner: String(user._id) });
+    user.collections = await collections_1.getCollections({ owner: String(user._id) });
+    if (response) {
+        res.json(response);
+    }
+    else {
+        res.sendStatus(400);
+    }
+});
+// POST collection
+app.post('/', users_1.isAuthenticated, async (req, res) => {
+    let { name, slug } = req.body;
+    let { user } = req;
+    let available = await collections_1.isAvailable(slug);
+    if (!available) {
+        return res.sendStatus(409);
+    }
+    let response = await collections_1.createCollection(req.user)(req.body)
+        .catch((err) => {
+        console.error(err);
+        res.sendStatus(400);
+    });
+    user.collections = await collections_1.getCollections({ owner: String(user._id) });
+    if (response) {
+        res.json(response.ops[0]);
+    }
+    else {
+        res.sendStatus(400);
+    }
+});
+exports.default = app;
+//# sourceMappingURL=api.js.map
+});
+___scope___.file("server/collections/collections.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const db_1 = require("../db");
+const dropbox_1 = require("../imager/dropbox");
+exports.createCollection = (user) => async (content) => {
+    if (!user || !user._id) {
+        return false;
+    }
+    // extend content with dates and owner
+    content = Object.assign({
+        dateCreated: new Date(),
+        dateModified: new Date(),
+        owner: user._id,
+    }, content);
+    console.log('creating collection', content);
+    return db_1.default('collections').insertOne(content);
+};
+exports.isAvailable = (slug) => db_1.default('collections')
+    .findOne({ slug })
+    .then(r => !r);
+exports.addItemToCollection = ({ slug, owner }) => (item) => {
+    console.log('adding item to collection', slug, item);
+    return db_1.default('collections')
+        .updateOne({
+        slug,
+        owner,
+        'items.item.id': { $ne: item.id },
+    }, {
+        $addToSet: { items: item },
+    });
+};
+exports.removeItemFromCollection = ({ slug, owner }) => (where) => db_1.default('collections')
+    .updateMany({ slug, owner }, {
+    $pull: {
+        items: where,
+    }
+});
+exports.updateItemInCollection = ({ slug, owner }) => (id) => (content) => {
+    const updateify = (content) => {
+        let base = Object.keys(content).reduce((obj, key) => {
+            obj[`items.$.${key}`] = content[key];
+            return obj;
+        }, {});
+        base['items.$.dateModified'] = new Date();
+        console.log('updateify', content, base);
+        return base;
+    };
+    return db_1.default('collections')
+        .updateOne({
+        slug,
+        owner,
+        'items.id': id,
+    }, {
+        $set: updateify(content),
+    });
+};
+exports.getCollection = (where = {}) => db_1.default('collections').findOne(where);
+exports.getCollections = (where = {}) => db_1.default('collections')
+    .find(where, {
+    items: 0,
+})
+    .toArray();
+exports.getCollectionList = (where = {}) => db_1.default('collections')
+    .find(where)
+    .toArray();
+exports.getCollectionItems = (where = {}) => db_1.default('collections')
+    .findOne(where)
+    .then(r => r.items || []);
+exports.getCollectionItem = (where = {}) => (itemWhere = {}) => db_1.default('collections')
+    .findOne(where, { foo: 1, dateCreated: 0 })
+    .then(r => r.items || []);
+exports.syncCollection = async (where = {}) => {
+    try {
+        let collection = await exports.getCollection(where);
+        let collectionItems = collection.items || [];
+        console.log('collection', where, '-->', collection);
+        let { source, owner, slug } = collection;
+        if (!source || !source.apiKey)
+            return false;
+        let dropboxItems = await dropbox_1.getIndex(source.apiKey) || [];
+        for (var dbItem of dropboxItems) {
+            if (!collectionItems.find(i => i.id === dbItem.id)) {
+                console.log('id', dbItem.id, 'not found in collection... inserting', dbItem);
+                await exports.addItemToCollection({ slug, owner })(dbItem);
+            }
+        }
+        for (var collectionItem of collectionItems) {
+            if (!dropboxItems.find(i => i.id === collectionItem.id)) {
+                console.log('id', collectionItem.id, 'not found in dropbox... removing from collection/archiving');
+                exports.removeItemFromCollection({ slug, owner })({ id: collectionItem.id });
+                // TODO: clean up files
+            }
+        }
+        return {
+            collectionItems,
+            dropboxItems,
+        };
+    }
+    catch (err) {
+        throw new Error(err);
+    }
+};
+//# sourceMappingURL=collections.js.map
+});
+___scope___.file("server/imager/dropbox.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const dropbox_1 = require("dropbox");
+const isomorphic_fetch_1 = require("isomorphic-fetch");
+const toFileItem = (i) => ({
+    id: i.rev,
+    filename: i.name,
+    folder: i.path_display.replace(/(.*\/).*/gi, '$1'),
+    size: i.size,
+    dateCreated: i.server_modified,
+});
+exports.getIndex = (accessToken) => {
+    console.log('dropbox:filesListFolder');
+    var dbx = new dropbox_1.Dropbox({ accessToken, fetch: isomorphic_fetch_1.default });
+    return dbx
+        .filesListFolder({
+        recursive: true,
+        path: '',
+    })
+        .then(r => r.entries)
+        .then(entries => entries.filter(i => i['.tag'] === 'file'))
+        .then(entries => entries.map(toFileItem))
+        .catch(console.error);
+};
+exports.download = (accessToken, path) => {
+    console.log('dropbox:filesDownload', { path: `rev:${path}` });
+    var dbx = new dropbox_1.Dropbox({ accessToken, fetch: isomorphic_fetch_1.default });
+    return dbx.filesDownload({ path: `rev:${path}` })
+        .then((response) => {
+        console.log(`${path} downloaded`);
+        return response.fileBinary;
+    })
+        .catch(console.error);
+};
+//# sourceMappingURL=dropbox.js.map
 });
 ___scope___.file("server/imager/api.js", function(exports, require, module, __filename, __dirname){
 
@@ -267,8 +468,9 @@ exports.getImage = (requestedImagePath) => {
     console.log('getImage:', requestedImagePath);
     return new Promise(async function (resolve, reject) {
         let decodedPath = decodeURI(requestedImagePath);
+        let collectionId = decodedPath.replace(/\/([^\/]+).*/g, '$1');
         let optionsSegment = decodedPath.replace(/^.*::(.*)\.\w{3,4}$/i, '$1') || '';
-        let revisionId = decodedPath.replace(/.*?(\w+).*/g, '$1');
+        let revisionId = decodedPath.replace(/.*\/(\w+).*/g, '$1');
         let options = optionsSegment
             .split(',')
             .reduce((a, b) => {
@@ -285,7 +487,17 @@ exports.getImage = (requestedImagePath) => {
         // begin: save final output and stream output to response
         let savefolder = path_1.default.join(__dirname, `../../${isProduction ? 'dist' : '.dist-dev'}/client/i`);
         let savepath = savefolder + requestedImagePath;
-        let file = await get_base_image_1.getBaseImage(`/${revisionId}.jpg`)
+        console.log('getImage', {
+            requestedImagePath,
+            decodedPath,
+            collectionId,
+            optionsSegment,
+            revisionId,
+            options,
+            savefolder,
+            savepath,
+        });
+        let file = await get_base_image_1.getBaseImage(`/${collectionId}/${revisionId}.jpg`)
             .catch((err) => console.error('failure fetching image', err));
         let image = sharp_1.default(file).rotate();
         if (options.preview) {
@@ -327,23 +539,39 @@ const fs_1 = require("fs");
 const sharp_1 = require("sharp");
 const path_1 = require("path");
 const dropbox_1 = require("./dropbox");
+const collections_1 = require("../collections/collections");
 const isProduction = process.env.NODE_ENV === 'production';
 // gets image locally, or downloads from dropbox and returns the saved image
 exports.getBaseImage = async (requestedImagePath) => {
     return new Promise(async function (resolve, reject) {
         let decodedPath = decodeURI(requestedImagePath);
-        let revisionId = decodedPath.replace(/.*?(\w+).*/g, '$1');
+        let collectionId = decodedPath.replace(/\/([^\/]+).*/g, '$1');
+        let revisionId = decodedPath.replace(/.*\/(\w+).*/g, '$1');
         // begin: save final output and stream output to response
         let savefolder = path_1.default.join(__dirname, `../../${isProduction ? 'dist' : '.dist-dev'}/client/i`);
         let savepath = savefolder + requestedImagePath;
-        let originalpath = savefolder + '/' + revisionId + '.jpg';
+        let originalpath = savefolder + '/' + collectionId + '/' + revisionId + '.jpg';
+        console.log('getBaseImage', {
+            requestedImagePath,
+            decodedPath,
+            collectionId,
+            revisionId,
+            savefolder,
+            savepath,
+            originalpath,
+        });
+        // throw new Error('exit')
         let image = await fs_1.default.promises.readFile(originalpath)
             .catch((err) => console.log('loading image from dropbox...'));
+        // download image from dropbox if not found base locally
         if (!image) {
-            let binary = await dropbox_1.download(revisionId);
+            let collection = await collections_1.getCollection({ slug: collectionId });
+            let { source } = collection;
+            console.log('found apiKey', source.apiKey, 'for collection', collectionId);
+            let binary = await dropbox_1.download(source.apiKey, revisionId);
             console.log('making savefolder', savefolder);
             // ensure folder exists before file stream opening
-            await fs_1.default.promises.mkdir(savefolder, { recursive: true }).catch(e => e);
+            await fs_1.default.promises.mkdir(savefolder + '/' + collectionId, { recursive: true }).catch(e => e);
             console.log('saving base image', originalpath);
             let image = await sharp_1.default(binary)
                 .rotate()
@@ -365,26 +593,32 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const xs_blowfish_1 = require("xs-blowfish");
 const users_1 = require("./users");
+const collections_1 = require("../collections/collections");
 const security_1 = require("./security");
 const app = express_1.default();
-// app.post('/signup', async (req, res) => {
-//   let user = await createUser(req.body)
-//   if (user) {
-//     res.json(req.session.user)
-//   }
-// })
-app.get('/all', users_1.isAuthenticated, async (req, res) => {
+const safeUserProfile = (user) => {
+    let response = Object.assign({}, user);
+    delete response._id;
+    delete response.apiKey;
+    delete response.password;
+    return response;
+};
+app.get('/all', users_1.isAuthenticated, users_1.isAdmin, async (req, res) => {
     let users = await users_1.getUsersList()
         .catch((err) => res.status(400).json(err));
     console.log('users', users);
     res.json(users);
 });
-app.get('/hash/:password', async (req, res) => {
-    let hash = await security_1.getHash(req.params.password);
-    res.send(hash);
+app.get('/profile', users_1.isAuthenticated, async (req, res) => {
+    let { user } = req;
+    let response = safeUserProfile(user);
+    response.collections = await collections_1.getCollections({ owner: user._id });
+    res.json(response);
 });
-app.get('/profile', users_1.isAuthenticated, (req, res) => {
-    res.json(req.session.user);
+app.get('/collections', users_1.isAuthenticated, async (req, res) => {
+    let { user } = req;
+    let response = await collections_1.getCollections({ owner: user._id });
+    response ? res.json(response) : res.sendStatus(400);
 });
 app.get('/logout', (req, res) => {
     delete req.session.user;
@@ -409,11 +643,12 @@ app.post('/login', async (req, res) => {
             // let bf = new Blowfish(user.password)
             // user.apiKey = bf.decrypt(user.apiKey)
             // console.log('decrypted API key', user.apiKey)
-            delete user.password;
-            delete user._id;
-            delete user.apiKey;
+            console.log('getting collections where', { owner: String(user._id) });
+            let collections = await collections_1.getCollections({ owner: String(user._id) });
+            console.log('matching collections', collections);
+            user.collections = collections;
             req.session.user = user;
-            res.json(user);
+            res.json(safeUserProfile(user));
         }
         else {
             res.sendStatus(401);
@@ -444,12 +679,6 @@ app.post('/signup', async (req, res) => {
     await users_1.createUser({ email, password, apiKey }).catch(() => res.sendStatus(401));
     let user = await users_1.getUser({ email, password })
         .then(users => users[0])
-        .then(user => {
-        delete user.password;
-        delete user._id;
-        delete user.apiKey;
-        return user;
-    })
         .catch(() => res.sendStatus(401));
     if (user) {
         req.session.user = user;
@@ -468,33 +697,6 @@ const saltRounds = 8;
 exports.getHash = (password) => bcryptjs_1.default.hash(password, saltRounds);
 exports.checkPassword = (password, hash) => bcryptjs_1.default.compare(password, hash);
 //# sourceMappingURL=security.js.map
-});
-___scope___.file("server/imager/cache-warmer.js", function(exports, require, module, __filename, __dirname){
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const dropbox_1 = require("./dropbox");
-const get_base_image_1 = require("./get-base-image");
-const imager_js_1 = require("./imager.js");
-const loadImages = async (images) => {
-    for (var image of images) {
-        await get_base_image_1.getBaseImage(`/${image.id}.jpg`);
-        await imager_js_1.getImage(`/${image.id}::width=400,height=400,preview.jpg`);
-        await imager_js_1.getImage(`/${image.id}::width=400,height=400.jpg`);
-        await imager_js_1.getImage(`/${image.id}::width=900,preview.jpg`);
-        await imager_js_1.getImage(`/${image.id}::width=900.jpg`);
-    }
-    console.log('image loads complete.');
-};
-exports.cacheWarmer = async () => {
-    console.log('warming the cache...');
-    await dropbox_1.getIndex()
-        .then((entries) => {
-        loadImages(entries.filter(e => e.type === 'file'));
-        return entries;
-    });
-};
-//# sourceMappingURL=cache-warmer.js.map
 });
 return ___scope___.entry = "server/index.js";
 });
