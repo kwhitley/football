@@ -28,7 +28,7 @@ export default class Collection {
 
   @computed get saveable() {
     let { name, description, slug, source } = this
-    let results = { name, description, slug, source }
+    let results = { name, description, slug }
 
     if (!this._id) {
       // embed source when creating new collections

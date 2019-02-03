@@ -2,6 +2,7 @@ import express from 'express'
 import {
   createCollection,
   getCollection,
+  updateCollection,
   getCollections,
   getCollectionList,
   getCollectionItems,
@@ -51,6 +52,48 @@ app.get('/:slug', async (req, res) => {
 
   let syncResponse = await syncCollection({ slug })
                             .catch(err => console.error(err))
+})
+
+// PATCH collection update
+app.patch('/:slug', isAuthenticated, async (req, res) => {
+  const collections = collection('collections')
+  const { slug } = req.params
+  const { user } = req
+
+  console.log('updating collection', slug, req.body)
+
+  // return res.sendStatus(200)
+
+  await updateCollection({ slug, owner: user._id })(req.body)
+          .catch((err) => {
+            console.error(err)
+            res.sendStatus(400)
+          })
+
+  let response = await getCollections({ slug })
+  user.collections = await getCollections({ owner: user._id })
+
+  if (response) {
+    res.json(response)
+  } else {
+    res.sendStatus(400)
+  }
+})
+
+// DELETE collection
+app.delete('/:slug', isAuthenticated, async (req, res) => {
+  const collections = collection('collections')
+  const { slug } = req.params
+  const { user } = req
+
+  let response = await collections.remove({ slug, owner: String(user._id) })
+  user.collections = await getCollections({ owner: String(user._id) })
+
+  if (response) {
+    res.json(response)
+  } else {
+    res.sendStatus(400)
+  }
 })
 
 // GET collection items
@@ -108,44 +151,6 @@ app.get('/:slug/available', async (req, res) => {
   let available = await isAvailable(req.params.slug)
 
   res.sendStatus(available ? 200 : 409)
-})
-
-// PATCH collection update
-app.patch('/:slug', isAuthenticated, async (req, res) => {
-  const collections = collection('collections')
-  const { slug } = req.params
-  const { user } = req
-
-  await collections.update(slug, req.body)
-          .catch((err) => {
-            console.error(err)
-            res.sendStatus(400)
-          })
-
-  let response = await getCollections({ slug })
-  user.collections = await getCollections({ owner: String(user._id) })
-
-  if (response) {
-    res.json(response)
-  } else {
-    res.sendStatus(400)
-  }
-})
-
-// DELETE collection
-app.delete('/:slug', isAuthenticated, async (req, res) => {
-  const collections = collection('collections')
-  const { slug } = req.params
-  const { user } = req
-
-  let response = await collections.remove({ slug, owner: String(user._id) })
-  user.collections = await getCollections({ owner: String(user._id) })
-
-  if (response) {
-    res.json(response)
-  } else {
-    res.sendStatus(400)
-  }
 })
 
 // POST collection

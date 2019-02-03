@@ -189,6 +189,41 @@ app.get('/:slug', async (req, res) => {
     let syncResponse = await collections_1.syncCollection({ slug })
         .catch(err => console.error(err));
 });
+// PATCH collection update
+app.patch('/:slug', users_1.isAuthenticated, async (req, res) => {
+    const collections = db_1.collection('collections');
+    const { slug } = req.params;
+    const { user } = req;
+    console.log('updating collection', slug, req.body);
+    // return res.sendStatus(200)
+    await collections_1.updateCollection({ slug, owner: user._id })(req.body)
+        .catch((err) => {
+        console.error(err);
+        res.sendStatus(400);
+    });
+    let response = await collections_1.getCollections({ slug });
+    user.collections = await collections_1.getCollections({ owner: user._id });
+    if (response) {
+        res.json(response);
+    }
+    else {
+        res.sendStatus(400);
+    }
+});
+// DELETE collection
+app.delete('/:slug', users_1.isAuthenticated, async (req, res) => {
+    const collections = db_1.collection('collections');
+    const { slug } = req.params;
+    const { user } = req;
+    let response = await collections.remove({ slug, owner: String(user._id) });
+    user.collections = await collections_1.getCollections({ owner: String(user._id) });
+    if (response) {
+        res.json(response);
+    }
+    else {
+        res.sendStatus(400);
+    }
+});
 // GET collection items
 app.get('/:slug/items', async (req, res) => {
     let { slug, item } = req.params;
@@ -228,39 +263,6 @@ app.get('/:slug/sync', async (req, res) => {
 app.get('/:slug/available', async (req, res) => {
     let available = await collections_1.isAvailable(req.params.slug);
     res.sendStatus(available ? 200 : 409);
-});
-// PATCH collection update
-app.patch('/:slug', users_1.isAuthenticated, async (req, res) => {
-    const collections = db_1.collection('collections');
-    const { slug } = req.params;
-    const { user } = req;
-    await collections.update(slug, req.body)
-        .catch((err) => {
-        console.error(err);
-        res.sendStatus(400);
-    });
-    let response = await collections_1.getCollections({ slug });
-    user.collections = await collections_1.getCollections({ owner: String(user._id) });
-    if (response) {
-        res.json(response);
-    }
-    else {
-        res.sendStatus(400);
-    }
-});
-// DELETE collection
-app.delete('/:slug', users_1.isAuthenticated, async (req, res) => {
-    const collections = db_1.collection('collections');
-    const { slug } = req.params;
-    const { user } = req;
-    let response = await collections.remove({ slug, owner: String(user._id) });
-    user.collections = await collections_1.getCollections({ owner: String(user._id) });
-    if (response) {
-        res.json(response);
-    }
-    else {
-        res.sendStatus(400);
-    }
 });
 // POST collection
 app.post('/', users_1.isAuthenticated, async (req, res) => {
@@ -305,6 +307,8 @@ exports.createCollection = (user) => async (content) => {
     console.log('creating collection', content);
     return db_1.default('collections').insertOne(content);
 };
+exports.updateCollection = ({ slug, owner }) => (content) => db_1.default('collections')
+    .updateOne({ slug, owner }, { $set: content });
 exports.isAvailable = (slug) => db_1.default('collections')
     .findOne({ slug })
     .then(r => !r);

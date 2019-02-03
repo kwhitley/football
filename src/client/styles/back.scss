@@ -26,49 +26,14 @@ $backButtonHeight: 4.6rem;
     margin-top: calc(#{$backButtonHeight} + #{$gutterSize});
   }
 
-  // flex: 0 0 $backButtonHeight;
-  // background: rgba(200,200,200,0.9);
-  // cursor: pointer;
-  // margin-bottom: 0.2em;
-  // position: relative;
-  // border-radius: $borderRadius;
-  // color: white;
-  // overflow: hidden;
-  // display: flex;
-  // flex-flow: column wrap;
-  // justify-content: center;
-
-  // + * {
-  //   z-index: 1;
-  // }
-
   @media screen and (min-aspect-ratio: 3/2), screen and (min-width: 900px) {
-    position: relative;
-    top: auto;
-    right: auto;
+    position: absolute;
+    top: 0;
     left: auto;
     right: auto;
     flex: 0 0 $backButtonHeight;
     width: 100%;
-
-    + * {
-      margin-top: auto;
-    }
   }
-
-  // @media screen and (max-width: 900px) {
-  //   position: relative;
-  //   top: auto;
-  //   right: auto;
-  //   left: auto;
-  //   right: auto;
-  //   flex: 0 0 $backButtonHeight;
-  //   width: 100%;
-
-  //   + * {
-  //     margin-top: auto;
-  //   }
-  // }
 
   &:before {
     flex: 0;

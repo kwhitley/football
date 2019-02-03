@@ -18,6 +18,13 @@ export const createCollection = (user) => async (content) => {
   return db('collections').insertOne(content)
 }
 
+export const updateCollection = ({ slug, owner }) => (content) =>
+  db('collections')
+    .updateOne(
+      { slug, owner },
+      { $set: content }
+    )
+
 export const isAvailable = (slug) => db('collections')
                                       .findOne({ slug })
                                       .then(r => !r)
