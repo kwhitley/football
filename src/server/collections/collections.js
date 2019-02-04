@@ -110,7 +110,6 @@ export const syncCollection = async (where = {}) => {
     let collection = await getCollection(where)
     let collectionItems = collection.items || []
 
-    console.log('collection', where, '-->', collection)
     let { source, owner, slug } = collection
 
     if (!source || !source.apiKey) return false

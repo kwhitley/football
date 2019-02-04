@@ -11,14 +11,13 @@ import path from 'path'
 import http from 'http'
 import fs from 'fs'
 import favicon from 'serve-favicon'
+import { connectDatabase } from './db'
+import { cacheWhenIdle, checkForUpdates } from './imager/cache-warmer'
 
 // API
 import api from './api'
 import imagerApi from './imager/api'
 import usersApi from './users/api'
-
-// other
-import { cacheWarmer } from './imager/cache-warmer'
 
 // instantiate express
 const app = express()
@@ -46,6 +45,9 @@ console.log(`serving static content from ${staticPath}`)
 app.use(express.static(staticPath))
 app.use(favicon(path.join(__dirname, '../src/client/images', 'favicon.ico')))
 
+// cache and sync collections when idle
+app.use(cacheWhenIdle)
+
 // add api layers
 app.use('/api', api)
 app.use('/user', usersApi)
@@ -60,8 +62,15 @@ app.get(/.*(?<!\.\w{1,4})$/, (req, res) => {
 const serverPort = process.env.PORT || 3000
 const server = http.createServer(app)
 
-server.listen(serverPort)
-console.log(`Express server @ http://localhost:${serverPort} (${isProduction ? 'production' : 'development'})\n`)
+const initialize = async () => {
+  await connectDatabase()
 
-// warm the cache
-// cacheWarmer()
+  // start the cache warmer
+  checkForUpdates()
+
+  // begin listening
+  server.listen(serverPort)
+  console.log(`Express server @ http://localhost:${serverPort} (${isProduction ? 'production' : 'development'})\n`)
+}
+
+initialize()

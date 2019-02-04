@@ -10,7 +10,6 @@ const toFileItem = (i) => ({
 })
 
 export const getIndex = (accessToken) => {
-  console.log('dropbox:filesListFolder')
   var dbx = new Dropbox({ accessToken, fetch })
 
   return dbx
@@ -25,7 +24,7 @@ export const getIndex = (accessToken) => {
 }
 
 export const download = (accessToken, path) => {
-  console.log('dropbox:filesDownload', { path: `rev:${path}` })
+  console.log('dropbox:download', { path: `rev:${path}` })
   var dbx = new Dropbox({ accessToken, fetch })
 
   return dbx.filesDownload({ path: `rev:${path}` })

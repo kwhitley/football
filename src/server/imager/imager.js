@@ -6,7 +6,7 @@ import { getBaseImage } from './get-base-image'
 const isProduction = process.env.NODE_ENV === 'production'
 
 export const getImage = (requestedImagePath) => {
-  console.log('getImage:', requestedImagePath)
+  // console.log('getImage:', requestedImagePath)
   return new Promise(async function(resolve, reject) {
     let decodedPath = decodeURI(requestedImagePath)
     let collectionId = decodedPath.replace(/\/([^\/]+).*/g, '$1')
@@ -32,21 +32,26 @@ export const getImage = (requestedImagePath) => {
     let savefolder = Path.join(__dirname, `../../${isProduction ? 'dist' : '.dist-dev'}/client/i`)
     let savepath = savefolder + requestedImagePath
 
-    console.log('getImage', {
-      requestedImagePath,
-      decodedPath,
-      collectionId,
-      optionsSegment,
-      revisionId,
-      options,
-      savefolder,
-      savepath,
-    })
+    // console.log('getImage', {
+    //   requestedImagePath,
+    //   decodedPath,
+    //   collectionId,
+    //   optionsSegment,
+    //   revisionId,
+    //   options,
+    //   savefolder,
+    //   savepath,
+    // })
 
     let file = await getBaseImage(`/${collectionId}/${revisionId}.jpg`)
       .catch((err) => console.error('failure fetching image', err))
 
-    let image = sharp(file).rotate()
+    try {
+      var image = sharp(file).rotate()
+    } catch(err) {
+      console.log('error loading image', requestedImagePath, err)
+      return false
+    }
 
     if (options.preview) {
       if (options.width) {
@@ -57,12 +62,11 @@ export const getImage = (requestedImagePath) => {
         options.height = 75
       }
 
-      options.quality = 70
-      options.fit = (options.height && options.width ? 'cover' : 'inside'
+      if (!options.fit) {
+        options.fit = (options.height && options.width ? 'cover' : 'inside'
+      }
 
-      console.log('generating preview', options)
-    } else {
-      console.log('generating fragment', options)
+      options.quality = 70
     }
 
     let data = await image
@@ -75,6 +79,8 @@ export const getImage = (requestedImagePath) => {
         quality: options.quality || 90,
       })
       .toFile(savepath)
+
+    console.log('generated', requestedImagePath)
 
     fs.promises.readFile(savepath)
       .then(resolve)

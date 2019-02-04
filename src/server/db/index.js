@@ -16,15 +16,18 @@ const db = {
   connection: undefined,
 }
 
-MongoClient
-  .connect(URI, { useNewUrlParser: true })
-  .then((client) => {
-    console.log('connected to database.')
-    db.connection = client.db(DB_DATABASE)
-  })
-  .catch((err) => {
-    console.log('error', err)
-  })
+export const connectDatabase = async () =>
+  MongoClient
+    .connect(URI, { useNewUrlParser: true })
+    .then((client) => {
+      console.log('connected to database.')
+      db.connection = client.db(DB_DATABASE)
+
+      return dbCollection
+    })
+    .catch((err) => {
+      console.log('error', err)
+    })
 
 const find = (collection) => (match) =>
   collection
@@ -57,10 +60,12 @@ export const collection = (name) => {
   }
 }
 
-export default (collectionName) => {
+const dbCollection = (collectionName) => {
   if (!db.connection) {
     return throw new Error('database connection not instantiated before use')
   }
 
   return db.connection.collection(collectionName)
 }
+
+export default dbCollection

@@ -19,6 +19,8 @@ const heroku_ssl_redirect_1 = require("heroku-ssl-redirect");
 const path_1 = require("path");
 const http_1 = require("http");
 const serve_favicon_1 = require("serve-favicon");
+const db_1 = require("./db");
+const cache_warmer_1 = require("./imager/cache-warmer");
 // API
 const api_1 = require("./api");
 const api_2 = require("./imager/api");
@@ -45,6 +47,8 @@ const staticPath = path_1.default.join(__dirname, `../${isProduction ? 'dist' : 
 console.log(`serving static content from ${staticPath}`);
 app.use(express_1.default.static(staticPath));
 app.use(serve_favicon_1.default(path_1.default.join(__dirname, '../src/client/images', 'favicon.ico')));
+// cache and sync collections when idle
+app.use(cache_warmer_1.cacheWhenIdle);
 // add api layers
 app.use('/api', api_1.default);
 app.use('/user', api_3.default);
@@ -56,11 +60,444 @@ app.get(/.*(?<!\.\w{1,4})$/, (req, res) => {
 });
 const serverPort = process.env.PORT || 3000;
 const server = http_1.default.createServer(app);
-server.listen(serverPort);
-console.log(`Express server @ http://localhost:${serverPort} (${isProduction ? 'production' : 'development'})\n`);
-// warm the cache
-// cacheWarmer()
+const initialize = async () => {
+    await db_1.connectDatabase();
+    // start the cache warmer
+    cache_warmer_1.checkForUpdates();
+    // begin listening
+    server.listen(serverPort);
+    console.log(`Express server @ http://localhost:${serverPort} (${isProduction ? 'production' : 'development'})\n`);
+};
+initialize();
 //# sourceMappingURL=index.js.map
+});
+___scope___.file("server/db/index.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const mongodb_1 = require("mongodb");
+const { DB_USER, DB_PASSWORD, DB_DATABASE, DB_URI, } = process.env;
+const shards = (uri) => Array(3).fill(0).map((v, i) => uri.replace(/^(.*)?-(.*)$/, `$1-shard-00-0${i}-$2`));
+const replicaSet = (uri) => uri.replace(/^(.*)?-(.*)$/, `$1-shard-0`);
+exports.URI = `mongodb://${DB_USER}:${DB_PASSWORD}@${shards(DB_URI).join(',')}/${DB_DATABASE}?replicaSet=${replicaSet(DB_URI)}&ssl=true&authSource=admin`;
+const db = {
+    connection: undefined,
+};
+exports.connectDatabase = async () => mongodb_1.MongoClient
+    .connect(exports.URI, { useNewUrlParser: true })
+    .then((client) => {
+    console.log('connected to database.');
+    db.connection = client.db(DB_DATABASE);
+    return dbCollection;
+})
+    .catch((err) => {
+    console.log('error', err);
+});
+const find = (collection) => (match) => collection
+    .find(match)
+    .toArray();
+const remove = (collection) => (condition) => {
+    console.log('deleting from', collection, 'where', condition);
+    return collection.deleteOne(condition || { safe: true });
+};
+const create = (collection) => (content = {}) => collection.insertOne(content);
+const update = (collection) => (slug, content = {}) => collection
+    .updateOne({ slug }, { $set: content })
+    .then(find(collection)({ slug }));
+exports.collection = (name) => {
+    return {
+        create: create(db.connection.collection(name)),
+        find: find(db.connection.collection(name)),
+        update: update(db.connection.collection(name)),
+        remove: remove(db.connection.collection(name)),
+    };
+};
+const dbCollection = (collectionName) => {
+    if (!db.connection) {
+        return ;
+        throw new Error('database connection not instantiated before use');
+    }
+    return db.connection.collection(collectionName);
+};
+exports.default = dbCollection;
+//# sourceMappingURL=index.js.map
+});
+___scope___.file("server/imager/cache-warmer.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const time_1 = require("supergeneric/time");
+const collections_1 = require("supergeneric/collections");
+const imager_js_1 = require("./imager.js");
+const collections_2 = require("../collections/collections");
+// persist list of paths processed and pending to be processed
+const pendingImages = new Set;
+const cachedImages = new Set;
+const IDLE_CACHE_DELAY = time_1.getMilliseconds('10 seconds');
+const SYNC_INTERVAL = time_1.getMilliseconds('1 minute');
+// global timer to debounce effects
+let timer = undefined;
+let stallDate = new Date();
+let globalUpdate;
+// delay updates whenever middleware is triggered from a route
+exports.cacheWhenIdle = (req, res, next) => {
+    console.log('DELAY IDLE CACHING...', IDLE_CACHE_DELAY, 'ms');
+    resetTimer(IDLE_CACHE_DELAY);
+    next();
+};
+exports.checkForUpdates = async () => {
+    console.log('cache-warmer: checking for updates...');
+    let collections = await collections_2.getCollections({
+        'source.service': 'dropbox',
+        'source.apiKey': { $exists: true },
+    });
+    for (var collection of collections) {
+        await collections_2.syncCollection({ _id: collection._id });
+    }
+    // get updated collections
+    collections = await collections_2.getCollections({
+        'source.service': 'dropbox',
+        'source.apiKey': { $exists: true },
+    });
+    for (var collection of collections) {
+        for (var item of collection.items) {
+            let path = `${collection.slug}/${item.id}`;
+            if (!pendingImages.has(path) && !cachedImages.has(path)) {
+                console.log('image to be cached', { path });
+                pendingImages.add(path);
+            }
+        }
+    }
+    if (pendingImages.size && !timer) {
+        resetTimer();
+    }
+};
+const resetTimer = (delay = 10) => {
+    let timeDiff = (new Date() - stallDate);
+    console.log('resetTimer, delay=', delay, 'timeDiff=', timeDiff);
+    if (timeDiff > 0) {
+        stallDate = new Date(new Date() - -delay); // shorthand to add delay to current Date
+        timer && clearTimeout(timer);
+        if (pendingImages.size) {
+            timer = setTimeout(cacheAnImage, delay);
+        }
+        else {
+            timer = undefined;
+        }
+    }
+    else {
+        // resetTimer(delay)
+    }
+};
+const cacheAnImage = async () => {
+    if (pendingImages.size) {
+        let path = collections_1.randomItem(Array.from(pendingImages));
+        await loadFragments(path);
+        pendingImages.delete(path);
+        cachedImages.add(path);
+        console.log({
+            service: 'cache-warmer',
+            pending: pendingImages.size,
+            cached: cachedImages.size,
+        });
+        // begin caching at full speed
+        resetTimer();
+    }
+};
+const loadFragments = async (path) => {
+    try {
+        await imager_js_1.getImage(`/${path}::width=400,height=400,preview.jpg`);
+        await imager_js_1.getImage(`/${path}::width=400,height=400.jpg`);
+        await imager_js_1.getImage(`/${path}::width=1500,height=1500,fit=inside,preview.jpg`);
+        await imager_js_1.getImage(`/${path}::width=1500,height=1500,fit=inside.jpg`);
+        return true;
+    }
+    catch (err) {
+        console.log('loadFragments:error', err);
+        return false;
+    }
+};
+// set up constant update interval for app in background
+setInterval(exports.checkForUpdates, SYNC_INTERVAL);
+//# sourceMappingURL=cache-warmer.js.map
+});
+___scope___.file("server/imager/imager.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = require("fs");
+const sharp_1 = require("sharp");
+const path_1 = require("path");
+const get_base_image_1 = require("./get-base-image");
+const isProduction = process.env.NODE_ENV === 'production';
+exports.getImage = (requestedImagePath) => {
+    // console.log('getImage:', requestedImagePath)
+    return new Promise(async function (resolve, reject) {
+        let decodedPath = decodeURI(requestedImagePath);
+        let collectionId = decodedPath.replace(/\/([^\/]+).*/g, '$1');
+        let optionsSegment = decodedPath.replace(/^.*::(.*)\.\w{3,4}$/i, '$1') || '';
+        let revisionId = decodedPath.replace(/.*\/(\w+).*/g, '$1');
+        let options = optionsSegment
+            .split(',')
+            .reduce((a, b) => {
+            let [key, value] = b.split('=');
+            if (value === undefined) {
+                a[key] = true;
+            }
+            else {
+                let numValue = Number(value);
+                a[key] = isNaN(numValue) ? value : numValue;
+            }
+            return a;
+        }, {});
+        // begin: save final output and stream output to response
+        let savefolder = path_1.default.join(__dirname, `../../${isProduction ? 'dist' : '.dist-dev'}/client/i`);
+        let savepath = savefolder + requestedImagePath;
+        // console.log('getImage', {
+        //   requestedImagePath,
+        //   decodedPath,
+        //   collectionId,
+        //   optionsSegment,
+        //   revisionId,
+        //   options,
+        //   savefolder,
+        //   savepath,
+        // })
+        let file = await get_base_image_1.getBaseImage(`/${collectionId}/${revisionId}.jpg`)
+            .catch((err) => console.error('failure fetching image', err));
+        try {
+            var image = sharp_1.default(file).rotate();
+        }
+        catch (err) {
+            console.log('error loading image', requestedImagePath, err);
+            return false;
+        }
+        if (options.preview) {
+            if (options.width) {
+                options.width = 75;
+            }
+            if (options.height) {
+                options.height = 75;
+            }
+            if (!options.fit) {
+                options.fit = (options.height && options.width ? 'cover' : 'inside');
+            }
+            options.quality = 70;
+        }
+        let data = await image
+            .resize({
+            width: options.width,
+            height: options.height,
+            fit: options.fit || 'cover',
+        })
+            .jpeg({
+            quality: options.quality || 90,
+        })
+            .toFile(savepath);
+        console.log('generated', requestedImagePath);
+        fs_1.default.promises.readFile(savepath)
+            .then(resolve)
+            .catch(reject);
+    });
+};
+//# sourceMappingURL=imager.js.map
+});
+___scope___.file("server/imager/get-base-image.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = require("fs");
+const sharp_1 = require("sharp");
+const path_1 = require("path");
+const dropbox_1 = require("./dropbox");
+const collections_1 = require("../collections/collections");
+const isProduction = process.env.NODE_ENV === 'production';
+// gets image locally, or downloads from dropbox and returns the saved image
+exports.getBaseImage = async (requestedImagePath) => {
+    return new Promise(async function (resolve, reject) {
+        let decodedPath = decodeURI(requestedImagePath);
+        let collectionId = decodedPath.replace(/\/([^\/]+).*/g, '$1');
+        let revisionId = decodedPath.replace(/.*\/(\w+).*/g, '$1');
+        // begin: save final output and stream output to response
+        let savefolder = path_1.default.join(__dirname, `../../${isProduction ? 'dist' : '.dist-dev'}/client/i`);
+        let savepath = savefolder + requestedImagePath;
+        let originalpath = savefolder + '/' + collectionId + '/' + revisionId + '.jpg';
+        // console.log('getBaseImage', {
+        //   requestedImagePath,
+        //   decodedPath,
+        //   collectionId,
+        //   revisionId,
+        //   savefolder,
+        //   savepath,
+        //   originalpath,
+        // })
+        // throw new Error('exit')
+        let image = await fs_1.default.promises.readFile(originalpath)
+            .catch((err) => console.log('loading image from dropbox...'));
+        // download image from dropbox if not found base locally
+        if (!image) {
+            let collection = await collections_1.getCollection({ slug: collectionId });
+            let { source } = collection;
+            let binary = await dropbox_1.download(source.apiKey, revisionId);
+            // ensure folder exists before file stream opening
+            await fs_1.default.promises.mkdir(savefolder + '/' + collectionId, { recursive: true }).catch(e => e);
+            console.log('saving base image', originalpath);
+            let image = await sharp_1.default(binary)
+                .rotate()
+                .jpeg({ quality: 95 })
+                .toFile(originalpath);
+        }
+        // console.log('returning', savepath)
+        fs_1.default.promises.readFile(savepath)
+            .then(resolve)
+            .catch(reject);
+    });
+};
+//# sourceMappingURL=get-base-image.js.map
+});
+___scope___.file("server/imager/dropbox.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const dropbox_1 = require("dropbox");
+const isomorphic_fetch_1 = require("isomorphic-fetch");
+const toFileItem = (i) => ({
+    id: i.rev,
+    filename: i.name,
+    folder: i.path_display.replace(/(.*\/).*/gi, '$1'),
+    size: i.size,
+    dateCreated: i.server_modified,
+});
+exports.getIndex = (accessToken) => {
+    var dbx = new dropbox_1.Dropbox({ accessToken, fetch: isomorphic_fetch_1.default });
+    return dbx
+        .filesListFolder({
+        recursive: true,
+        path: '',
+    })
+        .then(r => r.entries)
+        .then(entries => entries.filter(i => i['.tag'] === 'file'))
+        .then(entries => entries.map(toFileItem))
+        .catch(console.error);
+};
+exports.download = (accessToken, path) => {
+    console.log('dropbox:download', { path: `rev:${path}` });
+    var dbx = new dropbox_1.Dropbox({ accessToken, fetch: isomorphic_fetch_1.default });
+    return dbx.filesDownload({ path: `rev:${path}` })
+        .then((response) => {
+        console.log(`${path} downloaded`);
+        return response.fileBinary;
+    })
+        .catch(console.error);
+};
+//# sourceMappingURL=dropbox.js.map
+});
+___scope___.file("server/collections/collections.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const db_1 = require("../db");
+const dropbox_1 = require("../imager/dropbox");
+exports.createCollection = (user) => async (content) => {
+    if (!user || !user._id) {
+        return false;
+    }
+    // extend content with dates and owner
+    content = Object.assign({
+        dateCreated: new Date(),
+        dateModified: new Date(),
+        owner: user._id,
+    }, content);
+    console.log('creating collection', content);
+    return db_1.default('collections').insertOne(content);
+};
+exports.updateCollection = ({ slug, owner }) => (content) => db_1.default('collections')
+    .updateOne({ slug, owner }, { $set: content });
+exports.isAvailable = (slug) => db_1.default('collections')
+    .findOne({ slug })
+    .then(r => !r);
+exports.addItemToCollection = ({ slug, owner }) => (item) => {
+    console.log('adding item to collection', slug, item);
+    return db_1.default('collections')
+        .updateOne({
+        slug,
+        owner,
+        'items.item.id': { $ne: item.id },
+    }, {
+        $addToSet: { items: item },
+    });
+};
+exports.removeItemFromCollection = ({ slug, owner }) => (where) => db_1.default('collections')
+    .updateMany({ slug, owner }, {
+    $pull: {
+        items: where,
+    }
+});
+exports.updateItemInCollection = ({ slug, owner }) => (id) => (content) => {
+    const updateify = (content) => {
+        let base = Object.keys(content).reduce((obj, key) => {
+            obj[`items.$.${key}`] = content[key];
+            return obj;
+        }, {});
+        base['items.$.dateModified'] = new Date();
+        console.log('updateify', content, base);
+        return base;
+    };
+    return db_1.default('collections')
+        .updateOne({
+        slug,
+        owner,
+        'items.id': id,
+    }, {
+        $set: updateify(content),
+    });
+};
+exports.getCollection = (where = {}) => db_1.default('collections').findOne(where);
+exports.getCollections = (where = {}) => db_1.default('collections')
+    .find(where, {
+    items: 0,
+})
+    .toArray();
+exports.getCollectionList = (where = {}) => db_1.default('collections')
+    .find(where)
+    .toArray();
+exports.getCollectionItems = (where = {}) => db_1.default('collections')
+    .findOne(where)
+    .then(r => r.items || []);
+exports.getCollectionItem = (where = {}) => (itemWhere = {}) => db_1.default('collections')
+    .findOne(where, { foo: 1, dateCreated: 0 })
+    .then(r => r.items || []);
+exports.syncCollection = async (where = {}) => {
+    try {
+        let collection = await exports.getCollection(where);
+        let collectionItems = collection.items || [];
+        let { source, owner, slug } = collection;
+        if (!source || !source.apiKey)
+            return false;
+        let dropboxItems = await dropbox_1.getIndex(source.apiKey) || [];
+        for (var dbItem of dropboxItems) {
+            if (!collectionItems.find(i => i.id === dbItem.id)) {
+                console.log('id', dbItem.id, 'not found in collection... inserting', dbItem);
+                await exports.addItemToCollection({ slug, owner })(dbItem);
+            }
+        }
+        for (var collectionItem of collectionItems) {
+            if (!dropboxItems.find(i => i.id === collectionItem.id)) {
+                console.log('id', collectionItem.id, 'not found in dropbox... removing from collection/archiving');
+                exports.removeItemFromCollection({ slug, owner })({ id: collectionItem.id });
+                // TODO: clean up files
+            }
+        }
+        return {
+            collectionItems,
+            dropboxItems,
+        };
+    }
+    catch (err) {
+        throw new Error(err);
+    }
+};
+//# sourceMappingURL=collections.js.map
 });
 ___scope___.file("server/api.js", function(exports, require, module, __filename, __dirname){
 
@@ -104,55 +541,6 @@ exports.isAdmin = (req, res, next) => req.session.user & req.session.user.email 
     : res.sendStatus(401);
 //# sourceMappingURL=users.js.map
 });
-___scope___.file("server/db/index.js", function(exports, require, module, __filename, __dirname){
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongodb_1 = require("mongodb");
-const { DB_USER, DB_PASSWORD, DB_DATABASE, DB_URI, } = process.env;
-const shards = (uri) => Array(3).fill(0).map((v, i) => uri.replace(/^(.*)?-(.*)$/, `$1-shard-00-0${i}-$2`));
-const replicaSet = (uri) => uri.replace(/^(.*)?-(.*)$/, `$1-shard-0`);
-exports.URI = `mongodb://${DB_USER}:${DB_PASSWORD}@${shards(DB_URI).join(',')}/${DB_DATABASE}?replicaSet=${replicaSet(DB_URI)}&ssl=true&authSource=admin`;
-const db = {
-    connection: undefined,
-};
-mongodb_1.MongoClient
-    .connect(exports.URI, { useNewUrlParser: true })
-    .then((client) => {
-    console.log('connected to database.');
-    db.connection = client.db(DB_DATABASE);
-})
-    .catch((err) => {
-    console.log('error', err);
-});
-const find = (collection) => (match) => collection
-    .find(match)
-    .toArray();
-const remove = (collection) => (condition) => {
-    console.log('deleting from', collection, 'where', condition);
-    return collection.deleteOne(condition || { safe: true });
-};
-const create = (collection) => (content = {}) => collection.insertOne(content);
-const update = (collection) => (slug, content = {}) => collection
-    .updateOne({ slug }, { $set: content })
-    .then(find(collection)({ slug }));
-exports.collection = (name) => {
-    return {
-        create: create(db.connection.collection(name)),
-        find: find(db.connection.collection(name)),
-        update: update(db.connection.collection(name)),
-        remove: remove(db.connection.collection(name)),
-    };
-};
-exports.default = (collectionName) => {
-    if (!db.connection) {
-        return ;
-        throw new Error('database connection not instantiated before use');
-    }
-    return db.connection.collection(collectionName);
-};
-//# sourceMappingURL=index.js.map
-});
 ___scope___.file("server/collections/api.js", function(exports, require, module, __filename, __dirname){
 
 "use strict";
@@ -177,6 +565,7 @@ app.get('/:slug', async (req, res) => {
     if (!result) {
         return res.sendStatus(404);
     }
+    console.log('GET getCollection', { slug }, 'result = ', result);
     delete result.source;
     delete result.owner;
     result.items = result.items || [];
@@ -186,8 +575,8 @@ app.get('/:slug', async (req, res) => {
         return i;
     });
     res.json(result);
-    let syncResponse = await collections_1.syncCollection({ slug })
-        .catch(err => console.error(err));
+    // let syncResponse = await syncCollection({ slug })
+    //                           .catch(err => console.error(err))
 });
 // PATCH collection update
 app.patch('/:slug', users_1.isAuthenticated, async (req, res) => {
@@ -288,152 +677,6 @@ app.post('/', users_1.isAuthenticated, async (req, res) => {
 exports.default = app;
 //# sourceMappingURL=api.js.map
 });
-___scope___.file("server/collections/collections.js", function(exports, require, module, __filename, __dirname){
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const db_1 = require("../db");
-const dropbox_1 = require("../imager/dropbox");
-exports.createCollection = (user) => async (content) => {
-    if (!user || !user._id) {
-        return false;
-    }
-    // extend content with dates and owner
-    content = Object.assign({
-        dateCreated: new Date(),
-        dateModified: new Date(),
-        owner: user._id,
-    }, content);
-    console.log('creating collection', content);
-    return db_1.default('collections').insertOne(content);
-};
-exports.updateCollection = ({ slug, owner }) => (content) => db_1.default('collections')
-    .updateOne({ slug, owner }, { $set: content });
-exports.isAvailable = (slug) => db_1.default('collections')
-    .findOne({ slug })
-    .then(r => !r);
-exports.addItemToCollection = ({ slug, owner }) => (item) => {
-    console.log('adding item to collection', slug, item);
-    return db_1.default('collections')
-        .updateOne({
-        slug,
-        owner,
-        'items.item.id': { $ne: item.id },
-    }, {
-        $addToSet: { items: item },
-    });
-};
-exports.removeItemFromCollection = ({ slug, owner }) => (where) => db_1.default('collections')
-    .updateMany({ slug, owner }, {
-    $pull: {
-        items: where,
-    }
-});
-exports.updateItemInCollection = ({ slug, owner }) => (id) => (content) => {
-    const updateify = (content) => {
-        let base = Object.keys(content).reduce((obj, key) => {
-            obj[`items.$.${key}`] = content[key];
-            return obj;
-        }, {});
-        base['items.$.dateModified'] = new Date();
-        console.log('updateify', content, base);
-        return base;
-    };
-    return db_1.default('collections')
-        .updateOne({
-        slug,
-        owner,
-        'items.id': id,
-    }, {
-        $set: updateify(content),
-    });
-};
-exports.getCollection = (where = {}) => db_1.default('collections').findOne(where);
-exports.getCollections = (where = {}) => db_1.default('collections')
-    .find(where, {
-    items: 0,
-})
-    .toArray();
-exports.getCollectionList = (where = {}) => db_1.default('collections')
-    .find(where)
-    .toArray();
-exports.getCollectionItems = (where = {}) => db_1.default('collections')
-    .findOne(where)
-    .then(r => r.items || []);
-exports.getCollectionItem = (where = {}) => (itemWhere = {}) => db_1.default('collections')
-    .findOne(where, { foo: 1, dateCreated: 0 })
-    .then(r => r.items || []);
-exports.syncCollection = async (where = {}) => {
-    try {
-        let collection = await exports.getCollection(where);
-        let collectionItems = collection.items || [];
-        console.log('collection', where, '-->', collection);
-        let { source, owner, slug } = collection;
-        if (!source || !source.apiKey)
-            return false;
-        let dropboxItems = await dropbox_1.getIndex(source.apiKey) || [];
-        for (var dbItem of dropboxItems) {
-            if (!collectionItems.find(i => i.id === dbItem.id)) {
-                console.log('id', dbItem.id, 'not found in collection... inserting', dbItem);
-                await exports.addItemToCollection({ slug, owner })(dbItem);
-            }
-        }
-        for (var collectionItem of collectionItems) {
-            if (!dropboxItems.find(i => i.id === collectionItem.id)) {
-                console.log('id', collectionItem.id, 'not found in dropbox... removing from collection/archiving');
-                exports.removeItemFromCollection({ slug, owner })({ id: collectionItem.id });
-                // TODO: clean up files
-            }
-        }
-        return {
-            collectionItems,
-            dropboxItems,
-        };
-    }
-    catch (err) {
-        throw new Error(err);
-    }
-};
-//# sourceMappingURL=collections.js.map
-});
-___scope___.file("server/imager/dropbox.js", function(exports, require, module, __filename, __dirname){
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const dropbox_1 = require("dropbox");
-const isomorphic_fetch_1 = require("isomorphic-fetch");
-const toFileItem = (i) => ({
-    id: i.rev,
-    filename: i.name,
-    folder: i.path_display.replace(/(.*\/).*/gi, '$1'),
-    size: i.size,
-    dateCreated: i.server_modified,
-});
-exports.getIndex = (accessToken) => {
-    console.log('dropbox:filesListFolder');
-    var dbx = new dropbox_1.Dropbox({ accessToken, fetch: isomorphic_fetch_1.default });
-    return dbx
-        .filesListFolder({
-        recursive: true,
-        path: '',
-    })
-        .then(r => r.entries)
-        .then(entries => entries.filter(i => i['.tag'] === 'file'))
-        .then(entries => entries.map(toFileItem))
-        .catch(console.error);
-};
-exports.download = (accessToken, path) => {
-    console.log('dropbox:filesDownload', { path: `rev:${path}` });
-    var dbx = new dropbox_1.Dropbox({ accessToken, fetch: isomorphic_fetch_1.default });
-    return dbx.filesDownload({ path: `rev:${path}` })
-        .then((response) => {
-        console.log(`${path} downloaded`);
-        return response.fileBinary;
-    })
-        .catch(console.error);
-};
-//# sourceMappingURL=dropbox.js.map
-});
 ___scope___.file("server/imager/api.js", function(exports, require, module, __filename, __dirname){
 
 "use strict";
@@ -457,137 +700,6 @@ app.get('*.(png|jpg)', (req, res) => {
 });
 exports.default = app;
 //# sourceMappingURL=api.js.map
-});
-___scope___.file("server/imager/imager.js", function(exports, require, module, __filename, __dirname){
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const fs_1 = require("fs");
-const sharp_1 = require("sharp");
-const path_1 = require("path");
-const get_base_image_1 = require("./get-base-image");
-const isProduction = process.env.NODE_ENV === 'production';
-exports.getImage = (requestedImagePath) => {
-    console.log('getImage:', requestedImagePath);
-    return new Promise(async function (resolve, reject) {
-        let decodedPath = decodeURI(requestedImagePath);
-        let collectionId = decodedPath.replace(/\/([^\/]+).*/g, '$1');
-        let optionsSegment = decodedPath.replace(/^.*::(.*)\.\w{3,4}$/i, '$1') || '';
-        let revisionId = decodedPath.replace(/.*\/(\w+).*/g, '$1');
-        let options = optionsSegment
-            .split(',')
-            .reduce((a, b) => {
-            let [key, value] = b.split('=');
-            if (value === undefined) {
-                a[key] = true;
-            }
-            else {
-                let numValue = Number(value);
-                a[key] = isNaN(numValue) ? value : numValue;
-            }
-            return a;
-        }, {});
-        // begin: save final output and stream output to response
-        let savefolder = path_1.default.join(__dirname, `../../${isProduction ? 'dist' : '.dist-dev'}/client/i`);
-        let savepath = savefolder + requestedImagePath;
-        console.log('getImage', {
-            requestedImagePath,
-            decodedPath,
-            collectionId,
-            optionsSegment,
-            revisionId,
-            options,
-            savefolder,
-            savepath,
-        });
-        let file = await get_base_image_1.getBaseImage(`/${collectionId}/${revisionId}.jpg`)
-            .catch((err) => console.error('failure fetching image', err));
-        let image = sharp_1.default(file).rotate();
-        if (options.preview) {
-            if (options.width) {
-                options.width = 75;
-            }
-            if (options.height) {
-                options.height = 75;
-            }
-            options.quality = 70;
-            options.fit = (options.height && options.width ? 'cover' : 'inside');
-            console.log('generating preview', options);
-        }
-        else {
-            console.log('generating fragment', options);
-        }
-        let data = await image
-            .resize({
-            width: options.width,
-            height: options.height,
-            fit: options.fit || 'cover',
-        })
-            .jpeg({
-            quality: options.quality || 90,
-        })
-            .toFile(savepath);
-        fs_1.default.promises.readFile(savepath)
-            .then(resolve)
-            .catch(reject);
-    });
-};
-//# sourceMappingURL=imager.js.map
-});
-___scope___.file("server/imager/get-base-image.js", function(exports, require, module, __filename, __dirname){
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const fs_1 = require("fs");
-const sharp_1 = require("sharp");
-const path_1 = require("path");
-const dropbox_1 = require("./dropbox");
-const collections_1 = require("../collections/collections");
-const isProduction = process.env.NODE_ENV === 'production';
-// gets image locally, or downloads from dropbox and returns the saved image
-exports.getBaseImage = async (requestedImagePath) => {
-    return new Promise(async function (resolve, reject) {
-        let decodedPath = decodeURI(requestedImagePath);
-        let collectionId = decodedPath.replace(/\/([^\/]+).*/g, '$1');
-        let revisionId = decodedPath.replace(/.*\/(\w+).*/g, '$1');
-        // begin: save final output and stream output to response
-        let savefolder = path_1.default.join(__dirname, `../../${isProduction ? 'dist' : '.dist-dev'}/client/i`);
-        let savepath = savefolder + requestedImagePath;
-        let originalpath = savefolder + '/' + collectionId + '/' + revisionId + '.jpg';
-        console.log('getBaseImage', {
-            requestedImagePath,
-            decodedPath,
-            collectionId,
-            revisionId,
-            savefolder,
-            savepath,
-            originalpath,
-        });
-        // throw new Error('exit')
-        let image = await fs_1.default.promises.readFile(originalpath)
-            .catch((err) => console.log('loading image from dropbox...'));
-        // download image from dropbox if not found base locally
-        if (!image) {
-            let collection = await collections_1.getCollection({ slug: collectionId });
-            let { source } = collection;
-            console.log('found apiKey', source.apiKey, 'for collection', collectionId);
-            let binary = await dropbox_1.download(source.apiKey, revisionId);
-            console.log('making savefolder', savefolder);
-            // ensure folder exists before file stream opening
-            await fs_1.default.promises.mkdir(savefolder + '/' + collectionId, { recursive: true }).catch(e => e);
-            console.log('saving base image', originalpath);
-            let image = await sharp_1.default(binary)
-                .rotate()
-                .jpeg({ quality: 95 })
-                .toFile(originalpath);
-        }
-        console.log('returning', savepath);
-        fs_1.default.promises.readFile(savepath)
-            .then(resolve)
-            .catch(reject);
-    });
-};
-//# sourceMappingURL=get-base-image.js.map
 });
 ___scope___.file("server/users/api.js", function(exports, require, module, __filename, __dirname){
 

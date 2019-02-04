@@ -38,6 +38,8 @@ app.get('/:slug', async (req, res) => {
     return res.sendStatus(404)
   }
 
+  console.log('GET getCollection', { slug }, 'result = ', result)
+
   delete result.source
   delete result.owner
   result.items = result.items || []
@@ -50,8 +52,8 @@ app.get('/:slug', async (req, res) => {
 
   res.json(result)
 
-  let syncResponse = await syncCollection({ slug })
-                            .catch(err => console.error(err))
+  // let syncResponse = await syncCollection({ slug })
+  //                           .catch(err => console.error(err))
 })
 
 // PATCH collection update

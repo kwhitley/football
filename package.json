@@ -38,6 +38,7 @@
     "mongodb": "^3.1.12",
     "serve-favicon": "^2.5.0",
     "sharp": "^0.21.3",
+    "supergeneric": "^1.1.0",
     "xs-blowfish": "^2.0.0"
   },
   "devDependencies": {

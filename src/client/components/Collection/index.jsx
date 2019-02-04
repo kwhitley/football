@@ -34,7 +34,7 @@ export class ImageCollection extends Component {
     let { params } = match
 
     return (
-      <Page>
+      <Page className="collection">
         {
           app.editMode && user.isLoggedIn
           ? <div className="edit-collection-details">

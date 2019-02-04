@@ -18,15 +18,15 @@ export const getBaseImage = async (requestedImagePath) => {
     let savepath = savefolder + requestedImagePath
     let originalpath = savefolder + '/' + collectionId + '/' + revisionId + '.jpg'
 
-    console.log('getBaseImage', {
-      requestedImagePath,
-      decodedPath,
-      collectionId,
-      revisionId,
-      savefolder,
-      savepath,
-      originalpath,
-    })
+    // console.log('getBaseImage', {
+    //   requestedImagePath,
+    //   decodedPath,
+    //   collectionId,
+    //   revisionId,
+    //   savefolder,
+    //   savepath,
+    //   originalpath,
+    // })
 
     // throw new Error('exit')
 
@@ -37,10 +37,8 @@ export const getBaseImage = async (requestedImagePath) => {
     if (!image) {
       let collection = await getCollection({ slug: collectionId })
       let { source } = collection
-      console.log('found apiKey', source.apiKey, 'for collection', collectionId)
       let binary = await download(source.apiKey, revisionId)
 
-      console.log('making savefolder', savefolder)
       // ensure folder exists before file stream opening
       await fs.promises.mkdir(savefolder + '/' + collectionId, { recursive: true }).catch(e => e)
 
@@ -51,7 +49,7 @@ export const getBaseImage = async (requestedImagePath) => {
         .toFile(originalpath)
     }
 
-    console.log('returning', savepath)
+    // console.log('returning', savepath)
 
     fs.promises.readFile(savepath)
       .then(resolve)
