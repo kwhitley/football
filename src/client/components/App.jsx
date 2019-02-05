@@ -10,7 +10,6 @@ import UserActions from './User/UserActions'
 
 const App = ({ history }) =>
   <div className="page-content">
-    <UserActions />
     <Router>
       <CreateCollection path="create-collection" />
       <Login path="signup" signup />
@@ -20,6 +19,8 @@ const App = ({ history }) =>
       <CollectionIndex path="/" />
       <div default>Page not found</div>
     </Router>
+
+    <UserActions />
   </div>
 
 export default App

@@ -3,6 +3,7 @@ import { inject, observer } from 'mobx-react'
 import Grid from './Grid'
 import Page from '../Page'
 import LiveEdit from '../Controls/LiveEdit'
+import Inspect from '../Controls/Inspect'
 
 export class ImageCollection extends Component {
   componentWillUnmount() {
@@ -29,6 +30,7 @@ export class ImageCollection extends Component {
 
   render() {
     let { app, user, collection, navigate } = this.props
+    console.log('CollectionIndex', collection)
 
     return (
       <Page className="collection">
@@ -53,12 +55,7 @@ export class ImageCollection extends Component {
             </div>
           : <h1 className="collection-title">{ collection.name }</h1>
         }
-        {
-          <Grid
-            items={collection.items.sorted)}
-            collection={collection}
-            />
-        }
+        <Grid />
       </Page>
     )
   }

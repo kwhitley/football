@@ -7,7 +7,7 @@ export default function InputPassword(props) {
       placeholder="password"
       pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
       type="password"
-      autocapitalize="none"
+      autoCapitalize="none"
       required
       {...props}
     />

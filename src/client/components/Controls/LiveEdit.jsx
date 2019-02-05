@@ -13,11 +13,10 @@ export const LiveEdit = ({
   ...props,
 }) =>
   <div className="input-group">
-    <TextArea
+    <textarea
       className={classNames('live-edit', className)}
-      type="text"
       onChange={valueOnly(onChange)}
-      value={value}
+      value={value || ''}
       placeholder={placeholder}
       {...props}
       />

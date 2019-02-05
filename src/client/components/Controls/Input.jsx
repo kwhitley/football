@@ -13,11 +13,10 @@ export const Input = ({
 }) =>
   <div className="input-group">
     <input
-      autocomplete
       className={classNames('input', className)}
       type="text"
       onChange={valueOnly(onChange)}
-      value={value}
+      value={value || ''}
       placeholder={placeholder}
       {...props}
       />

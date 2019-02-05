@@ -1,10 +1,12 @@
 import React from 'react'
-import { observer } from 'mobx-react'
+import { observer, inject } from 'mobx-react'
 import classNames from 'classnames'
 import Item from './Item'
 
-export const Grid = ({ items, collection }) => {
-  console.log('Grid loaded', items.length, collection.name)
+export const Grid = ({ collection }) => {
+  let items = collection.items.sorted
+
+  console.log('Grid loaded', collection)
   let gridScale = undefined
 
   if (items.length < 8) {
@@ -30,5 +32,5 @@ export const Grid = ({ items, collection }) => {
   )
 }
 
-export default observer(Grid)
+export default inject('collection')(observer(Grid))
 

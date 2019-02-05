@@ -26,9 +26,9 @@ console.log('description', pkg.description)
 
 const clientConfig = (isProduction, basePath = DEV_BUILD_PATH) => ({
   alias : {
-    'react' : 'preact-compat',
-    'react-dom' : 'preact-compat',
-    'mobx-react' : 'mobx-preact',
+    // 'react' : 'preact-compat',
+    // 'react-dom' : 'preact-compat',
+    // 'mobx-react' : 'mobx-preact',
   },
   homeDir: 'src',
   output: `${basePath}/client/$name.js`,
