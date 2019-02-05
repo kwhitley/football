@@ -1,6 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { NavLink } from 'react-router-dom'
+import { Link } from '@reach/router'
+import Inspect from '../Controls/Inspect'
 
 export const CollectionsNav = ({ collections }) => {
   return (
@@ -9,16 +10,16 @@ export const CollectionsNav = ({ collections }) => {
       <nav className="horizontal">
         {
           collections.map(c =>
-            <NavLink
+            <Link
               key={c._id}
               className="collection"
               to={`/${c.slug}`}
             >
               { c.name || c.slug }
-            </NavLink>
+            </Link>
           )
         }
-        <NavLink className="create" to="/collections/create">Create New</NavLink>
+        <Link className="create" to="/create-collection">Create New</Link>
       </nav>
     </div>
   )

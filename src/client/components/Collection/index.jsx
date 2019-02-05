@@ -11,27 +11,24 @@ export class ImageCollection extends Component {
   }
 
   componentDidMount() {
-    let { collection, scroll, match } = this.props
-    let { params } = match
+    console.log('ImageCollection:props', this.props)
+    let { collection, collectionId, scroll } = this.props
 
     scroll.restore()
     scroll.isTracking = true
-    collection.load(params.collection || 'krwhitley')
+    collection.load(collectionId || 'krwhitley')
   }
 
   componentDidUpdate(prev) {
-    let { match } = this.props
-    let { params } = match
+    let { collectionId, collection } = this.props
 
-    if (prev.match !== match) {
-      collection.load(params.collection || 'krwhitley')
-      console.log('match update', match, prev, params.collection)
+    if (collectionId !== prev.collectionId) {
+      collection.load(collectionId || 'krwhitley')
     }
   }
 
   render() {
-    let { app, user, collection, history, match } = this.props
-    let { params } = match
+    let { app, user, collection, navigate } = this.props
 
     return (
       <Page className="collection">
@@ -56,13 +53,12 @@ export class ImageCollection extends Component {
             </div>
           : <h1 className="collection-title">{ collection.name }</h1>
         }
-
-        <Grid
-          items={collection.items.sorted}
-          collection={collection}
-          location={location}
-          history={history}
-          />
+        {
+          <Grid
+            items={collection.items.sorted)}
+            collection={collection}
+            />
+        }
       </Page>
     )
   }

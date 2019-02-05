@@ -4,20 +4,18 @@ import Imager from '../../Imager'
 import Details from './Details'
 import Page from '../../Page'
 
-export const Viewer = ({ collection, user, match, history, location }) => {
-  let { params } = match
-
+export const Viewer = ({ collection, collectionId, itemId, user, navigate }) => {
   if (!collection.slug) {
-    collection.load(params.collection)
+    collection.load(collectionId)
   }
 
-  let image = collection.items.getById(params.id)
+  let image = collection.items.getById(itemId)
 
   return (
-    <Page back className="viewer" history={history}>
+    <Page back className="viewer" navigate={navigate}>
       <Imager
-        collection={match.params.collection}
-        id={match.params.id}
+        collection={collectionId}
+        id={itemId}
         width={900}
         />
       {

@@ -4,6 +4,7 @@ import classNames from 'classnames'
 import Item from './Item'
 
 export const Grid = ({ items, collection }) => {
+  console.log('Grid loaded', items.length, collection.name)
   let gridScale = undefined
 
   if (items.length < 8) {

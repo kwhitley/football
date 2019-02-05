@@ -21,6 +21,7 @@ input + input {
 
 .form {
   display: flex;
+  flex: auto;
   flex-direction: column;
   text-align: center;
   justify-content: center;
@@ -46,8 +47,12 @@ input + input {
   }
 
   button {
-    // margin-top: 2em;
+    margin-top: 2em;
     width: 8em;
+  }
+
+  .back + * {
+    margin-top: 5em;
   }
 }
 

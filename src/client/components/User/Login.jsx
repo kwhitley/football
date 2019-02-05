@@ -5,11 +5,11 @@ import Input from '../Controls/Input'
 import InputPassword from '../Controls/InputPassword'
 import InputEmail from '../Controls/InputEmail'
 
-export const LoginForm = ({ user, location, history, signup = false }) => {
+export const LoginForm = ({ user, navigate, signup = false }) => {
   let { newCollection } = user
 
   return (
-    <Page className="form full-page user-login" back history={history}>
+    <Page className="form full-page user-login" back navigate={navigate}>
       <InputEmail
         value={user.credentials.email}
         onChange={(value) => user.credentials.email = value}
@@ -54,7 +54,7 @@ export const LoginForm = ({ user, location, history, signup = false }) => {
       <div className="error">{ user.error }</div>
 
       <button
-        onClick={() => user.login(history, signup)}
+        onClick={() => user.login(navigate, signup)}
         disabled={user.isValidating}
         >
         { signup ? 'Sign Up' : 'Login' }

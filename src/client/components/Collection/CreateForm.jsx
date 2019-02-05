@@ -6,18 +6,18 @@ import Back from '../Back'
 
 export class CreateForm extends React.Component {
   submit = async () => {
-    let { user, history } = this.props
+    let { user } = this.props
 
     let created = await user.createCollection()
     history.push('/' + created.slug)
   }
 
   render() {
-    let { user, location, history, signup = false } = this.props
+    let { user, location, navigate, signup = false } = this.props
     const { newCollection } = user
 
     return (
-      <Page back history={history}>
+      <Page back navigate={navigate}>
         <div className="form full-page create-collection">
           <Input
             placeholder="Collection Name"

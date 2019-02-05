@@ -1,11 +1,12 @@
 import React from 'react'
 import { inject, observer } from 'mobx-react'
-import { NavLink } from 'react-router-dom'
+import { Link } from '@reach/router'
 import Imager from '../../Imager'
 
 export const GridItem = ({ app, item, collection }) =>
+<article>{ JSON.stringify(item) }</article>
   <article>
-    <NavLink to={`/${collection.slug}/${item.id}`}>
+    <Link to={`/${collection.slug}/${item.id}`}>
       <Imager
         id={item.id}
         collection={collection.slug}
@@ -13,7 +14,7 @@ export const GridItem = ({ app, item, collection }) =>
         height={400}
         />
       <label><span>{ item.name }</span></label>
-    </NavLink>
+    </Link>
   </article>
 
 export default inject('app')(observer(GridItem))

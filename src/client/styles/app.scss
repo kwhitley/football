@@ -6,6 +6,8 @@ $mobile: 35rem;
 
   > * {
     flex: auto;
+    display: flex;
+    flex-direction: column;
   }
 }
 
