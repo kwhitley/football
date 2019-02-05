@@ -39,6 +39,9 @@ const clientConfig = (isProduction, basePath = DEV_BUILD_PATH) => ({
   cache: !isProduction,
   sourceMaps: true,
   plugins: [
+    !isProduction && EnvPlugin({
+      NODE_ENV: 'development',
+    }),
     JSONPlugin(),
     [
       SassPlugin(),
@@ -82,6 +85,7 @@ const clientConfig = (isProduction, basePath = DEV_BUILD_PATH) => ({
       replaceTypeOf: false,
       uglify: true,
       bakeApiIntoBundle: true,
+      treeshake: true,
       css: {
         clean: true
       }
@@ -98,9 +102,8 @@ const serverConfig = (isProduction, basePath = DEV_BUILD_PATH) => ({
   debug: true,
   sourceMaps: true,
   plugins: [
-    isProduction && EnvPlugin({
-      NODE_ENV: 'production',
-      foo: 'bar'
+    !isProduction && EnvPlugin({
+      NODE_ENV: 'development',
     }),
     JSONPlugin(),
   ]

@@ -3,8 +3,7 @@ import sharp from 'sharp'
 import Path from 'path'
 import { download } from './dropbox'
 import { getCollection } from '../collections/collections'
-
-const isProduction = process.env.NODE_ENV === 'production'
+import { imagePath } from '../paths'
 
 // gets image locally, or downloads from dropbox and returns the saved image
 export const getBaseImage = async (requestedImagePath) => {
@@ -14,16 +13,14 @@ export const getBaseImage = async (requestedImagePath) => {
     let revisionId = decodedPath.replace(/.*\/(\w+).*/g, '$1')
 
     // begin: save final output and stream output to response
-    let savefolder = Path.join(__dirname, `../../${isProduction ? 'dist' : '.dist-dev'}/client/i`)
-    let savepath = savefolder + requestedImagePath
-    let originalpath = savefolder + '/' + collectionId + '/' + revisionId + '.jpg'
+    let savepath = imagePath + requestedImagePath
+    let originalpath = imagePath + '/' + collectionId + '/' + revisionId + '.jpg'
 
     // console.log('getBaseImage', {
     //   requestedImagePath,
     //   decodedPath,
     //   collectionId,
     //   revisionId,
-    //   savefolder,
     //   savepath,
     //   originalpath,
     // })
@@ -40,7 +37,7 @@ export const getBaseImage = async (requestedImagePath) => {
       let binary = await download(source.apiKey, revisionId)
 
       // ensure folder exists before file stream opening
-      await fs.promises.mkdir(savefolder + '/' + collectionId, { recursive: true }).catch(e => e)
+      await fs.promises.mkdir(imagePath + '/' + collectionId, { recursive: true }).catch(e => e)
 
       console.log('saving base image', originalpath)
       let image = await sharp(binary)
