@@ -1,5 +1,5 @@
 import React, { h } from 'react'
-import { render } from 'react-dom'
+import ReactDom from 'react-dom'
 import { Provider } from 'mobx-react'
 
 import App from './components/App'
@@ -10,9 +10,10 @@ import { history } from './state/routing'
 // styles
 import './styles/base.scss'
 
-render(
-  <Provider {...store}>
-    <App history={history} />
-  </Provider>,
-  document.getElementById('app')
-)
+ReactDom
+  .createRoot(document.getElementById('app'))
+  .render(
+    <Provider {...store}>
+      <App history={history} />
+    </Provider>
+  )

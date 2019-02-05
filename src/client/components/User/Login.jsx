@@ -4,14 +4,12 @@ import Page from '../Page'
 import Input from '../Controls/Input'
 import InputPassword from '../Controls/InputPassword'
 import InputEmail from '../Controls/InputEmail'
-import Inspect from '../Controls/Inspect'
 
 export const LoginForm = ({ user, navigate, signup = false }) => {
   let { newCollection } = user
 
   return (
     <Page className="form full-page user-login" back navigate={navigate}>
-      <Inspect item={user} />
       <InputEmail
         value={user.credentials.email}
         onChange={(value) => user.credentials.email = value}
