@@ -560,6 +560,11 @@ const app = express_1.default();
 // GET colections index
 app.get('/', async (req, res) => {
     let result = await collections_1.getCollections();
+    result = result.map(c => {
+        delete c.items;
+        delete c.source;
+        return c;
+    });
     if (!result) {
         return res.sendStatus(404);
     }
