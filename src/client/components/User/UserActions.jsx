@@ -5,7 +5,7 @@ import LoginLogoutLink from './LoginLogoutLink'
 import SignupLink from './SignupLink'
 import CollectionsNav from './CollectionsNav'
 
-export const UserActions = ({ user }) =>
+export const UserActions = ({ user, location }) =>
   !false//['/login', '/signup'].includes(location.pathname)
   ? <div className="user-actions">
       { user.isLoggedIn && <CollectionsNav collections={user.collections} /> }

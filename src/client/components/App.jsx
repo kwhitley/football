@@ -4,14 +4,14 @@ import { Router } from '@reach/router'
 import CollectionIndex from './Collection'
 import ItemViewer from './Collection/Item/Viewer'
 import Login from './User/Login'
-import CreateCollection from './Collection/CreateForm'
+// import CreateCollection from './Collection/CreateForm'
 import Back from './Back'
-import UserActions from './User/UserActions'
+// import UserActions from './User/UserActions'
 
-const App = ({ history }) =>
+const App = () =>
   <div className="page-content">
     <Router>
-      <CreateCollection path="create-collection" />
+      {/*<CreateCollection path="create-collection" />*/}
       <Login path="signup" signup />
       <Login path="login" />
       <ItemViewer path=":collectionId/:itemId" />
@@ -20,7 +20,7 @@ const App = ({ history }) =>
       <div default>Page not found</div>
     </Router>
 
-    <UserActions />
+    {/*<UserActions />*/}
   </div>
 
 export default App

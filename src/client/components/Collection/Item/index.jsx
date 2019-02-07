@@ -1,20 +1,19 @@
 import React from 'react'
-import { inject, observer } from 'mobx-react'
 import { Link } from '@reach/router'
 import Imager from '../../Imager'
 
-export const GridItem = ({ app, item, collection }) =>
-<article>{ JSON.stringify(item) }</article>
-  <article>
-    <Link to={`/${collection.slug}/${item.id}`}>
-      <Imager
-        id={item.id}
-        collection={collection.slug}
-        width={400}
-        height={400}
-        />
-      <label><span>{ item.name }</span></label>
-    </Link>
-  </article>
-
-export default inject('app')(observer(GridItem))
+export default function GridItem({ item }) {
+  return (
+    <article>
+      <Link to={`/${item.key}`}>
+        <Imager
+          id={item.key}
+          width={400}
+          height={400}
+          alt={item.name}
+          />
+        <label><span>{ item.name }</span></label>
+      </Link>
+    </article>
+  )
+}

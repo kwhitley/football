@@ -1,30 +1,29 @@
 import React from 'react'
-import { observer } from 'mobx-react'
 import classNames from 'classnames'
 
-const valueOnly = (fn) => (e) => fn(e.target.value)
+const valueOnly = (fn) => ({ target }) => {
+  let { name, value } = target
 
-export const Input = ({
-  value,
-  placeholder,
-  onChange,
-  className,
-  ...props,
-}) =>
-  <div className="input-group">
-    <input
-      className={classNames('input', className)}
-      type="text"
-      onChange={valueOnly(onChange)}
-      value={value || ''}
-      placeholder={placeholder}
-      {...props}
-      />
-    {
-      placeholder
-      ? <label>{ placeholder }</label>
-      : null
-    }
-  </div>
+  if (name) {
+    return fn(target)
+  } else {
+    return fn(value)
+  }
+}
 
-export default observer(Input)
+export default function Input({ name, value, onChange, label, placeholder, className, ...props }) {
+  return (
+    <section className="input-group">
+      <input
+        className={classNames('input', className)}
+        type="text"
+        name={name}
+        value={value}
+        placeholder={placeholder || name}
+        onChange={valueOnly(onChange)}
+        {...props}
+        />
+      <label>{ label || placeholder || name }</label>
+    </section>
+  )
+}

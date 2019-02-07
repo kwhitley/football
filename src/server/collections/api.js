@@ -21,6 +21,13 @@ const app = express()
 app.get('/', async (req, res) => {
   let result = await getCollections()
 
+  result = result.map(c => {
+    delete c.items
+    delete c.source
+
+    return c
+  })
+
   if (!result) {
     return res.sendStatus(404)
   }
@@ -46,6 +53,7 @@ app.get('/:slug', async (req, res) => {
   result.items = result.items.map(i => {
     delete i.filename
     delete i.size
+    i.key = slug + '/' + i.id
 
     return i
   })
