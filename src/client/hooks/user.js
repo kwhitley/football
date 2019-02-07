@@ -1,24 +1,44 @@
-import { useState, useRef, useEffect, createContext } from 'react'
-import { fetchJSON, fetchStatusIsOK } from '../utils'
+import { useState, useEffect } from 'react'
+import { globalStore, useStore } from './store'
+import { loginAction, logoutAction } from './user.actions'
+import { fetchJSON } from '../utils'
+import { navigate } from '@reach/router'
 
-export function save(id) {
-  return (json) => fetchStatusIsOK(`/api/fake-collections/${id}`, {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify(json),
-                    })
-}
+globalStore.set('user', {
+  isLoggedIn: false,
+})
 
-export function useUser() {
-  let [ user, setUser ] = useState({
+fetchJSON('/user/profile')
+  .then(profile => {
+    console.log('logging in with profile')
+    globalStore.set('user', { isLoggedIn: true, profile })
+  })
+  .catch(() => {
+    console.warn('user is not logged in')
+  })
+
+export function useLogin() {
+  let [ login, setLogin ] = useState({
     email: '',
     password: '',
     isValidating: false,
   })
+  let [ error, setError ] = useState(undefined)
+  let [ user, setUser ] = useStore('user')
+  let resetLogin = () => setLogin({ email: '', password: '', isValidating: false })
 
-  const updateFromInput = ({ name, value }) => setUser({ ...user, [name]: value })
+  useEffect(() => setError(undefined), [login])
 
-  return { user, setUser: updateFromInput }
+  return {
+    login,
+    error,
+    setLogin: ({ name, value }) => setLogin({ ...login, [name]: value }),
+    loginAction: () => loginAction({ login, resetLogin, setUser, setError }),
+    logoutAction: () => {
+      console.log('logging out')
+      logoutAction({
+        onSuccess: () => setUser({ isLoggedIn: false, profile: undefined })
+      })
+    }
+  }
 }

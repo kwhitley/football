@@ -11,7 +11,24 @@ const valueOnly = (fn) => ({ target }) => {
   }
 }
 
-export default function Input({ name, value, onChange, label, placeholder, className, ...props }) {
+export default function Input({
+  name,
+  value,
+  onChange,
+  label,
+  placeholder,
+  className,
+  validator,
+  ...props
+}) {
+  let invalid = undefined
+  let validationMessage = undefined
+
+  if (validator) {
+    invalid = validator.fn(value) ? undefined : 'true'
+    validationMessage = invalid && validator.message
+  }
+
   return (
     <section className="input-group">
       <input
@@ -19,11 +36,14 @@ export default function Input({ name, value, onChange, label, placeholder, class
         type="text"
         name={name}
         value={value}
+        invalid={invalid}
         placeholder={placeholder || name}
         onChange={valueOnly(onChange)}
         {...props}
         />
-      <label>{ label || placeholder || name }</label>
+      <label className={validationMessage ? 'hint' : undefined}>{ label || placeholder || name }
+        { validationMessage && <b className="details">{ validationMessage }</b> }
+      </label>
     </section>
   )
 }

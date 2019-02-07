@@ -24,6 +24,10 @@ input, textarea {
     content: ' x';
   }
 
+  &:invalid + label.hint:after, &[invalid] + label.hint:after {
+    content: ' did you know?';
+  }
+
   + label {
     text-transform: uppercase;
     font-size: 0.7rem;
@@ -37,9 +41,32 @@ input, textarea {
     opacity: 0;
     padding: 0 0.2rem;
 
+    &:hover {
+      b.details {
+        display: inline-block;
+      }
+    }
+
     &:after {
       font-weight: bold;
       color: #e88;
+    }
+
+    b.details {
+      display: none;
+      position: absolute;
+      font-weight: normal;
+      color: #e88;
+      font-size: 1.2em;
+      text-align: left;
+      left: 100%;
+      border: 1px solid #aaa;
+      border-radius: $borderRadius;
+      padding: 0.3em 0.5em 0.4em;
+      background-color: white;
+      text-transform: none;
+      white-space: nowrap;
+      box-shadow: 0.2em 0.2em 0.5em rgba(0,0,0,0.1);
     }
   }
 

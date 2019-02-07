@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 
 export class Store {
   constructor(initialState) {
-    console.log('creating store with initialState', initialState)
     this.state = initialState
     this.setters = []
   }
@@ -19,7 +18,6 @@ class GlobalStore {
       this[namespace].setState(value)
     } else {
       this[namespace] = new Store(value)
-      console.log('globalStore.set > creating new Store', value, this)
     }
   }
 }
@@ -27,25 +25,23 @@ class GlobalStore {
 export const globalStore = window.globalStore = new GlobalStore()
 
 export function useStore(namespace, initialState) {
-  let store = undefined
-
-  console.log('useStore:namespace', namespace, globalStore)
+  let whichStore = undefined
 
   if (globalStore.hasOwnProperty(namespace)) {
-    store = globalStore[namespace]
+    whichStore = globalStore[namespace]
   } else {
-    store = globalStore[namespace] = new Store(initialState)
+    whichStore = globalStore[namespace] = new Store(initialState)
   }
 
-  const [ state, set ] = useState(store.state)
+  const [ state, set ] = useState(whichStore.state)
 
-  if (!store.setters.includes(set)) {
-    store.setters.push(set)
+  if (!whichStore.setters.includes(set)) {
+    whichStore.setters.push(set)
   }
 
   useEffect(() => () => {
-    store.setters = store.setters.filter(setter => setter !== set)
+    whichStore.setters = whichStore.setters.filter(setter => setter !== set)
   }, [])
 
-  return [ state, store.setState ]
+  return [ state, whichStore.setState ]
 }
