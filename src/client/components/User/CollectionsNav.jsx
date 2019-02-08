@@ -1,9 +1,7 @@
 import React from 'react'
-import { observer } from 'mobx-react'
 import { Link } from '@reach/router'
-import Inspect from '../Controls/Inspect'
 
-export const CollectionsNav = ({ collections }) => {
+export default function CollectionsNav({ collections }) {
   return (
     <div className="collections">
       <h1>My Collections</h1>
@@ -24,5 +22,3 @@ export const CollectionsNav = ({ collections }) => {
     </div>
   )
 }
-
-export default observer(CollectionsNav)

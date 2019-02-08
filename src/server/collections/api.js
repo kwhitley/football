@@ -53,7 +53,6 @@ app.get('/:slug', async (req, res) => {
   result.items = result.items.map(i => {
     delete i.filename
     delete i.size
-    i.key = slug + '/' + i.id
 
     return i
   })

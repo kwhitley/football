@@ -26,7 +26,7 @@ export default function Input({
 
   if (validator) {
     invalid = validator.isValid(value) ? undefined : 'true'
-    validationMessage = invalid && validator.message
+    validationMessage = invalid && value && validator.message
   }
 
   return (
@@ -41,9 +41,13 @@ export default function Input({
         onChange={valueOnly(onChange)}
         {...props}
         />
-      <label className={validationMessage ? 'hint' : undefined}>{ label || placeholder || name }
-        { validationMessage && <b className="details">{ validationMessage }</b> }
-      </label>
+      <label className={validationMessage ? 'hint' : undefined}>{ label || placeholder || name }</label>
+      {
+        validator && validator.message &&
+        <b className={classNames('details', validationMessage && 'visible')}>
+          { validationMessage }
+        </b>
+      }
     </section>
   )
 }

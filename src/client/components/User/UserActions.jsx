@@ -1,20 +1,35 @@
 import React from 'react'
-import { observer, inject } from 'mobx-react'
-import ToggleEditMode from './ToggleEditMode'
-import LoginLogoutLink from './LoginLogoutLink'
-import SignupLink from './SignupLink'
-import CollectionsNav from './CollectionsNav'
+import { Link, navigate } from '@reach/router'
+import { useStore, useLogin } from '../../hooks'
 
-export const UserActions = ({ user, location }) =>
-  !false//['/login', '/signup'].includes(location.pathname)
-  ? <div className="user-actions">
-      { user.isLoggedIn && <CollectionsNav collections={user.collections} /> }
-      <div className="login-signup">
-        <LoginLogoutLink />
-        <SignupLink />
-      </div>
-      <ToggleEditMode />
-    </div>
-  : null
+export default function UserActions({ location }) {
+  let origin = location && location.state && location.state.origin || undefined
+  let { user, logoutAction } = useLogin()
 
-export default inject('user')(observer(UserActions))
+  return (
+    <React.Fragment>
+      {
+        user.isLoggedIn
+        ? <React.Fragment>
+            <a className="link" onClick={logoutAction}>Logout</a>
+            <Link to="/collections">Collections</Link>
+          </React.Fragment>
+        : <div className="login-signup">
+            <a
+              className="link"
+              onClick={() =>
+                navigate('/login',
+                  {
+                    state: {
+                      origin: location && location.pathname
+                    },
+                    replace: true
+                  }
+                )
+              }>Login</a>
+            <Link to="/signup">Signup</Link>
+          </div>
+      }
+    </React.Fragment>
+  )
+}

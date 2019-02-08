@@ -1,26 +1,30 @@
 import React from 'react'
 import { Router } from '@reach/router'
 
-import CollectionIndex from './Collection'
+import CollectionViewer from './Collection'
 import ItemViewer from './Collection/Item/Viewer'
 import Login from './User/Login'
-import CreateCollection from './Collection/CreateForm'
+import CollectionsList from './Collections/List'
+import CreateCollection from './Collections/Create'
 import Back from './Back'
-// import UserActions from './User/UserActions'
+import UserActions from './User/UserActions'
 
 const App = () =>
   <div className="page-content">
-    <Router>
-      <CreateCollection path="create-collection" />
+    <Router className="main">
       <Login path="signup" signup />
       <Login path="login" />
+      <CollectionsList path="collections" />
+      <CreateCollection path="collections/create" />
+      <CollectionViewer path=":collectionId" />
       <ItemViewer path=":collectionId/:itemId" />
-      <CollectionIndex path=":collectionId" />
-      <CollectionIndex path="/" />
+      <CollectionViewer path="/" />
       <div default>Page not found</div>
     </Router>
 
-    {/*<UserActions />*/}
+    <Router className="controls" primary={false}>
+      <UserActions default />
+    </Router>
   </div>
 
 export default App

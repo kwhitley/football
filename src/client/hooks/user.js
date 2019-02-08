@@ -31,6 +31,7 @@ export function useLogin(origin) {
 
   return {
     login,
+    user,
     error,
     setLogin: ({ name, value }) => setLogin({ ...login, [name]: value }),
     loginAction: () => {

@@ -1,16 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { navigate } from '@reach/router'
 import Page from '../Page'
 import LoginForm from './LoginForm'
-import Inspect from '../Controls/Inspect'
 import Input from '../Controls/Input'
-import { login } from '../../api/users'
-import {
-  fetchJSON,
-  fetchStatus,
-  fetchStatusIsOK,
-  withValue,
-  validators,
-} from '../../utils'
+import { validators } from '../../utils'
 import {
   usePrevious,
   useCollections,
@@ -22,70 +15,51 @@ import {
   globalStore,
 } from '../../hooks'
 
-globalStore.set('foo', 'bar')
-
-export const CollectionDetails = ({ collectionId }) => {
-  let { collection, isLoading } = useCollectionDetails(collectionId)
-  let [ counter, setCounter ] = useStore('counter')
-  let [ counter2] = useStore('counter2')
-  let [ user ] = useStore('user')
-
-  if (!collection) {
-    return <div>Loading...</div>
-  }
-
-  return (
-    <div>
-      <h1>{ collection.name } ({ collection.items.length }), user.isLoggedIn? { user.isLoggedIn ? 'yes' : 'no'}</h1>
-      Counter: { counter }
-      <button onClick={() => setCounter(counter + 1)}>+</button>
-      <div>Counter2: { counter2 }</div>
-    </div>
-  )
-}
-
-export default ({ location, signup = false }) => {
+export default function Login({ location, signup = false }){
+  console.log('Login')
   let origin = location.state && location.state.origin || undefined
-  let { login, setLogin, setOrigin, error, loginAction, logoutAction } = useLogin(origin)
-  let { collections, isLoading } = useCollections()
-  let [ counter, setCounter ] = useStore('counter', 0)
-  let [ counter2, setCounter2 ] = useStore('counter2', 30)
+  let { login, setLogin, error, loginAction, logoutAction } = useLogin(origin)
   let [ user ] = useStore('user')
 
-  if (origin) {
-    console.log('location', origin)
-  }
+  console.log({
+    origin,
+    user,
+    login,
+  })
+
+  useEffect(
+    () => {
+      console.log('Login:useEffect', user)
+      if (user.isLoggedIn) {
+        console.log('user already logged in, redirecting to', origin, location)
+        navigate(origin || '/')
+      }
+    }, [login, user]
+  )
 
   return (
     <Page className="form">
-      <h1>Login</h1>
-      {
-        !user.isLoggedIn
-        ? <React.Fragment>
-            <Input
-              name="email"
-              type="email"
-              value={login.email}
-              onChange={setLogin}
-              />
+      <h1>{ signup ? 'Sign Up' : 'Login' }</h1>
 
-            <Input
-              name="password"
-              type="password"
-              value={login.password}
-              onChange={setLogin}
-              validator={validators.password()}
-              />
+      <Input
+        name="email"
+        type="email"
+        value={login.email}
+        validator={validators.email()}
+        onChange={setLogin}
+        />
 
-            { error && <div className="error">{error}</div> }
+      <Input
+        name="password"
+        type="password"
+        value={login.password}
+        onChange={setLogin}
+        validator={validators.password()}
+        />
 
-            <button onClick={loginAction}>Submit</button>
-          </React.Fragment>
-        : <button onClick={logoutAction}>Logout</button>
-      }
+        { error && <div className="error">{error}</div> }
 
-      <Inspect item={login} />
-      <Inspect item={user} />
+      <button onClick={loginAction}>Submit</button>
     </Page>
   )
 }

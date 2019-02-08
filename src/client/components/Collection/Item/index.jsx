@@ -2,12 +2,12 @@ import React from 'react'
 import { Link } from '@reach/router'
 import Imager from '../../Imager'
 
-export default function GridItem({ item }) {
+export default function GridItem({ item, id }) {
   return (
     <article>
-      <Link to={`/${item.key}`}>
+      <Link to={`/${id}`}>
         <Imager
-          id={item.key}
+          id={id}
           width={400}
           height={400}
           alt={item.name}

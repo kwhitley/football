@@ -19,7 +19,6 @@ export default function ItemViewer({ collectionId, itemId, navigate }) {
         width={900}
         />
       <Details item={item} />
-      <Inspect item={item} />
     </Page>
   )
 }

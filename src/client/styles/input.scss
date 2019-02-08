@@ -24,9 +24,9 @@ input, textarea {
     content: ' x';
   }
 
-  &:invalid + label.hint:after, &[invalid] + label.hint:after {
-    content: ' Hint';
-  }
+  // &:invalid + label.hint:after, &[invalid] + label.hint:after {
+  //   content: ' read below';
+  // }
 
   + label {
     text-transform: uppercase;
@@ -41,21 +41,15 @@ input, textarea {
     opacity: 0;
     padding: 0 0.2rem;
 
-    &:hover {
-      b.details {
-        bottom: 0;
-      }
-    }
-
     &:after {
       font-weight: bold;
       color: #e88;
     }
 
-    b.details {
-      // display: none;
-      transition: all 0.2s ease-in-out;
+    + b.details {
+      transition: bottom 0.2s ease-in-out;
       position: fixed;
+      z-index: 10;
       bottom: -10em;
       left: 0;
       right: 0;
@@ -65,9 +59,13 @@ input, textarea {
       font-size: 1.2rem;
       border-top: 1px solid #aaa;
       padding: 1em;
-      background-color: rgba(255,255,255,0.75);
+      background-color: #fff;//rgba(255,255,255,0.75);
       text-transform: none;
       box-shadow: 0 -0.2em 1em rgba(0,0,0,0.1);
+
+      &:not(:empty) {
+        bottom: 0;
+      }
     }
   }
 
@@ -98,4 +96,3 @@ input, textarea {
     padding: 0;
   }
 }
-

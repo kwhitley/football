@@ -584,7 +584,6 @@ app.get('/:slug', async (req, res) => {
     result.items = result.items.map(i => {
         delete i.filename;
         delete i.size;
-        i.key = slug + '/' + i.id;
         return i;
     });
     res.json(result);
@@ -731,6 +730,12 @@ const safeUserProfile = (user) => {
     delete response.password;
     return response;
 };
+const simplifiedCollection = c => {
+    c.numItems = c.items && c.items.length;
+    delete c.source;
+    delete c.items;
+    return c;
+};
 app.get('/all', users_1.isAuthenticated, users_1.isAdmin, async (req, res) => {
     let users = await users_1.getUsersList()
         .catch((err) => res.status(400).json(err));
@@ -741,6 +746,7 @@ app.get('/profile', users_1.isAuthenticated, async (req, res) => {
     let { user } = req;
     let response = safeUserProfile(user);
     response.collections = await collections_1.getCollections({ owner: user._id });
+    response.collections = response.collections.map(simplifiedCollection);
     res.json(response);
 });
 app.get('/collections', users_1.isAuthenticated, async (req, res) => {
@@ -774,7 +780,7 @@ app.post('/login', async (req, res) => {
             console.log('getting collections where', { owner: String(user._id) });
             let collections = await collections_1.getCollections({ owner: String(user._id) });
             console.log('matching collections', collections);
-            user.collections = collections;
+            user.collections = collections.map(simplifiedCollection);
             req.session.user = user;
             res.json(safeUserProfile(user));
         }
