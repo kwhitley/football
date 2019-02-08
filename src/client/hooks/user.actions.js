@@ -1,6 +1,7 @@
 import { validators, fetchJSON, fetchStatusIsOK } from '../utils'
+import { navigate } from '@reach/router'
 
-export const loginAction = ({ login, resetLogin, setUser, setError }) => {
+export const loginAction = ({ login, resetLogin, setUser, setError, origin }) => {
   let { password } = validators
 
   if (!login.email || !login.password) {
@@ -20,7 +21,7 @@ export const loginAction = ({ login, resetLogin, setUser, setError }) => {
       body: JSON.stringify(login),
     })
     .then(profile => {
-      console.log('login success', profile)
+      console.log('login success', profile, origin)
 
       setUser({
         isLoggedIn: true,
@@ -28,6 +29,11 @@ export const loginAction = ({ login, resetLogin, setUser, setError }) => {
       })
 
       resetLogin && resetLogin()
+
+      if (origin) {
+        console.log('returning to', origin)
+        navigate(origin)
+      }
     })
     .catch(() => setError('Are you sure about that username and password?  Try again!'))
 }

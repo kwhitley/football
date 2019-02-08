@@ -1,61 +1,45 @@
-import React from 'react'
-import { observer, inject } from 'mobx-react'
+import React, { useEffect } from 'react'
 import Page from '../Page'
 import Input from '../Controls/Input'
+import Inspect from '../Controls/Inspect'
 import Back from '../Back'
 
-export class CreateForm extends React.Component {
-  submit = async () => {
-    let { user } = this.props
+import { useNewCollection, useStore, requireLogin } from '../../hooks'
 
-    let created = await user.createCollection()
-    history.push('/' + created.slug)
-  }
+export default function CreateForm({ location }) {
+  // console.log('CreateForm:location', location)
+  requireLogin(location)
 
-  render() {
-    let { user, location, navigate, signup = false } = this.props
-    const { newCollection } = user
+  let collection = useNewCollection()
+  let {
+    slug,
+    setSlug,
+    apiKey,
+    setApiKey,
+    isAvailable,
+  } = collection
 
-    return (
-      <Page back navigate={navigate}>
-        <div className="form full-page create-collection">
-          <Input
-            placeholder="Collection Name"
-            value={newCollection.name}
-            onChange={(value) => newCollection.name = value}
-            disabled={newCollection.isPending}
-            />
+  return (
+    <Page>
+      <h1>New Collection</h1>
+      <Inspect item={collection} somethingelse />
 
-          <Input
-            placeholder="Collection URL (link)"
-            value={newCollection.slug}
-            onChange={newCollection.setSlug}
-            disabled={newCollection.isPending}
-            invalid={!newCollection.isAvailable}
-            valid={newCollection.isAvailable}
-            />
+      <button onClick={() => navigate('/login')}>Navigate</button>
 
-          <Input
-            placeholder="API Key (Dropbox)"
-            value={newCollection.source.apiKey}
-            onChange={(value) => newCollection.source.apiKey = value}
-            disabled={newCollection.isPending}
-            invalid={!newCollection.isAvailable}
-            valid={newCollection.isAvailable}
-            />
+      <Input
+        placeholder="Collection Link (URL)"
+        value={slug}
+        onChange={setSlug}
+        />
 
-          <div className="error">{ user.error }</div>
+      <Input
+        placeholder="Your API Key"
+        value={apiKey}
+        onChange={setApiKey}
+        />
 
-          <button
-            onClick={this.submit}
-            disabled={newCollection.isPending}
-            >
-            Create
-          </button>
-        </div>
-      </Page>
-    )
-  }
+      <h1>isAvailable</h1>
+      { isAvailable ? 'available' : 'name taken' }
+    </Page>
+  )
 }
-
-export default inject('user')(observer(CreateForm))

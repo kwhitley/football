@@ -44,31 +44,24 @@ export const CollectionDetails = ({ collectionId }) => {
   )
 }
 
-export default ({ navigate, signup = false }) => {
-  let { login, setLogin, error, loginAction, logoutAction } = useLogin()
+export default ({ location, signup = false }) => {
+  let origin = location.state && location.state.origin || undefined
+  let { login, setLogin, setOrigin, error, loginAction, logoutAction } = useLogin(origin)
   let { collections, isLoading } = useCollections()
-  let collection = useNewCollection()
-  let {
-    slug,
-    setSlug,
-    apiKey,
-    setApiKey,
-    isAvailable,
-  } = collection
   let [ counter, setCounter ] = useStore('counter', 0)
   let [ counter2, setCounter2 ] = useStore('counter2', 30)
-  let [ foo, setFoo ] = useStore('foo' )
   let [ user ] = useStore('user')
 
-  let previousIsAvailable = usePrevious(isAvailable)
+  if (origin) {
+    console.log('location', origin)
+  }
 
   return (
-    <Page className="form full-page user-login" navigate={navigate}>
-      <h1>Counter ({ counter }, { counter2 })</h1>
+    <Page className="form full-page user-login">
+      {
+        /*<h1>Counter ({ counter }, { counter2 })</h1>
       <button onClick={() => { setCounter(counter + 1); setFoo('foo ' + (counter + 1))}}>Increment Counter1</button>
       <button onClick={() => setCounter2(counter2 + 1)}>Increment Counter2</button>
-
-      <h1>Foo = { foo }</h1>
 
       {
         isLoading ? <div>Loading...</div> :
@@ -77,11 +70,8 @@ export default ({ navigate, signup = false }) => {
         )
       }
       <Inspect item={collections.map(c => c.slug)} />
-
+    */}
       <h1>User</h1>
-      <Inspect item={login} />
-      <Inspect item={user} />
-
       {
         !user.isLoggedIn
         ? <React.Fragment>
@@ -107,29 +97,8 @@ export default ({ navigate, signup = false }) => {
         : <button onClick={logoutAction}>Logout</button>
       }
 
-      <h1>New Collection</h1>
-      <Inspect item={collection} somethingelse />
-
-      <Input
-        placeholder="Collection Link (URL)"
-        value={slug}
-        onChange={setSlug}
-        />
-
-      <Input
-        placeholder="Your API Key"
-        value={apiKey}
-        onChange={setApiKey}
-        />
-
-
-      <h1>isAvailable</h1>
-      { isAvailable ? 'available' : 'name taken' }
-
-      <h1>isAvailable (previous)</h1>
-      { previousIsAvailable ? 'prev:available' : 'prev:name taken' }
+      <Inspect item={login} />
+      <Inspect item={user} />
     </Page>
   )
 }
-
-// export default inject('user')(observer(LoginForm))

@@ -17,7 +17,7 @@ fetchJSON('/user/profile')
     console.warn('user is not logged in')
   })
 
-export function useLogin() {
+export function useLogin(origin) {
   let [ login, setLogin ] = useState({
     email: '',
     password: '',
@@ -33,7 +33,9 @@ export function useLogin() {
     login,
     error,
     setLogin: ({ name, value }) => setLogin({ ...login, [name]: value }),
-    loginAction: () => loginAction({ login, resetLogin, setUser, setError }),
+    loginAction: () => {
+      loginAction({ login, resetLogin, setUser, setError, origin })
+    },
     logoutAction: () => {
       console.log('logging out')
       logoutAction({
@@ -41,4 +43,16 @@ export function useLogin() {
       })
     }
   }
+}
+
+export function requireLogin(location) {
+  let [ user ] = useStore('user')
+
+  useEffect(
+    () => {
+      if (!user.isLoggedIn) {
+        navigate('/login', { state: { origin: location.pathname }})
+      }
+    }
+  )
 }

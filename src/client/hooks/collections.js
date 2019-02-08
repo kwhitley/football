@@ -11,7 +11,6 @@ export function useCollections() {
   let [ isLoading, setIsLoading ] = useState(false)
 
   useEffect(() => {
-    console.log('useCollections:useEffect')
     setIsLoading(true)
 
     fetchJSON('/api/collections')
@@ -31,8 +30,6 @@ export function useCollectionSlugIsAvailable(slug) {
   let [ isAvailable, setIsAvailable ] = useState(false)
 
   useEffect(() => {
-    console.log('useCollectionSlugIsAvailable', slug)
-
     if (slug.length < 5) {
       return setIsAvailable(false)
     }
