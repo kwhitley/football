@@ -25,7 +25,7 @@ input, textarea {
   }
 
   &:invalid + label.hint:after, &[invalid] + label.hint:after {
-    content: ' did you know?';
+    content: ' Hint';
   }
 
   + label {
@@ -43,7 +43,7 @@ input, textarea {
 
     &:hover {
       b.details {
-        display: inline-block;
+        bottom: 0;
       }
     }
 
@@ -53,20 +53,21 @@ input, textarea {
     }
 
     b.details {
-      display: none;
-      position: absolute;
+      // display: none;
+      transition: all 0.2s ease-in-out;
+      position: fixed;
+      bottom: -10em;
+      left: 0;
+      right: 0;
       font-weight: normal;
+      text-align: center;
       color: #e88;
-      font-size: 1.2em;
-      text-align: left;
-      left: 100%;
-      border: 1px solid #aaa;
-      border-radius: $borderRadius;
-      padding: 0.3em 0.5em 0.4em;
-      background-color: white;
+      font-size: 1.2rem;
+      border-top: 1px solid #aaa;
+      padding: 1em;
+      background-color: rgba(255,255,255,0.75);
       text-transform: none;
-      white-space: nowrap;
-      box-shadow: 0.2em 0.2em 0.5em rgba(0,0,0,0.1);
+      box-shadow: 0 -0.2em 1em rgba(0,0,0,0.1);
     }
   }
 

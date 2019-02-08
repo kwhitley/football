@@ -2,14 +2,17 @@ import { validators, fetchJSON, fetchStatusIsOK } from '../utils'
 import { navigate } from '@reach/router'
 
 export const loginAction = ({ login, resetLogin, setUser, setError, origin }) => {
-  let { password } = validators
+  let {
+    isValid,
+    message: passwordMessage,
+  } = validators.password()
 
   if (!login.email || !login.password) {
     return setError('You need a username and password to login.')
   }
 
-  if (!validators.password.fn(login.password)) {
-    return setError(validators.password.message)
+  if (!isValid(login.password)) {
+    return setError(passwordMessage)
   }
 
   fetchJSON('/user/login',

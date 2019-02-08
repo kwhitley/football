@@ -57,21 +57,8 @@ export default ({ location, signup = false }) => {
   }
 
   return (
-    <Page className="form full-page user-login">
-      {
-        /*<h1>Counter ({ counter }, { counter2 })</h1>
-      <button onClick={() => { setCounter(counter + 1); setFoo('foo ' + (counter + 1))}}>Increment Counter1</button>
-      <button onClick={() => setCounter2(counter2 + 1)}>Increment Counter2</button>
-
-      {
-        isLoading ? <div>Loading...</div> :
-        collections.map((c, i) =>
-          <CollectionDetails key={c.slug} collectionId={c.slug} />
-        )
-      }
-      <Inspect item={collections.map(c => c.slug)} />
-    */}
-      <h1>User</h1>
+    <Page className="form">
+      <h1>Login</h1>
       {
         !user.isLoggedIn
         ? <React.Fragment>
@@ -87,7 +74,7 @@ export default ({ location, signup = false }) => {
               type="password"
               value={login.password}
               onChange={setLogin}
-              validator={validators.password}
+              validator={validators.password()}
               />
 
             { error && <div className="error">{error}</div> }

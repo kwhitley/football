@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 
+// prefix for localStorage
 const GLOBALSTORAGE_PREFIX = 'globalstore:'
 
+// individual Store implementation for tracking values/setters
 export class Store {
   constructor({ value, namespace, persist }) {
     this.state = value
@@ -29,7 +31,8 @@ export class Store {
   }
 }
 
-class GlobalStore {
+// namespaced index of requested Stores
+export class GlobalStore {
   set = (namespace, value, options = {}) => {
     let { persist } = options
     if (this.hasOwnProperty(namespace)) {
@@ -42,8 +45,10 @@ class GlobalStore {
   persist = (...args) => this.set(...args, { persist: true })
 }
 
+// shared instantiation of GlobalStore
 export const globalStore = window.globalStore = new GlobalStore()
 
+// the actual hook
 export function useStore(namespace, value, options = {}) {
   let whichStore = undefined
   let { persist } = options

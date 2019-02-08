@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react'
+import { navigate } from '@reach/router'
 import Page from '../Page'
 import Input from '../Controls/Input'
 import Inspect from '../Controls/Inspect'
 import Back from '../Back'
-
-import { useNewCollection, useStore, requireLogin } from '../../hooks'
+import { validators } from '../../utils'
+import { useNewCollection, requireLogin } from '../../hooks'
 
 export default function CreateForm({ location }) {
   let isLoggedIn = requireLogin(location)
@@ -16,16 +17,19 @@ export default function CreateForm({ location }) {
     apiKey,
     setApiKey,
     isAvailable,
+    isValid,
+    createCollectionAction,
   } = collection
 
   return (
-    <Page visible={isLoggedIn}>
-      <h1>New Collection</h1>
-      <Inspect item={collection} somethingelse />
+    <Page className="form" visible={isLoggedIn}>
+      <h1>Create a
+      New Collection</h1>
 
       <Input
         placeholder="Collection Link (URL)"
         value={slug}
+        validator={validators.collectionName(isAvailable)}
         onChange={setSlug}
         />
 
@@ -35,8 +39,7 @@ export default function CreateForm({ location }) {
         onChange={setApiKey}
         />
 
-      <h1>isAvailable</h1>
-      { isAvailable ? 'available' : 'name taken' }
+      <button disabled={!isValid} onClick={createCollectionAction}>Create Collection</button>
     </Page>
   )
 }

@@ -29,8 +29,6 @@ export function useLogin(origin) {
     setLogin({ email: '', password: '', isValidating: false })
   }
 
-  // useEffect(() => setError(undefined), [login])
-
   return {
     login,
     error,
@@ -50,14 +48,10 @@ export function useLogin(origin) {
 export function requireLogin(location) {
   let [ user ] = useStore('user')
 
-  useEffect(
-    () => {
-      if (!user.isLoggedIn) {
-        console.log('user not logged in', user, 'redirecting to login')
-        navigate('/login', { state: { origin: location.pathname }, replace: true })
-      }
-    }
-  )
+  if (!user.isLoggedIn) {
+    console.log('user not logged in', user, 'redirecting to login')
+    navigate('/login', { state: { origin: location.pathname }, replace: true })
+  }
 
   return user.isLoggedIn
 }

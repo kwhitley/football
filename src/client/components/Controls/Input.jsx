@@ -25,7 +25,7 @@ export default function Input({
   let validationMessage = undefined
 
   if (validator) {
-    invalid = validator.fn(value) ? undefined : 'true'
+    invalid = validator.isValid(value) ? undefined : 'true'
     validationMessage = invalid && validator.message
   }
 

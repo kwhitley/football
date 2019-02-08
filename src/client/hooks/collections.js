@@ -4,6 +4,7 @@ import {
   fetchStatusIsOK,
   withValue,
   withSlugifiedValue,
+  validators,
 } from '../utils'
 
 export function useCollections() {
@@ -82,11 +83,14 @@ export function useItemDetails({ collectionId, itemId }) {
 export function useNewCollection() {
   let [ slug, setSlug ] = useState('')
   let [ apiKey, setApiKey ] = useState('')
+  let isAvailable = useCollectionSlugIsAvailable(slug)
+  let isValid = isAvailable
 
   return {
     apiKey,
     setApiKey,
     slug,
+    isValid,
     setSlug: withSlugifiedValue(setSlug),
     isAvailable: useCollectionSlugIsAvailable(slug),
   }
