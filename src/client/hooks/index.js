@@ -1,4 +1,5 @@
 export * from './collections'
+export * from './component-size'
 export * from './images'
 export * from './misc'
 export * from './store'

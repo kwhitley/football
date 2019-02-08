@@ -1,8 +1,8 @@
 .live-edit {
-  box-sizing: border-box;
+  // box-sizing: border-box;
   position: relative;
   border: none;
-  border-bottom: 2px dashed transparent;
+  // border-bottom: 2px dashed transparent;
   margin: 0;
   background-color: transparent;
   border-radius: 0;
@@ -13,16 +13,20 @@
   position: relative;
   font-size: 1.5rem;
   resize: none;
+  overflow-y: hidden;
+  line-height: 1em;
+  transition: color 0.2s ease-in-out;
 
   &:hover {
     border-color: #21b5f0;
-  }
-
-  &:focus {
     color: #3ae;
   }
 
-  &::placeholder {
-    color: #ccc;
+  &:focus {
+    // color: #3ae;
+  }
+
+  &::placeholder, .live-edit + label {
+    color: #ccc !important;
   }
 }

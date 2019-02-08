@@ -1,14 +1,28 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import md from 'react-markings'
-// import LiveEdit from '../../Controls/LiveEdit'
+
+import LiveEdit from '../../Controls/LiveEdit'
+import Input from '../../Controls/Input'
+import Inspect from '../../Controls/Inspect'
 
 export default function ImageDetails({ item }) {
+  let [ details, setDetails ] = useState(item)
+
   return (
     <div className="image-details">
       <h1>{ item.name }</h1>
       <div className="story">
         { md([item.story]) }
       </div>
+
+      <LiveEdit
+        className="h1"
+        value={details.name}
+        onChange={name => setDetails({ ...details, name })}
+        placeholder="Image Title"
+        />
+
+      <Inspect item={details} />
     </div>
   )
 }
