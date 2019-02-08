@@ -7,7 +7,7 @@ export default function ImageCollection({ collectionId = 'krwhitley' }) {
   let { collection, isLoading } = useCollectionDetails(collectionId)
 
   if (!collection || isLoading) {
-    return <div>Loading...</div>
+    return false
   }
 
   return (

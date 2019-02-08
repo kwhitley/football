@@ -3,7 +3,6 @@ import classNames from 'classnames'
 import Item from './Item'
 
 export default function Grid({ items }) {
-  console.log('Grid rendered', items.length)
   let gridScale = undefined
 
   if (items.length < 8) {

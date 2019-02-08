@@ -28,6 +28,8 @@ export const loginAction = ({ login, resetLogin, setUser, setError, origin }) =>
         profile,
       })
 
+      setError()
+
       resetLogin && resetLogin()
 
       if (origin) {
@@ -35,7 +37,10 @@ export const loginAction = ({ login, resetLogin, setUser, setError, origin }) =>
         navigate(origin)
       }
     })
-    .catch(() => setError('Are you sure about that username and password?  Try again!'))
+    .catch(() => {
+      setUser({ profile: undefined, isLoggedIn: false })
+      setError('Are you sure about that username and password?  Try again!')
+    })
 }
 
 export const logoutAction = ({ onSuccess }) => {

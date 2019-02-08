@@ -7,10 +7,9 @@ import Inspect from '../../Controls/Inspect'
 
 export default function ItemViewer({ collectionId, itemId, navigate }) {
   let { item, isLoading } = useItemDetails({ collectionId, itemId })
-  console.log('ItemViewer', collectionId, itemId, item, isLoading)
 
   if (!item || isLoading) {
-    return <div>Loading...</div>
+    return false
   }
 
   return (

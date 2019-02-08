@@ -4,17 +4,16 @@ import { loginAction, logoutAction } from './user.actions'
 import { fetchJSON } from '../utils'
 import { navigate } from '@reach/router'
 
-globalStore.set('user', {
-  isLoggedIn: false,
-})
+globalStore.persist('user', { isLoggedIn: true })
 
 fetchJSON('/user/profile')
   .then(profile => {
-    console.log('logging in with profile')
+    console.log('profile fetched')
     globalStore.set('user', { isLoggedIn: true, profile })
   })
   .catch(() => {
-    console.warn('user is not logged in')
+    console.warn('user profile could not be found')
+    globalStore.set('user', { isLoggedIn: false, profile: undefined })
   })
 
 export function useLogin(origin) {
@@ -25,9 +24,12 @@ export function useLogin(origin) {
   })
   let [ error, setError ] = useState(undefined)
   let [ user, setUser ] = useStore('user')
-  let resetLogin = () => setLogin({ email: '', password: '', isValidating: false })
+  let resetLogin = () => {
+    setError()
+    setLogin({ email: '', password: '', isValidating: false })
+  }
 
-  useEffect(() => setError(undefined), [login])
+  // useEffect(() => setError(undefined), [login])
 
   return {
     login,
@@ -51,8 +53,11 @@ export function requireLogin(location) {
   useEffect(
     () => {
       if (!user.isLoggedIn) {
-        navigate('/login', { state: { origin: location.pathname }})
+        console.log('user not logged in', user, 'redirecting to login')
+        navigate('/login', { state: { origin: location.pathname }, replace: true })
       }
     }
   )
+
+  return user.isLoggedIn
 }
