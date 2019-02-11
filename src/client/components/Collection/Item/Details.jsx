@@ -33,12 +33,6 @@ export function Editable({
   children,
   ...props,
 }) {
-  // let { update, setUpdate, isDirty } = useUpdate({
-  //   item: value,
-  //   // path: `/api/collections/${collectionId}/items/${item.id}`,
-  // })
-
-  console.log('creating Editable', value)
   if (!editing) {
     return children
   }
@@ -58,25 +52,29 @@ export default function ImageDetails({ collectionId, item, updateItemAction }) {
     item,
     path: `/api/collections/${collectionId}/items/${item.id}`,
   })
-  let [ preview, setPreview ] = useState('false')
-  const togglePreview = () => setPreview(!preview)
+  let [ editMode, setEditMode ] = useState(false)
+  const toggleEditMode = () => setEditMode(!editMode)
 
   // let [ update, setUpdate ] = useState(item)
   let isOwner = ownsCollection(collectionId)
-  let editable = !preview && isOwner
+  let editable = isOwner && editMode
 
+  console.log('editMode', editMode)
   return (
     <div className="image-details">
-      <div className="actions">
-        <ActionIconToggle
-          onClick={togglePreview}
-          state={preview}
-          states={{
-            [true]: <FiEye />,
-            [false]: <FiEdit />,
-          }}>
-        </ActionIconToggle>
-      </div>
+      {
+        isOwner &&
+        <div className="actions">
+          <ActionIconToggle
+            onClick={toggleEditMode}
+            state={editMode}
+            states={{
+              [true]: <FiEye />,
+              [false]: <FiEdit />,
+            }}>
+          </ActionIconToggle>
+        </div>
+      }
 
       <div className="content">
         <Editable
@@ -84,7 +82,7 @@ export default function ImageDetails({ collectionId, item, updateItemAction }) {
           placeholder="Image Title"
           value={update.name}
           onChange={name => setUpdate({ ...update, name })}
-          editing={editable}
+          editing={editMode}
           >
           <h1>{ update.name }</h1>
         </Editable>
@@ -94,7 +92,7 @@ export default function ImageDetails({ collectionId, item, updateItemAction }) {
           placeholder="Story or Description"
           value={update.story}
           onChange={story => setUpdate({ ...update, story })}
-          editing={editable}
+          editing={editMode}
           >
           <div className="story">
             { md([update.story]) }
@@ -135,7 +133,7 @@ export default function ImageDetails({ collectionId, item, updateItemAction }) {
       }
 */}
       {
-        editable &&
+        editMode &&
         <button
           disabled={!isDirty}
           onClick={() => {
