@@ -2,6 +2,37 @@ $storyPaddingRight: 1em;
 
 .image-details {
   margin: 1.7rem 0;
+  display: flex;
+  flex-flow: row-reverse wrap;
+
+  > * {
+    flex: 1 80%;
+  }
+
+  .actions {
+    flex: 0 1 1em;
+    align-self: stretch;
+
+    > * {
+      font-size: 2rem;
+      cursor: pointer;
+    }
+  }
+
+  @media screen and (max-width: 30rem) {
+    flex-flow: column;
+
+    > * {
+      flex: auto;
+    }
+
+    .actions {
+      flex: auto;
+      padding-bottom: 0.5em;
+      text-align: right;
+    }
+  }
+
 
   *::placeholder {
     text-transform: none;
