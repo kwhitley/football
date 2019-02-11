@@ -6,6 +6,7 @@ import {
   withSlugifiedValue,
   validators,
 } from '../utils'
+import { updateItemAction } from './collection.actions'
 
 export function useCollections() {
   let [ collections, setCollections ] = useState([])
@@ -77,7 +78,11 @@ export function useItemDetails({ collectionId, itemId }) {
       })
   }, [collectionId, itemId])
 
-  return { item, isLoading }
+  return {
+    item,
+    isLoading,
+    updateItemAction: updateItemAction({ collectionId, itemId }),
+  }
 }
 
 export function useNewCollection() {

@@ -129,9 +129,8 @@ app.get('/:slug/items/:id', async (req, res) => {
 app.patch('/:slug/items/:id', isAuthenticated, async (req, res) => {
   let { slug, id } = req.params
   let { user } = req
-  let content = req.body
 
-  let update = await updateItemInCollection({ slug, owner: user._id })(id)(content)
+  let update = await updateItemInCollection({ slug, owner: user._id })(id)(req.body)
                       .catch(err => console.error(err))
 
   let results = await getCollection({ slug })

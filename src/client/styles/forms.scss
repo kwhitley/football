@@ -50,19 +50,19 @@ input + input {
     margin-top: 0.6em;
   }
 
-  button {
-    background-color: #eee;
-    margin-top: 2em;
-    min-width: 8em;
-
-    &:disabled {
-      background-color: #ccc;
-      opacity: 0.15;
-    }
-  }
-
   .back + * {
     margin-top: 5em;
+  }
+}
+
+button {
+  background-color: #eee;
+  margin-top: 2em;
+  min-width: 8em;
+
+  &:disabled {
+    background-color: #ccc;
+    opacity: 0.15;
   }
 }
 

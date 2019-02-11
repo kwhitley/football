@@ -46,6 +46,19 @@ export function useLogin(origin) {
   }
 }
 
+export function ownsCollection(collectionId) {
+  let [ user ] = useStore('user')
+
+  if (user.isLoggedIn) {
+    let ownedCollections = user.profile.collections
+    console.log('ownedCollections', ownedCollections)
+    console.log('checking against', collectionId)
+    return !!ownedCollections.find(c => c.slug === collectionId))
+  }
+
+  return false
+}
+
 export function requireLogin(location) {
   let [ user ] = useStore('user')
 
