@@ -20,7 +20,7 @@ export default class User {
   }
   @observable newCollection = new Collection()
 
-  @action login = async (history, signup = false) => {
+  @action login = async (navigate, signup = false) => {
     let { email, password, passwordConfirmation, apiKey } = this.credentials
     let { isAvailable, source, slug } = this.newCollection
 
@@ -68,7 +68,7 @@ export default class User {
         this.createCollection()
       }
       // console.log('user', this.profile.email, 'logged in')
-      history.push('/')
+      navigate('/')
     } else {
       this.error = errorMessage(this.statusCode)
     }

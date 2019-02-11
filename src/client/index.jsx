@@ -1,17 +1,11 @@
-import React, { h, render } from 'react'
-import { Provider } from 'mobx-react'
+import React, { h } from 'react'
+import ReactDom from 'react-dom'
 
 import App from './components/App'
-import store from './state'
-import { history } from './state/routing'
-import './utils/zoomfix'
+// import store from './state'
+// import './utils/zoomfix'
 
 // styles
 import './styles/base.scss'
 
-render(
-  <Provider {...store}>
-    <App history={history} />
-  </Provider>,
-  document.getElementById('app')
-)
+ReactDom.render(<App />, document.getElementById('app'))

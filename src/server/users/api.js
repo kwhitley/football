@@ -23,6 +23,14 @@ const safeUserProfile = (user) => {
   return response
 }
 
+const simplifiedCollection = c => {
+  c.numItems = c.items && c.items.length
+  delete c.source
+  delete c.items
+
+  return c
+}
+
 app.get('/all', isAuthenticated, isAdmin, async (req, res) => {
   let users = await getUsersList()
     .catch((err) => res.status(400).json(err))
@@ -36,6 +44,7 @@ app.get('/profile', isAuthenticated, async (req, res) => {
   let { user } = req
   let response = safeUserProfile(user)
   response.collections = await getCollections({ owner: user._id })
+  response.collections = response.collections.map(simplifiedCollection)
 
   res.json(response)
 })
@@ -82,7 +91,7 @@ app.post('/login', async (req, res) => {
 
       console.log('matching collections', collections)
 
-      user.collections = collections
+      user.collections = collections.map(simplifiedCollection)
       req.session.user = user
 
       res.json(safeUserProfile(user))

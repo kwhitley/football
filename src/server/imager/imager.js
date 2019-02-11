@@ -1,9 +1,7 @@
 import fs from 'fs'
 import sharp from 'sharp'
-import Path from 'path'
 import { getBaseImage } from './get-base-image'
-
-const isProduction = process.env.NODE_ENV === 'production'
+import { imagePath } from '../paths'
 
 export const getImage = (requestedImagePath) => {
   // console.log('getImage:', requestedImagePath)
@@ -29,8 +27,7 @@ export const getImage = (requestedImagePath) => {
                     }, {})
 
     // begin: save final output and stream output to response
-    let savefolder = Path.join(__dirname, `../../${isProduction ? 'dist' : '.dist-dev'}/client/i`)
-    let savepath = savefolder + requestedImagePath
+    let savepath = imagePath + requestedImagePath
 
     // console.log('getImage', {
     //   requestedImagePath,
@@ -39,7 +36,6 @@ export const getImage = (requestedImagePath) => {
     //   optionsSegment,
     //   revisionId,
     //   options,
-    //   savefolder,
     //   savepath,
     // })
 

@@ -1,19 +1,19 @@
 import React from 'react'
-import { inject, observer } from 'mobx-react'
-import { NavLink } from 'react-router-dom'
+import { Link } from '@reach/router'
 import Imager from '../../Imager'
 
-export const GridItem = ({ app, item, collection }) =>
-  <article>
-    <NavLink to={`/${collection.slug}/${item.id}`}>
-      <Imager
-        id={item.id}
-        collection={collection.slug}
-        width={400}
-        height={400}
-        />
-      <label><span>{ item.name }</span></label>
-    </NavLink>
-  </article>
-
-export default inject('app')(observer(GridItem))
+export default function GridItem({ item, id }) {
+  return (
+    <article>
+      <Link to={`/${id}`}>
+        <Imager
+          id={id}
+          width={400}
+          height={400}
+          alt={item.name}
+          />
+        <label><span>{ item.name }</span></label>
+      </Link>
+    </article>
+  )
+}

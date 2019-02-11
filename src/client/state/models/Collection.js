@@ -115,9 +115,9 @@ export default class Collection {
   }
 
   @action async load(slug) {
-    console.log('loading collection', slug, this.slug)
+    console.log('loading collection', JSON.stringify({ new: slug, existing: this.slug }))
     // if (!slug || slug === this.slug) {
-    //   return false
+    //   return true
     // }
 
     if (!slug) {

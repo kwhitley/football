@@ -7,7 +7,7 @@ export default function InputEmail(props) {
       className="email"
       placeholder="email address"
       pattern=".+@.{2,}\..{2,}"
-      autocapitalize="none"
+      autoCapitalize="none"
       required
       {...props}
     />

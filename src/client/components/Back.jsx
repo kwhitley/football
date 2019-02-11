@@ -1,8 +1,8 @@
 import React from 'react'
 
-export const Back = ({ history, location }) => {
-  // console.log('Back:history', history, location)
-  return <div className="back" onClick={history.goBack} />
+export const Back = ({ navigate, to = '../' }) => {
+  const goBack = () => navigate(to)
+  return <div className="back" onClick={goBack} />
 }
 
 export default Back

@@ -21,11 +21,17 @@ input + input {
 
 .form {
   display: flex;
+  flex: auto;
   flex-direction: column;
   text-align: center;
   justify-content: center;
   align-items: center;
-  padding-bottom: 10%;
+  padding: 0 3rem 10%;
+
+  h1:first-child {
+    color: #ccc;
+    margin-bottom: 1em;
+  }
 
   &.full-page {
     flex: auto;
@@ -33,21 +39,30 @@ input + input {
 
   .error:not(:empty) {
     margin-top: 2em;
-    width: calc(20% + 8rem);
   }
 
   .input-group {
-    width: calc(20% + 10rem);
     text-align: center;
+    width: 100%;
   }
 
   .input-group + .input-group {
     margin-top: 0.6em;
   }
 
-  button {
-    // margin-top: 2em;
-    width: 8em;
+  .back + * {
+    margin-top: 5em;
+  }
+}
+
+button {
+  background-color: #eee;
+  margin-top: 2em;
+  min-width: 8em;
+
+  &:disabled {
+    background-color: #ccc;
+    opacity: 0.15;
   }
 }
 

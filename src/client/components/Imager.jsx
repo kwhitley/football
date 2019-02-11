@@ -1,28 +1,17 @@
 import React, { Component } from 'react'
-import ImageService from '../services/images.js'
-import { observer, inject } from 'mobx-react'
+import { useImageWithPreview } from '../hooks'
 
-@observer class Image extends Component {
-  componentWillMount() {
-    let { width, height, quality, id, collection } = this.props
-    let params = []
+export default function Image({ id, alt, width, height, quality }) {
+  const params = []
+  if (width) params.push(`width=${width}`)
+  if (height) params.push(`height=${height}`)
+  if (quality) params.push(`quality=${quality}`)
 
-    if (width) params.push(`width=${width}`)
-    if (height) params.push(`height=${height}`)
-    if (quality) params.push(`quality=${quality}`)
+  const { src, orientation } = useImageWithPreview(`/i/${id}::${params.join(',')}.jpg`)
 
-    this.path = `/i/${collection}/${id}::${params.join(',')}.jpg`
-  }
-
-  componentWillUnmount() {
-    ImageService.unload(this.path)
-  }
-
-  render() {
-    let src = ImageService.getImage(this.path)
-
-    return src ? <img src={src} /> : <div className="loading" />
-  }
+  return (
+    <img src={src} alt={alt} className={orientation} />
+  )
 }
 
 export default Image

@@ -1,31 +1,53 @@
 import React from 'react'
-import { observer } from 'mobx-react'
 import classNames from 'classnames'
 
-const valueOnly = (fn) => (e) => fn(e.target.value)
+const valueOnly = (fn) => ({ target }) => {
+  let { name, value } = target
 
-export const Input = ({
+  if (name) {
+    return fn(target)
+  } else {
+    return fn(value)
+  }
+}
+
+export default function Input({
+  name,
   value,
-  placeholder,
   onChange,
+  label,
+  placeholder,
   className,
-  ...props,
-}) =>
-  <div className="input-group">
-    <input
-      autocomplete
-      className={classNames('input', className)}
-      type="text"
-      onChange={valueOnly(onChange)}
-      value={value}
-      placeholder={placeholder}
-      {...props}
-      />
-    {
-      placeholder
-      ? <label>{ placeholder }</label>
-      : null
-    }
-  </div>
+  validator,
+  ...props
+}) {
+  let invalid = undefined
+  let validationMessage = undefined
 
-export default observer(Input)
+  if (validator) {
+    invalid = validator.isValid(value) ? undefined : 'true'
+    validationMessage = invalid && value && validator.message
+  }
+
+  return (
+    <section className="input-group">
+      <input
+        className={classNames('input', className)}
+        type="text"
+        name={name}
+        value={value}
+        invalid={invalid}
+        placeholder={placeholder || name}
+        onChange={valueOnly(onChange)}
+        {...props}
+        />
+      <label className={validationMessage ? 'hint' : undefined}>{ label || placeholder || name }</label>
+      {
+        validator && validator.message &&
+        <b className={classNames('details', validationMessage && 'visible')}>
+          { validationMessage }
+        </b>
+      }
+    </section>
+  )
+}

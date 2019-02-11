@@ -74,6 +74,8 @@ pre {
   font-size: 1rem;
   border-radius: $borderRadius;
   text-align: left;
+  max-width: 100%;
+  overflow: scroll;
 }
 
 #app {
@@ -93,10 +95,6 @@ pre {
     @media screen and (min-width: $maxPageWidth) {
       padding: 2rem;
     }
-  }
-
-  @media screen and (max-width: 30rem) {
-    font-size: 0.7em;
   }
 }
 

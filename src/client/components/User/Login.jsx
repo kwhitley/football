@@ -1,66 +1,65 @@
-import React from 'react'
-import { observer, inject } from 'mobx-react'
+import React, { useState, useRef, useEffect } from 'react'
+import { navigate } from '@reach/router'
 import Page from '../Page'
+import LoginForm from './LoginForm'
 import Input from '../Controls/Input'
-import InputPassword from '../Controls/InputPassword'
-import InputEmail from '../Controls/InputEmail'
+import { validators } from '../../utils'
+import {
+  usePrevious,
+  useCollections,
+  useCollectionSlugIsAvailable,
+  useCollectionDetails,
+  useNewCollection,
+  useLogin,
+  useStore,
+  globalStore,
+} from '../../hooks'
 
-export const LoginForm = ({ user, location, history, signup = false }) => {
-  let { newCollection } = user
+export default function Login({ location, signup = false }){
+  console.log('Login')
+  let origin = location.state && location.state.origin || undefined
+  let { login, setLogin, error, loginAction, logoutAction } = useLogin(origin)
+  let [ user ] = useStore('user')
+
+  console.log({
+    origin,
+    user,
+    login,
+  })
+
+  useEffect(
+    () => {
+      console.log('Login:useEffect', user)
+      if (user.isLoggedIn) {
+        console.log('user already logged in, redirecting to', origin, location)
+        navigate(origin || '/')
+      }
+    }, [login, user]
+  )
 
   return (
-    <Page className="form full-page user-login" back history={history}>
-      <InputEmail
-        value={user.credentials.email}
-        onChange={(value) => user.credentials.email = value}
-        disabled={user.isValidating}
+    <Page className="form">
+      <h1>{ signup ? 'Sign Up' : 'Login' }</h1>
+
+      <Input
+        name="email"
+        type="email"
+        value={login.email}
+        validator={validators.email()}
+        onChange={setLogin}
         />
-      <InputPassword
-        value={user.credentials.password}
-        onChange={(value) => user.credentials.password = value}
-        disabled={user.isValidating}
-      />
 
-      {
-        signup && <InputPassword
-                    value={user.credentials.passwordConfirmation}
-                    onChange={(value) => user.credentials.passwordConfirmation = value}
-                    placeholder="password (confirmation)"
-                    disabled={user.isValidating}
-                  />
-      }
-      {
-        signup && <Input
-                    placeholder="Collection URL (link)"
-                    value={newCollection.slug}
-                    onChange={newCollection.setSlug}
-                    disabled={newCollection.isValidating}
-                    invalid={!newCollection.isAvailable}
-                    valid={newCollection.isAvailable}
-                    />
-      }
-      {
-        signup && <Input
-                    value={newCollection.source.apiKey}
-                    onChange={(value) => newCollection.source.apiKey = value}
-                    id="apiKey"
-                    placeholder="Dropbox API Key"
-                    disabled={user.isValidating}
-                    autocapitalize="none"
-                    required
-                  />
-      }
+      <Input
+        name="password"
+        type="password"
+        value={login.password}
+        onChange={setLogin}
+        validator={validators.password()}
+        />
 
-      <div className="error">{ user.error }</div>
+        { error && <div className="error">{error}</div> }
 
-      <button
-        onClick={() => user.login(history, signup)}
-        disabled={user.isValidating}
-        >
-        { signup ? 'Sign Up' : 'Login' }
-      </button>
+      <button onClick={loginAction}>Submit</button>
     </Page>
   )
 }
-
-export default inject('user')(observer(LoginForm))

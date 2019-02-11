@@ -13,6 +13,7 @@ import fs from 'fs'
 import favicon from 'serve-favicon'
 import { connectDatabase } from './db'
 import { cacheWhenIdle, checkForUpdates } from './imager/cache-warmer'
+import { clientPath } from './paths'
 
 // API
 import api from './api'
@@ -25,7 +26,6 @@ const isProduction = process.env.NODE_ENV === 'production'
 
 // force SSL on production
 app.use(sslRedirect([
-  'development',
   'production',
 ]))
 
@@ -40,9 +40,9 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(compression())
 
 // static serving from /dist/client
-const staticPath = path.join(__dirname, `../${isProduction ? 'dist' : '.dist-dev'}/client`)
-console.log(`serving static content from ${staticPath}`)
-app.use(express.static(staticPath))
+
+console.log(`serving static content from ${clientPath}`)
+app.use(express.static(clientPath))
 app.use(favicon(path.join(__dirname, '../src/client/images', 'favicon.ico')))
 
 // cache and sync collections when idle
@@ -55,8 +55,8 @@ app.use('/i', imagerApi)
 
 // all other client requests that lack an extension redirected to client
 app.get(/.*(?<!\.\w{1,4})$/, (req, res) => {
-  console.log('redirecting request for', req.path, 'to', staticPath + '/index.html')
-  res.sendFile('/index.html', { root: staticPath })
+  console.log('redirecting request for', req.path, 'to', clientPath + '/index.html')
+  res.sendFile('/index.html', { root: clientPath })
 })
 
 const serverPort = process.env.PORT || 3000

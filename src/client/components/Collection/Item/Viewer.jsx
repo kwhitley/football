@@ -1,30 +1,27 @@
 import React from 'react'
-import { observer, inject } from 'mobx-react'
 import Imager from '../../Imager'
 import Details from './Details'
 import Page from '../../Page'
+import { useItemDetails } from '../../../hooks'
 
-export const Viewer = ({ collection, user, match, history, location }) => {
-  let { params } = match
+export default function ItemViewer({ collectionId, itemId, navigate }) {
+  let { item, updateItemAction, isLoading } = useItemDetails({ collectionId, itemId })
 
-  if (!collection.slug) {
-    collection.load(params.collection)
+  if (!item || isLoading) {
+    return false
   }
 
-  let image = collection.items.getById(params.id)
-
   return (
-    <Page back className="viewer" history={history}>
+    <Page back className="viewer" navigate={navigate}>
       <Imager
-        collection={match.params.collection}
-        id={match.params.id}
+        id={collectionId + '/' + itemId}
         width={900}
         />
-      {
-        image && <Details image={image} />
-      }
+      <Details
+        collectionId={collectionId}
+        item={item}
+        updateItemAction={updateItemAction}
+        />
     </Page>
   )
 }
-
-export default inject('collection', 'user')(observer(Viewer))

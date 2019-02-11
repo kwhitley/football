@@ -2,7 +2,6 @@
 FuseBox.target = "server";
 // allowSyntheticDefaultImports
 FuseBox.sdep = true;
-Object.assign(process.env, {"NODE_ENV":"production","foo":"bar"})
 FuseBox.pkg("default", {}, function(___scope___){
 ___scope___.file("server/index.js", function(exports, require, module, __filename, __dirname){
 
@@ -21,6 +20,7 @@ const http_1 = require("http");
 const serve_favicon_1 = require("serve-favicon");
 const db_1 = require("./db");
 const cache_warmer_1 = require("./imager/cache-warmer");
+const paths_1 = require("./paths");
 // API
 const api_1 = require("./api");
 const api_2 = require("./imager/api");
@@ -30,7 +30,6 @@ const app = express_1.default();
 const isProduction = process.env.NODE_ENV === 'production';
 // force SSL on production
 app.use(heroku_ssl_redirect_1.default([
-    'development',
     'production',
 ]));
 app.use(express_session_1.default({
@@ -43,9 +42,8 @@ app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({ extended: false }));
 app.use(compression_1.default());
 // static serving from /dist/client
-const staticPath = path_1.default.join(__dirname, `../${isProduction ? 'dist' : '.dist-dev'}/client`);
-console.log(`serving static content from ${staticPath}`);
-app.use(express_1.default.static(staticPath));
+console.log(`serving static content from ${paths_1.clientPath}`);
+app.use(express_1.default.static(paths_1.clientPath));
 app.use(serve_favicon_1.default(path_1.default.join(__dirname, '../src/client/images', 'favicon.ico')));
 // cache and sync collections when idle
 app.use(cache_warmer_1.cacheWhenIdle);
@@ -55,8 +53,8 @@ app.use('/user', api_3.default);
 app.use('/i', api_2.default);
 // all other client requests that lack an extension redirected to client
 app.get(/.*(?<!\.\w{1,4})$/, (req, res) => {
-    console.log('redirecting request for', req.path, 'to', staticPath + '/index.html');
-    res.sendFile('/index.html', { root: staticPath });
+    console.log('redirecting request for', req.path, 'to', paths_1.clientPath + '/index.html');
+    res.sendFile('/index.html', { root: paths_1.clientPath });
 });
 const serverPort = process.env.PORT || 3000;
 const server = http_1.default.createServer(app);
@@ -227,9 +225,8 @@ ___scope___.file("server/imager/imager.js", function(exports, require, module, _
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = require("fs");
 const sharp_1 = require("sharp");
-const path_1 = require("path");
 const get_base_image_1 = require("./get-base-image");
-const isProduction = process.env.NODE_ENV === 'production';
+const paths_1 = require("../paths");
 exports.getImage = (requestedImagePath) => {
     // console.log('getImage:', requestedImagePath)
     return new Promise(async function (resolve, reject) {
@@ -251,8 +248,7 @@ exports.getImage = (requestedImagePath) => {
             return a;
         }, {});
         // begin: save final output and stream output to response
-        let savefolder = path_1.default.join(__dirname, `../../${isProduction ? 'dist' : '.dist-dev'}/client/i`);
-        let savepath = savefolder + requestedImagePath;
+        let savepath = paths_1.imagePath + requestedImagePath;
         // console.log('getImage', {
         //   requestedImagePath,
         //   decodedPath,
@@ -260,7 +256,6 @@ exports.getImage = (requestedImagePath) => {
         //   optionsSegment,
         //   revisionId,
         //   options,
-        //   savefolder,
         //   savepath,
         // })
         let file = await get_base_image_1.getBaseImage(`/${collectionId}/${revisionId}.jpg`)
@@ -308,10 +303,9 @@ ___scope___.file("server/imager/get-base-image.js", function(exports, require, m
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = require("fs");
 const sharp_1 = require("sharp");
-const path_1 = require("path");
 const dropbox_1 = require("./dropbox");
 const collections_1 = require("../collections/collections");
-const isProduction = process.env.NODE_ENV === 'production';
+const paths_1 = require("../paths");
 // gets image locally, or downloads from dropbox and returns the saved image
 exports.getBaseImage = async (requestedImagePath) => {
     return new Promise(async function (resolve, reject) {
@@ -319,15 +313,13 @@ exports.getBaseImage = async (requestedImagePath) => {
         let collectionId = decodedPath.replace(/\/([^\/]+).*/g, '$1');
         let revisionId = decodedPath.replace(/.*\/(\w+).*/g, '$1');
         // begin: save final output and stream output to response
-        let savefolder = path_1.default.join(__dirname, `../../${isProduction ? 'dist' : '.dist-dev'}/client/i`);
-        let savepath = savefolder + requestedImagePath;
-        let originalpath = savefolder + '/' + collectionId + '/' + revisionId + '.jpg';
+        let savepath = paths_1.imagePath + requestedImagePath;
+        let originalpath = paths_1.imagePath + '/' + collectionId + '/' + revisionId + '.jpg';
         // console.log('getBaseImage', {
         //   requestedImagePath,
         //   decodedPath,
         //   collectionId,
         //   revisionId,
-        //   savefolder,
         //   savepath,
         //   originalpath,
         // })
@@ -340,7 +332,7 @@ exports.getBaseImage = async (requestedImagePath) => {
             let { source } = collection;
             let binary = await dropbox_1.download(source.apiKey, revisionId);
             // ensure folder exists before file stream opening
-            await fs_1.default.promises.mkdir(savefolder + '/' + collectionId, { recursive: true }).catch(e => e);
+            await fs_1.default.promises.mkdir(paths_1.imagePath + '/' + collectionId, { recursive: true }).catch(e => e);
             console.log('saving base image', originalpath);
             let image = await sharp_1.default(binary)
                 .rotate()
@@ -499,6 +491,21 @@ exports.syncCollection = async (where = {}) => {
 };
 //# sourceMappingURL=collections.js.map
 });
+___scope___.file("server/paths.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const path_1 = require("path");
+const isProduction = process.env.NODE_ENV === 'production';
+const isDevelop = process.env.NODE_ENV === 'development';
+console.log('NODE_ENV=', process.env.NODE_ENV);
+console.log('isProduction=', isProduction);
+console.log('isDevelop=', isDevelop);
+exports.serverPath = path_1.default.join(__dirname, `../${isDevelop ? '.dist-dev' : 'dist'}`);
+exports.clientPath = exports.serverPath + '/client';
+exports.imagePath = exports.clientPath + '/i';
+//# sourceMappingURL=paths.js.map
+});
 ___scope___.file("server/api.js", function(exports, require, module, __filename, __dirname){
 
 "use strict";
@@ -553,6 +560,11 @@ const app = express_1.default();
 // GET colections index
 app.get('/', async (req, res) => {
     let result = await collections_1.getCollections();
+    result = result.map(c => {
+        delete c.items;
+        delete c.source;
+        return c;
+    });
     if (!result) {
         return res.sendStatus(404);
     }
@@ -718,6 +730,12 @@ const safeUserProfile = (user) => {
     delete response.password;
     return response;
 };
+const simplifiedCollection = c => {
+    c.numItems = c.items && c.items.length;
+    delete c.source;
+    delete c.items;
+    return c;
+};
 app.get('/all', users_1.isAuthenticated, users_1.isAdmin, async (req, res) => {
     let users = await users_1.getUsersList()
         .catch((err) => res.status(400).json(err));
@@ -728,6 +746,7 @@ app.get('/profile', users_1.isAuthenticated, async (req, res) => {
     let { user } = req;
     let response = safeUserProfile(user);
     response.collections = await collections_1.getCollections({ owner: user._id });
+    response.collections = response.collections.map(simplifiedCollection);
     res.json(response);
 });
 app.get('/collections', users_1.isAuthenticated, async (req, res) => {
@@ -761,7 +780,7 @@ app.post('/login', async (req, res) => {
             console.log('getting collections where', { owner: String(user._id) });
             let collections = await collections_1.getCollections({ owner: String(user._id) });
             console.log('matching collections', collections);
-            user.collections = collections;
+            user.collections = collections.map(simplifiedCollection);
             req.session.user = user;
             res.json(safeUserProfile(user));
         }
