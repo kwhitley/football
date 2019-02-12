@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import classNames from 'classnames'
-import { useAutoResize } from '../../hooks'
+import { useAutoResize } from 'hooks'
 
 const valueOnly = (fn) => (e) => fn(e.target.value)
 

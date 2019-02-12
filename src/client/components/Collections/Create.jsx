@@ -3,8 +3,8 @@ import Page from '../Page'
 import Input from '../Controls/Input'
 import Inspect from '../Controls/Inspect'
 import Back from '../Back'
-import { validators } from '../../utils'
-import { useNewCollection, requireLogin } from '../../hooks'
+import { validators } from 'utils'
+import { useNewCollection, requireLogin } from 'hooks'
 
 export default function CreateCollection({ location, navigate }) {
   let isLoggedIn = requireLogin(location)

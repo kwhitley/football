@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "baseUrl": ".",
     "target": "es6",
     "jsx": "react",
     "downlevelIteration": true,

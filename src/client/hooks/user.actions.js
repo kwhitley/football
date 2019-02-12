@@ -1,4 +1,4 @@
-import { validators, fetchJSON, fetchStatusIsOK } from '../utils'
+import { validators, fetchJSON, fetchStatusIsOK } from 'utils'
 import { navigate } from '@reach/router'
 
 export const loginAction = ({ login, resetLogin, setUser, setError, origin }) => {

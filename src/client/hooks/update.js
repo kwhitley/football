@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { patch } from '../utils'
+import { patch } from 'utils'
 
 const onlyChanges = (item1, item2) => {
   let changes = Object.keys(item2).reduce((final, key) => {

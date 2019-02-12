@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { globalStore, useStore } from './store'
 import { loginAction, logoutAction } from './user.actions'
-import { validators, fetchJSON } from '../utils'
+import { validators, fetchJSON } from 'utils'
 import { navigate } from '@reach/router'
 
 globalStore.persist('user', { isLoggedIn: true })

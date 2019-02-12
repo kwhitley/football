@@ -1,4 +1,4 @@
-let { useCallback, useState, useLayoutEffect } = require('react')
+import { useCallback, useState, useLayoutEffect } from 'react'
 
 function getSize(el) {
   if (!el) {

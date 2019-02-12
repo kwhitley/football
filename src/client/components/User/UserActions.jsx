@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, navigate } from '@reach/router'
-import { useStore, useLogin } from '../../hooks'
+import { useStore, useLogin } from 'hooks'
 
 export default function UserActions({ location }) {
   let origin = location && location.state && location.state.origin || undefined

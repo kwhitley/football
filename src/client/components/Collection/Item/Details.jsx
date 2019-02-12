@@ -6,7 +6,7 @@ import { FiEdit, FiShare, FiEye } from 'react-icons/fi'
 import Inspect from '../../Controls/Inspect'
 import Editable from '../../Controls/Editable'
 import { ActionIcon, ActionIconToggle } from '../../Controls/ActionIcons'
-import { useStore, useUpdate, ownsCollection } from '../../../hooks'
+import { useStore, useUpdate, ownsCollection } from 'hooks'
 
 export default function ImageDetails({ collectionId, isOwner, item }) {
   let { update, setUpdate, isDirty, updateAction } = useUpdate({

@@ -5,7 +5,7 @@ import {
   withValue,
   withSlugifiedValue,
   validators,
-} from '../utils'
+} from 'utils'
 import { useStore } from './store'
 import { updateItemAction } from './collection.actions'
 

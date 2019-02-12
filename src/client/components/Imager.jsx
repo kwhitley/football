@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { useImageWithPreview } from '../hooks'
+import { useImageWithPreview } from 'hooks'
 
 export default function Image({ id, alt, width, height, quality }) {
   const params = []

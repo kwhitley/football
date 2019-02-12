@@ -3,7 +3,7 @@ import { navigate } from '@reach/router'
 import Page from '../Page'
 import LoginForm from './LoginForm'
 import Input from '../Controls/Input'
-import { validators } from '../../utils'
+import { validators } from 'utils'
 import {
   usePrevious,
   useCollections,

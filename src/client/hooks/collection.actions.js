@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { fetchStatusIsOK } from '../utils'
+import { fetchStatusIsOK } from 'utils'
 
 export function updateItemAction({ itemId, collectionId, setItem }) {
   return ({ update, onSuccess }) => {

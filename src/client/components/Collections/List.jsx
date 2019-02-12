@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from '@reach/router'
 import List from './List'
 import Page from '../Page'
-import { useLogin, useStore, requireLogin } from '../../hooks'
+import { useLogin, useStore, requireLogin } from 'hooks'
 
 export default function CollectionsList({ location, navigate }) {
   let isLoggedIn = requireLogin(location)

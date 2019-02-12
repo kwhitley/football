@@ -3,7 +3,7 @@ import { Router } from '@reach/router'
 import Create from './Create'
 import List from './List'
 import Page from '../Page'
-import { useLogin, useStore, requireLogin } from '../../hooks'
+import { useLogin, useStore, requireLogin } from 'hooks'
 
 export default function CollectionsIndex() {
   // let isLoggedIn = requireLogin(location)
