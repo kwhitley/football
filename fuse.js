@@ -12,7 +12,7 @@ const {
   ImageBase64Plugin,
   SVGPlugin,
   WebIndexPlugin,
-  QuantumPlugin
+  QuantumPlugin,
 } = require('fuse-box')
 
 const pkg = JSON.parse(fs.readFileSync('./package.json',  'utf8')) // read package.json
@@ -47,29 +47,29 @@ const clientConfig = (isProduction, basePath = DEV_BUILD_PATH) => ({
       SassPlugin(),
       CSSResourcePlugin({
         dist: `${basePath}/client/i/`,
-        resolve: f => `/i/${f}`
+        resolve: f => `/i/${f}`,
       }),
-      CSSPlugin()
+      CSSPlugin(),
     ],
     [
       LESSPlugin(),
       CSSResourcePlugin({
         dist: `${basePath}/client/i/`,
-        resolve: f => `/i/${f}`
+        resolve: f => `/i/${f}`,
       }),
-      CSSPlugin()
+      CSSPlugin(),
     ],
     [
       CSSResourcePlugin({
         dist: `${basePath}/client/i/`,
-        resolve: f => `/i/${f}`
+        resolve: f => `/i/${f}`,
       }),
-      CSSPlugin()
+      CSSPlugin(),
     ],
     CSSPlugin(),
     CopyPlugin({
       files: ['.jpg', '.png'],
-      dest: `${basePath}/client/images/`
+      dest: `${basePath}/client/images/`,
     }),
     ImageBase64Plugin(),
     SVGPlugin(),
@@ -77,7 +77,7 @@ const clientConfig = (isProduction, basePath = DEV_BUILD_PATH) => ({
       title: `${pkg.title} v${pkg.version}`,
       description: pkg.description,
       template: 'src/client/index.html',
-      bundles: ['app', 'vendor']
+      bundles: ['app', 'vendor'],
     }),
     isProduction && QuantumPlugin({
       manifest : true,
@@ -87,8 +87,8 @@ const clientConfig = (isProduction, basePath = DEV_BUILD_PATH) => ({
       bakeApiIntoBundle: true,
       treeshake: true,
       css: {
-        clean: true
-      }
+        clean: true,
+      },
     })
   ]
 })

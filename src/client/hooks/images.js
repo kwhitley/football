@@ -16,6 +16,7 @@ export function useImageWithPreview(path) {
         image.onload = () => {
           // console.log('loaded full image', path)
           setIsLoaded(true)
+          setOrientation(image.naturalHeight > image.naturalWidth ? 'portrait' : 'landscape')
           setSrc(path)
         }
         console.log('loading image', path, 'height=', image.naturalHeight, 'width=', image.naturalWidth)
