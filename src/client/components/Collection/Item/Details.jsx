@@ -15,6 +15,7 @@ export default function ImageDetails({ collectionId, isOwner, item }) {
   })
   let [ editModeEnabled, setEditModeEnabled ] = useStore('editMode', false, { persist: true })
   let editMode = editModeEnabled && isOwner
+  let noContent = !item.story && !item.name
   const toggleEditMode = () => setEditModeEnabled(!editMode)
 
   return (
@@ -61,6 +62,13 @@ export default function ImageDetails({ collectionId, isOwner, item }) {
             { md([update.story]) }
           </div>
         </Editable>
+
+        {
+          noContent &&
+          <div className="no-content">
+            Imagine all the possible stories behind this image...
+          </div>
+        }
       </div>
     </div>
   )

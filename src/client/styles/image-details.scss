@@ -8,6 +8,17 @@ $columnSplitWidth: 50rem;
   flex-flow: row-reverse wrap;
   margin: 2rem 2rem 0;
 
+  .no-content {
+    font-size: 3rem;
+    font-weight: 100;
+    color: #ccc;
+    text-align: center;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    padding: 1rem;
+  }
+
   > * {
     flex: 1 80%;
   }
@@ -128,7 +139,6 @@ $columnSplitWidth: 50rem;
   overflow: hidden;
   display: flex;
   flex-flow: row wrap;
-
 
   i.imager {
     display: block;
