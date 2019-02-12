@@ -3,9 +3,10 @@ import { useStore } from './store'
 
 export function useImageWithPreview(path) {
   const previewPath = path.replace(/^(.*)(\.jpg|png)$/i, '$1,preview$2')
+  const keyPath = path.replace(/^([\/\w\d]+).*$/, '$1')
   let [ isLoaded, setIsLoaded ] = useStore(previewPath, false)
   let [ src, setSrc ] = useState(isLoaded ? path : previewPath)
-  let [ orientation, setOrientation ] = useStore(path+':orientation')
+  let [ orientation, setOrientation ] = useStore(keyPath+':orientation', 'landscape', { persist: true })
 
   useEffect(() => {
     if (!isLoaded) {

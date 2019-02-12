@@ -13,13 +13,13 @@ export class Store {
         let stored = localStorage.getItem(GLOBALSTORAGE_PREFIX + namespace)
 
         if (stored !== null) {
-          console.log(GLOBALSTORAGE_PREFIX + namespace, 'found in localStorage, setting to', this.state)
+          // console.log(GLOBALSTORAGE_PREFIX + namespace, 'found in localStorage, setting to', this.state)
           this.state = JSON.parse(stored)
         } else {
-          console.warn(GLOBALSTORAGE_PREFIX + namespace, 'not found in localStorage, setting to', this.state)
+          // console.warn(GLOBALSTORAGE_PREFIX + namespace, 'not found in localStorage, setting to', this.state)
         }
       } catch(err) {
-        console.warn(GLOBALSTORAGE_PREFIX + namespace, 'not found in localStorage, setting to', this.state)
+        // console.warn(GLOBALSTORAGE_PREFIX + namespace, 'not found in localStorage, setting to', this.state)
       }
     }
     this.namespace = namespace
@@ -30,7 +30,7 @@ export class Store {
   setState = (value) => {
     this.state = value
     if (this.persist) {
-      console.log('should persist value', value, 'to namespace', GLOBALSTORAGE_PREFIX + namespace)
+      // console.log('should persist value', value, 'to namespace', GLOBALSTORAGE_PREFIX + namespace)
       localStorage.setItem(GLOBALSTORAGE_PREFIX + namespace, JSON.stringify(value))
     }
     this.setters.forEach(setter => setter(this.state))

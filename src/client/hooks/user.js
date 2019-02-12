@@ -56,8 +56,8 @@ export function ownsCollection(collectionId) {
 
   if (user.isLoggedIn) {
     let ownedCollections = user.profile.collections
-    console.log('ownedCollections', ownedCollections)
-    console.log('checking against', collectionId)
+    // console.log('ownedCollections', ownedCollections)
+    // console.log('checking against', collectionId)
     return !!ownedCollections.find(c => c.slug === collectionId))
   }
 
