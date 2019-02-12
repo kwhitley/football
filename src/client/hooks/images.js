@@ -1,28 +1,39 @@
 import { useState, useEffect } from 'react'
 import { useStore } from './store'
 
+const getOrientation = (image) => image.naturalHeight > image.naturalWidth ? 'portrait' : 'landscape'
+
 export function useImageWithPreview(path) {
   const previewPath = path.replace(/^(.*)(\.jpg|png)$/i, '$1,preview$2')
-  const keyPath = path.replace(/^([\/\w\d]+).*$/, '$1')
+  const keyPath = path.replace(/^([^\:]+).*(\.jpg|png)$/, '$1')
   let [ isLoaded, setIsLoaded ] = useStore(previewPath, false)
-  let [ src, setSrc ] = useState(isLoaded ? path : previewPath)
-  let [ orientation, setOrientation ] = useStore(keyPath+':orientation', 'landscape', { persist: true })
+  let [ src, setSrc ] = useStore(path, undefined)
+  let [ orientation, setOrientation ] = useStore(path+':orientation', 'landscape')
 
   useEffect(() => {
-    if (!isLoaded) {
+    if (!src) {
       let image = new Image()
       image.onload = () => {
-        image.src = path
-        image.onload = () => {
-          setIsLoaded(true)
-          setOrientation(image.naturalHeight > image.naturalWidth ? 'portrait' : 'landscape')
-          setSrc(path)
+        setSrc(previewPath)
+
+        let newOrientation = getOrientation(image)
+        if (newOrientation !== orientation) {
+          setOrientation(newOrientation)
         }
-        setOrientation(image.naturalHeight > image.naturalWidth ? 'portrait' : 'landscape')
+
+        image.onload = () => {
+          setSrc(path)
+
+          let newOrientation = getOrientation(image)
+          if (newOrientation !== orientation) {
+            setOrientation(newOrientation)
+          }
+        }
+        image.src = path
       }
       image.src = previewPath
     }
-  }, [path])
+  }, [])
 
   return {
     src,

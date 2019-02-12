@@ -6,6 +6,7 @@ import {
   withSlugifiedValue,
   validators,
 } from '../utils'
+import { useStore } from './store'
 import { updateItemAction } from './collection.actions'
 
 export function useCollections() {
@@ -43,19 +44,21 @@ export function useCollectionSlugIsAvailable(slug) {
   return isAvailable
 }
 
-export function useCollectionDetails(slug) {
-  let [ collection, setCollection ] = useState(undefined)
+export function useCollectionDetails(collectionId) {
+  let [ collection, setCollection ] = useStore(`collection:${collectionId}`, undefined, { persist: true })
   let [ isLoading, setIsLoading ] = useState(false)
 
   useEffect(() => {
-    setIsLoading(true)
+    if (!collection) {
+      setIsLoading(true)
 
-    fetchJSON(`/api/collections/${slug}`)
-      .then(r => {
-        setIsLoading(false)
-        setCollection(r)
-      })
-  }, [slug])
+      fetchJSON(`/api/collections/${collectionId}`)
+        .then(r => {
+          setIsLoading(false)
+          setCollection(r)
+        })
+    }
+  }, [collectionId])
 
   return { collection, isLoading }
 }
