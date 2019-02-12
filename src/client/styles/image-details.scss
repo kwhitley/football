@@ -8,15 +8,22 @@ $columnSplitWidth: 50rem;
   flex-flow: row-reverse wrap;
   margin: 2rem 2rem 0;
 
+  .content {
+    display: flex;
+  }
+
   .no-content {
-    font-size: 3rem;
+    font-size: 2rem;
     font-weight: 100;
     color: #ccc;
     text-align: center;
     display: flex;
     flex-flow: column;
     justify-content: center;
-    padding: 1rem;
+    font-family: sans-serif;
+    font-weight: lighter;
+    letter-spacing: -0.04em;
+    margin: 2rem 3rem 5rem;
   }
 
   > * {
