@@ -1,10 +1,11 @@
 import React from 'react'
 import Grid from './Grid'
 import Page from '../Page'
-import { useCollectionDetails } from '../../hooks'
+import { useCollectionDetails, useScrollTracking } from '../../hooks'
 
 export default function ImageCollection({ collectionId = 'krwhitley' }) {
   let { collection, isLoading } = useCollectionDetails(collectionId)
+  useScrollTracking()
 
   if (!collection || isLoading) {
     return false
