@@ -18,7 +18,7 @@ import {
 export default function Login({ location, signup = false }){
   console.log('Login')
   let origin = location.state && location.state.origin || undefined
-  let { login, setLogin, error, loginAction, logoutAction } = useLogin(origin)
+  let { login, setLogin, error, loginAction, logoutAction, isValid } = useLogin(origin)
   let [ user ] = useStore('user')
 
   console.log({
@@ -36,6 +36,8 @@ export default function Login({ location, signup = false }){
       }
     }, [login, user]
   )
+
+  console.log('isValid', isValid)
 
   return (
     <Page className="form">
@@ -59,7 +61,12 @@ export default function Login({ location, signup = false }){
 
         { error && <div className="error">{error}</div> }
 
-      <button onClick={loginAction}>Submit</button>
+      <button
+        onClick={loginAction}
+        disabled={!isValid}
+        >
+        { signup ? 'Create Account' : 'Log In' }
+      </button>
     </Page>
   )
 }

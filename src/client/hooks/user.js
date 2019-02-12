@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { globalStore, useStore } from './store'
 import { loginAction, logoutAction } from './user.actions'
-import { fetchJSON } from '../utils'
+import { validators, fetchJSON } from '../utils'
 import { navigate } from '@reach/router'
 
 globalStore.persist('user', { isLoggedIn: true })
@@ -29,6 +29,10 @@ export function useLogin(origin) {
     setLogin({ email: '', password: '', isValidating: false })
   }
 
+  let { email, password } = login
+  let isValid = validators.password().isValid(password) &&
+    validators.email().isValid(email)
+
   return {
     login,
     user,
@@ -37,6 +41,7 @@ export function useLogin(origin) {
     loginAction: () => {
       loginAction({ login, resetLogin, setUser, setError, origin })
     },
+    isValid,
     logoutAction: () => {
       console.log('logging out')
       logoutAction({
