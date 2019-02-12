@@ -10,8 +10,14 @@ export class Store {
 
     if (persist) {
       try {
-        this.state = JSON.parse(localStorage.getItem(GLOBALSTORAGE_PREFIX + namespace))
-        console.log(GLOBALSTORAGE_PREFIX + namespace, 'found in localStorage, setting to', this.state)
+        let stored = localStorage.getItem(GLOBALSTORAGE_PREFIX + namespace)
+
+        if (stored !== null) {
+          console.log(GLOBALSTORAGE_PREFIX + namespace, 'found in localStorage, setting to', this.state)
+          this.state = JSON.parse(stored)
+        } else {
+          console.warn(GLOBALSTORAGE_PREFIX + namespace, 'not found in localStorage, setting to', this.state)
+        }
       } catch(err) {
         console.warn(GLOBALSTORAGE_PREFIX + namespace, 'not found in localStorage, setting to', this.state)
       }

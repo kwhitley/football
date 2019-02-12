@@ -2,7 +2,7 @@ $backButtonHeight: 4.6rem;
 
 .back {
   position: fixed;
-  background: rgba(200,200,200,0.9);
+  background: rgba(220,220,220,0.7);
   margin-bottom: 0.2em;
   cursor: pointer;
   border-radius: $borderRadius;
@@ -52,7 +52,7 @@ $backButtonHeight: 4.6rem;
   }
 
   &:hover {
-    background-color: #aaa;
+    background: rgba(200,200,200,0.7);
   }
 
   & + .form {

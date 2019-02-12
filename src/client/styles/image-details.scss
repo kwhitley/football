@@ -1,9 +1,12 @@
 $storyPaddingRight: 1em;
+$portraitResizeWidth: 40rem;
+$columnSplitWidth: 50rem;
 
 .image-details {
-  margin: 1.7rem 0;
   display: flex;
+  flex: 1 80%;
   flex-flow: row-reverse wrap;
+  margin: 2rem 2rem 0;
 
   > * {
     flex: 1 80%;
@@ -12,25 +15,45 @@ $storyPaddingRight: 1em;
   .actions {
     flex: 0 1 1em;
     align-self: stretch;
+    text-align: right;
 
-    > * {
+    .action {
+      opacity: 0.3;
       font-size: 2rem;
-      cursor: pointer;
+      display: inline-block;
+      transition: opacity 0.15s ease-in-out;
+      margin-bottom: 1rem;
+
+      &:not(.disabled) {
+        cursor: pointer;
+      }
+
+      &:not(.disabled):hover {
+        opacity: 1;
+      }
+
+      &.disabled {
+        opacity: 0.1;
+      }
     }
   }
 
   @media screen and (max-width: 30rem) {
     flex-flow: column;
+    margin: 1.2rem;
+
+    .action {
+      margin: 0 0 1rem 1rem;
+    }
 
     > * {
       flex: auto;
     }
+  }
 
-    .actions {
-      flex: auto;
-      padding-bottom: 0.5em;
-      text-align: right;
-    }
+  @media screen and (min-width: 900px) {
+    margin-left: 0;
+    margin-right: 0;
   }
 
 
@@ -62,11 +85,6 @@ $storyPaddingRight: 1em;
     margin-bottom: 1em;
 
     > div {
-      @media screen and (min-width: 50rem) {
-        column-count: 2;
-        column-gap: 3rem;
-      }
-
       > *:last-child {
         margin-bottom: 0;
         padding-bottom: 0;
@@ -78,13 +96,92 @@ $storyPaddingRight: 1em;
     width: calc(100% - #{$storyPaddingRight});
     padding-right: 0;
   }
+}
 
-  @media screen and (max-width: 900px) {
-    margin-left: 1.1rem;
-    margin-right: 1.1rem;
-  }
+.landscape {
+  max-width: 100%;
+  width: 100%;
 
-  @media screen and (min-width: 50rem) {
-    margin: 2rem 2rem 0;
+  & + .image-details .story {
+    @media screen and (min-width: $columnSplitWidth) {
+      column-count: 2;
+      column-gap: 3rem;
+      margin-right: 1rem;
+    }
   }
 }
+
+.portrait {
+  max-width: 100%;
+  width: 100%;
+
+  // @media screen and (min-aspect-ratio: 16/9) {
+  @media screen and (min-width: $portraitResizeWidth) {
+    max-height: 100%;
+    object-fit: cover;
+    width: auto;
+  }
+}
+
+.viewer {
+  border-radius: 0.2em;
+  overflow: hidden;
+  display: flex;
+  flex-flow: row wrap;
+
+
+  i.imager {
+    display: block;
+    // flex: 1 100%;
+
+    img {
+      max-width: 100%;
+    }
+  }
+
+  img {
+    border-radius: $borderRadius;
+  }
+
+  @media screen and (max-width: $portraitResizeWidth) {
+    flex-flow: column;
+
+    .image-details {
+      flex: auto;
+    }
+
+    i.imager.landscape {
+      flex: auto;
+    }
+  }
+
+  @media screen and (min-width: $portraitResizeWidth) {
+    i.portrait {
+      flex: 0 45%;
+      object-fit: cover;
+      max-height: calc(100% + #{$backButtonHeight});
+      max-width: 45%;
+      margin-top: calc(#{$backButtonHeight} + $gutterSize);
+    }
+
+    i.portrait + .image-details {
+      flex: 1;
+      margin: calc(#{$backButtonHeight} + 2rem) 1rem 0 2rem;
+    }
+
+    .actions {
+      margin: 0;
+    }
+  }
+
+  @media screen and (min-aspect-ratio: 16/9), screen and (min-width: 900px) {
+    .actions {
+      margin-right: 0;
+    }
+
+    .image-details {
+      margin-right: 0;
+    }
+  }
+}
+

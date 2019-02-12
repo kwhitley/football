@@ -18,10 +18,10 @@ export default function CollectionsIndex() {
   console.log('rendering CollectionsIndex')
 
   return (
-      <Router>
-        <List path="/" />
-        <Create path="create" />
-        <div default>404</div>
-      </Router>
+    <Router>
+      <List path="/" />
+      <Create path="create" />
+      <div default>404</div>
+    </Router>
   )
 }

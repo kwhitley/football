@@ -1,11 +1,11 @@
 import React from 'react'
 import classNames from 'classnames'
 
-export function ActionIcon({ className, children, onClick, }) {
+export function ActionIcon({ className, disabled, children, onClick, }) {
   return (
     <span
-      className={classNames('action', className)}
-      onClick={onClick}
+      className={classNames('action', className, disabled && 'disabled')}
+      onClick={!disabled ? onClick : () => {}}
       >
       { children }
     </span>

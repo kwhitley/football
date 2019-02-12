@@ -4,7 +4,7 @@ import List from './List'
 import Page from '../Page'
 import { useLogin, useStore, requireLogin } from '../../hooks'
 
-export default function CollectionsList({ location }) {
+export default function CollectionsList({ location, navigate }) {
   let isLoggedIn = requireLogin(location)
   let [ user ] = useStore('user')
 

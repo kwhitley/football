@@ -93,8 +93,13 @@ pre {
     max-width: calc(100% - 0.2em);
 
     @media screen and (min-width: $maxPageWidth) {
-      padding: 2rem;
+      padding: 3rem;
     }
+  }
+
+  @media screen and (min-aspect-ratio: 3/2), screen and (min-width: 900px) {
+    // max-height: 100%;
+    // overflow-y: scroll;
   }
 }
 

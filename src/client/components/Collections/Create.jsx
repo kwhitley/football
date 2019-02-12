@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react'
-import { navigate } from '@reach/router'
 import Page from '../Page'
 import Input from '../Controls/Input'
 import Inspect from '../Controls/Inspect'
@@ -7,7 +6,7 @@ import Back from '../Back'
 import { validators } from '../../utils'
 import { useNewCollection, requireLogin } from '../../hooks'
 
-export default function CreateCollection({ location }) {
+export default function CreateCollection({ location, navigate }) {
   let isLoggedIn = requireLogin(location)
   let collection = useNewCollection()
   let {
@@ -25,7 +24,7 @@ export default function CreateCollection({ location }) {
   }
 
   return (
-    <Page className="form" visible={isLoggedIn}>
+    <Page className="form" visible={isLoggedIn} back navigate={navigate}>
       <h1>Create a New Collection</h1>
 
       <Input

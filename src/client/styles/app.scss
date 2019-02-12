@@ -17,19 +17,6 @@ $mobile: 35rem;
   position: relative;
 }
 
-.viewer {
-  border-radius: 0.2em;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-
-  img {
-    max-width: 100%;
-    width: 100%;
-    border-radius: $borderRadius;
-  }
-}
-
 .hide-mobile {
   @media screen and (max-width: $mobile) {
     display: none;

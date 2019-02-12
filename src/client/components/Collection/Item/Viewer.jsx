@@ -2,10 +2,11 @@ import React from 'react'
 import Imager from '../../Imager'
 import Details from './Details'
 import Page from '../../Page'
-import { useItemDetails } from '../../../hooks'
+import { useItemDetails, ownsCollection } from '../../../hooks'
 
 export default function ItemViewer({ collectionId, itemId, navigate }) {
   let { item, updateItemAction, isLoading } = useItemDetails({ collectionId, itemId })
+  let isOwner = ownsCollection(collectionId)
 
   if (!item || isLoading) {
     return false
@@ -20,6 +21,7 @@ export default function ItemViewer({ collectionId, itemId, navigate }) {
       <Details
         collectionId={collectionId}
         item={item}
+        isOwner={isOwner}
         updateItemAction={updateItemAction}
         />
     </Page>
