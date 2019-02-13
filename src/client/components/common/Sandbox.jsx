@@ -3,11 +3,13 @@ import classNames from 'classnames'
 import Page from 'common/Page'
 import Inspect from 'common/Inspect'
 import LiveEdit from 'common/LiveEdit'
+import Input from 'common/Input'
 
 export default ({ children, className, ...props }) => {
   let [ item1, setItem1 ] = useState('')
   let [ item2, setItem2 ] = useState('')
   let [ stats, setStats ] = useState({})
+  let ref = useRef(null)
 
   const onResize = () => {
     let docEl = document.documentElement
@@ -33,6 +35,8 @@ export default ({ children, className, ...props }) => {
       window: w,
       screen: s,
       document: d,
+      liveEditScrollTop: ref.current.scrollTop,
+      ref: ref.current.getBoundingClientRect(),
     })
   }
 
@@ -49,6 +53,7 @@ export default ({ children, className, ...props }) => {
     item1,
     stats,
     ontouchstart: 'ontouchstart' in docEl,
+    item2,
   }
 
   return (
@@ -61,9 +66,10 @@ export default ({ children, className, ...props }) => {
 
       <Inspect item={foo} />
 
-      <LiveEdit
+      <input
+        ref={ref}
         value={item2}
-        onChange={setItem2}
+        onChange={e => setItem2(e.target.value)}
         placeholder="set item 2"
         />
     </Page>
