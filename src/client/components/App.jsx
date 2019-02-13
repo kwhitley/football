@@ -8,6 +8,7 @@ import CollectionsList from './Collections/List'
 import CreateCollection from './Collections/Create'
 import UserActions from './User/UserActions'
 import MissingPage from 'common/MissingPage'
+import Sandbox from 'common/Sandbox'
 
 const App = () =>
   <div className="page-content">
@@ -15,6 +16,7 @@ const App = () =>
       <Login path="signup" signup />
       <Login path="login" />
       <CollectionsList path="collections" />
+      <Sandbox path="sandbox" />
       <CreateCollection path="collections/create" />
       <CollectionViewer path=":collectionId" />
       <ItemViewer path=":collectionId/:itemId" />
