@@ -1,5 +1,6 @@
-import React, { useRef, useFocus } from 'react'
+import React, { useRef } from 'react'
 import classNames from 'classnames'
+import { useFocus } from 'hooks'
 
 const valueOnly = (fn) => ({ target }) => {
   let { name, value } = target

@@ -68,9 +68,10 @@ export function useKeyboardSpacing() {
 
 export function useFocus(ref) {
   let [ isFocused, setIsFocused ] = useStore('focus', false)
-  let el = ref.current
 
   useEffect(() => {
+    let el = ref.current
+
     console.log('useFocus:useEffect')
     let onFocus = () => {
       console.log('focused')
@@ -97,5 +98,5 @@ export function useFocus(ref) {
         // el.removeEventListener('blur', onBlur)
       }
     }
-  }, [el])
+  }, [ref.current])
 }
