@@ -47,6 +47,7 @@ export function useCollectionSlugIsAvailable(slug) {
 export function useCollectionDetails(collectionId) {
   let [ collection, setCollection ] = useStore(`collection:${collectionId}`, undefined)
   let [ isLoading, setIsLoading ] = useState(false)
+  let [ error, setError ] = useState(undefined)
 
   useEffect(() => {
     if (!collection) {
@@ -57,10 +58,14 @@ export function useCollectionDetails(collectionId) {
           setIsLoading(false)
           setCollection(r)
         })
+        .catch(err => {
+          setIsLoading(false)
+          setError(err)
+        })
     }
   }, [collectionId])
 
-  return { collection, isLoading }
+  return { collection, isLoading, error }
 }
 
 export function useItemDetails({ collectionId, itemId }) {

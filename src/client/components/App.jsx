@@ -7,6 +7,7 @@ import Login from './User/Login'
 import CollectionsList from './Collections/List'
 import CreateCollection from './Collections/Create'
 import UserActions from './User/UserActions'
+import MissingPage from 'common/MissingPage'
 
 const App = () =>
   <div className="page-content">
@@ -18,7 +19,7 @@ const App = () =>
       <CollectionViewer path=":collectionId" />
       <ItemViewer path=":collectionId/:itemId" />
       <CollectionViewer path="/" />
-      <div default>Page not found</div>
+      <MissingPage default />
     </Router>
 
     <Router className="controls" primary={false}>

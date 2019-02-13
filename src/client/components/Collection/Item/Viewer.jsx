@@ -7,16 +7,17 @@ import {
 } from 'hooks'
 import Imager from 'common/Imager'
 import Page from 'common/Page'
+import MissingPage from 'common/MissingPage'
 import Details from './Details'
 
 export default function ItemViewer({ collectionId, itemId, navigate }) {
-  let { collection } = useCollectionDetails(collectionId)
+  let { collection, error } = useCollectionDetails(collectionId)
   let { item, updateItemAction, isLoading } = useItemDetails({ collectionId, itemId })
   useDocumentTitle(item && item.name, collection && collection.name)
   let isOwner = ownsCollection(collectionId)
 
-  if (!item || isLoading) {
-    return false
+  if (!item || isLoading || error) {
+    return error ? <MissingPage message={`Are you sure about that?`} /> : false
   }
 
   return (
