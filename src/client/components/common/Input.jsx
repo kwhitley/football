@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef, useFocus } from 'react'
 import classNames from 'classnames'
 
 const valueOnly = (fn) => ({ target }) => {
@@ -21,6 +21,8 @@ export default function Input({
   validator,
   ...props
 }) {
+  let ref = useRef(null)
+  useFocus(ref)
   let invalid = undefined
   let validationMessage = undefined
 
@@ -32,6 +34,7 @@ export default function Input({
   return (
     <section className="input-group">
       <input
+        ref={ref}
         className={classNames('input', className)}
         type="text"
         name={name}

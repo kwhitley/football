@@ -1,18 +1,52 @@
 import { useRef, useState, useEffect, useLayoutEffect } from 'react'
 import { useStore } from 'hooks'
 
+export function useOrientationAngle() {
+  let [ orientationAngle, setOrientationAngle ] = useStore('orientation', screen.orientation.angle)
+
+  useEffect(() => {
+    const orientationListener = () => setOrientationAngle(screen.orientation.angle)
+
+    console.log('adding orientationListener')
+    window.addEventListener('orientationchange', orientationListener)
+
+    return () => {
+      console.log('removing orientationListener')
+      window.removeEventListener('orientationchange', orientationListener)
+    }
+  }, [])
+
+  return orientationAngle
+}
+
+export function useDeviceEnvironment() {
+  let orientationAngle = useOrientationAngle()
+  let isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime)
+  let isMobileChrome = !!navigator.userAgent.match('CriOS')
+  let isTouch = 'ontouchstart' in document.documentElement
+  let isPortrait = orientationAngle === 0
+  let isLandscape = !isPortrait
+
+  return {
+    isChrome,
+    isMobileChrome,
+    isTouch,
+    isPortrait,
+    isLandscape,
+    orientationAngle,
+  }
+}
+
 export function useKeyboardSpacing() {
   let [ spacer, setSpacer ] = useState(0)
   let [ isFocused, setIsFocused ] = useStore('focus', false)
-  var isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime)
-  var isMobileChrome = !!navigator.userAgent.match('CriOS')
-  var isTouch = 'ontouchstart' in document.documentElement
+  let { isMobileChrome, isTouch, isLandscape } = useDeviceEnvironment()
 
   useEffect(() => {
     let newSpacer = 0
 
     if (isTouch && isMobileChrome && isFocused) {
-      newSpacer = '50vh'
+      newSpacer = isLandscape ? '55vh' : '40vh'
     } else {
       newSpacer = 0
     }
@@ -21,19 +55,13 @@ export function useKeyboardSpacing() {
     if (newSpacer !== spacer) {
       setSpacer(newSpacer)
     }
-  }, [isTouch, isChrome, isMobileChrome, isFocused])
-  console.log('useKeyboardSpacing', { isTouch, isChrome, isFocused })
+  }, [isTouch, isMobileChrome, isFocused, isLandscape])
 
-  return { isTouch, isChrome, isMobileChrome, isFocused, spacer }
-}
-
-const myScript = () => {
-
+  return { isFocused, spacer }
 }
 
 export function useFocus(ref) {
   let [ isFocused, setIsFocused ] = useStore('focus', false)
-  // console.log('ref', ref.current)
   let el = ref.current
 
   useEffect(() => {
