@@ -26,33 +26,33 @@ export function useOrientationAngle() {
 }
 
 export function useDeviceEnvironment() {
-  let orientationAngle = useOrientationAngle()
+  // let orientationAngle = useOrientationAngle()
   let isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime)
   let isMobileChrome = !!navigator.userAgent.match('CriOS')
   let isTouch = 'ontouchstart' in document.documentElement
-  let isPortrait = orientationAngle === 0
-  let isLandscape = !isPortrait
+  // let isPortrait = orientationAngle === 0
+  // let isLandscape = !isPortrait
 
   return {
     isChrome,
     isMobileChrome,
     isTouch,
-    isPortrait,
-    isLandscape,
-    orientationAngle,
+    // isPortrait,
+    // isLandscape,
+    // orientationAngle,
   }
 }
 
 export function useKeyboardSpacing() {
   let [ spacer, setSpacer ] = useState(0)
   let [ isFocused, setIsFocused ] = useStore('focus', false)
-  let { isMobileChrome, isTouch, isLandscape } = useDeviceEnvironment()
+  let { isMobileChrome, isTouch } = useDeviceEnvironment()
 
   useEffect(() => {
     let newSpacer = 0
 
     if (isTouch && isMobileChrome && isFocused) {
-      newSpacer = isLandscape ? '55vh' : '40vh'
+      newSpacer = '50vh'
     } else {
       newSpacer = 0
     }
@@ -61,7 +61,7 @@ export function useKeyboardSpacing() {
     if (newSpacer !== spacer) {
       setSpacer(newSpacer)
     }
-  }, [isTouch, isMobileChrome, isFocused, isLandscape])
+  }, [isTouch, isMobileChrome, isFocused])
 
   return { isFocused, spacer }
 }
