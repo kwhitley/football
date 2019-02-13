@@ -23,7 +23,7 @@ export function useKeyboardSpacing() {
   }, [isTouch, isChrome, isFocused])
   console.log('useKeyboardSpacing', { isTouch, isChrome, isFocused })
 
-  return spacer
+  return { isTouch, isChrome, isFocused, spacer }
 }
 
 const myScript = () => {

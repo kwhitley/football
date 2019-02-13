@@ -11,7 +11,7 @@ import CreateCollection from './Collections/Create'
 import UserActions from './User/UserActions'
 
 export default function App() {
-  let spacer = useKeyboardSpacing()
+  let { spacer } = useKeyboardSpacing()
 
   console.log('App:spacer', spacer)
 
