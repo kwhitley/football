@@ -37,12 +37,9 @@ export default ({ children, className, ...props }) => {
   }
 
   useEffect(() => {
-    onResize()
-    console.log('adding event listener')
-    window.addEventListener('resize', onResize)
+    setInterval(onResize, 20)
     return () => {
-      console.log('removing event listener')
-      window.removeEventListener('resize', onResize)
+      clearInterval(onResize)
     }
   }, [])
 
