@@ -10,7 +10,6 @@ export default function GridItem({ item, id }) {
           id={id}
           width={400}
           height={400}
-          alt={item.name}
           />
         <label><span>{ item.name }</span></label>
       </Link>

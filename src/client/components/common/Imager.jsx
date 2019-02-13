@@ -10,7 +10,9 @@ export default function Image({ id, alt, width, height, quality }) {
   const { src, orientation } = useImageWithPreview(`/i/${id}::${params.join(',')}.jpg`)
 
   return (
-    <i className={'imager ' + orientation}><img src={src} alt={alt} /></i>
+    <i className={'imager ' + orientation}>
+      <img src={src} />
+    </i>
   )
 }
 
