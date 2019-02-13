@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import classNames from 'classnames'
 import Page from 'common/Page'
 import Inspect from 'common/Inspect'
@@ -9,50 +9,6 @@ import { useKeyboardSpacing } from 'hooks'
 export default ({ children, className, ...props }) => {
   let [ item1, setItem1 ] = useState('')
   let [ item2, setItem2 ] = useState('')
-  let [ stats, setStats ] = useState({})
-  let ref = useRef(null)
-
-  const onResize = () => {
-    let docEl = document.documentElement
-    let screen = window.screen
-    var isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime);
-    var isTouch = 'ontouchstart' in document.documentElement
-
-    let s = {
-      availHeight: screen.availHeight,
-      height: screen.height,
-      availWidth: screen.availWidth,
-      width: screen.width
-    }
-    let w = {
-      innerHeight: window.innerHeight,
-      outerHeight: window.outerHeight,
-      innerWidth: window.innerWidth,
-      outerWidth: window.outerWidth,
-    }
-    let d = {
-      clientHeight: docEl.clientHeight,
-      scrollHeight: docEl.scrollHeight,
-    }
-
-    setStats({
-      window: w,
-      screen: s,
-      document: d,
-      liveEditScrollTop: ref.current.scrollTop,
-      ref: ref.current.getBoundingClientRect(),
-      isChrome,
-      isTouch,
-    })
-  }
-
-  // useEffect(() => {
-  //   setInterval(onResize, 20)
-  //   return () => {
-  //     clearInterval(onResize)
-  //   }
-  // }, [])
-
   let keyboard = useKeyboardSpacing()
 
   let foo = {

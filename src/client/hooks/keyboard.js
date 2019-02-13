@@ -4,13 +4,14 @@ import { useStore } from 'hooks'
 export function useKeyboardSpacing() {
   let [ spacer, setSpacer ] = useState(0)
   let [ isFocused, setIsFocused ] = useStore('focus', false)
-  var isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime);
+  var isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime)
+  var isMobileChrome = !!navigator.userAgent.match('CriOS')
   var isTouch = 'ontouchstart' in document.documentElement
 
   useEffect(() => {
     let newSpacer = 0
 
-    if (isTouch && isChrome && isFocused) {
+    if (isTouch && isMobileChrome && isFocused) {
       newSpacer = '50vh'
     } else {
       newSpacer = 0
@@ -20,10 +21,10 @@ export function useKeyboardSpacing() {
     if (newSpacer !== spacer) {
       setSpacer(newSpacer)
     }
-  }, [isTouch, isChrome, isFocused])
+  }, [isTouch, isChrome, isMobileChrome, isFocused])
   console.log('useKeyboardSpacing', { isTouch, isChrome, isFocused })
 
-  return { isTouch, isChrome, isFocused, spacer }
+  return { isTouch, isChrome, isMobileChrome, isFocused, spacer }
 }
 
 const myScript = () => {
