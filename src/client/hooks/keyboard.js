@@ -5,7 +5,13 @@ export function useOrientationAngle() {
   let [ orientationAngle, setOrientationAngle ] = useStore('orientation', screen.orientation.angle)
 
   useEffect(() => {
-    const orientationListener = () => setOrientationAngle(screen.orientation.angle)
+    const orientationListener = () => {
+      let angle = 'orientation' in window
+                ? window.orientation
+                : (screen.orientation ? screen.orientation.angle : undefined)
+
+      setOrientationAngle(angle)
+    }
 
     console.log('adding orientationListener')
     window.addEventListener('orientationchange', orientationListener)
