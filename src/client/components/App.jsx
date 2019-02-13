@@ -6,7 +6,6 @@ import ItemViewer from './Collection/Item/Viewer'
 import Login from './User/Login'
 import CollectionsList from './Collections/List'
 import CreateCollection from './Collections/Create'
-import Back from './Back'
 import UserActions from './User/UserActions'
 
 const App = () =>

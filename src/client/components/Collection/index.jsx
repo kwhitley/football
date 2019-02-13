@@ -1,10 +1,11 @@
 import React from 'react'
+import { useCollectionDetails, useScrollTracking, useDocumentTitle } from 'hooks'
+import Page from 'common/Page'
 import Grid from './Grid'
-import Page from '../Page'
-import { useCollectionDetails, useScrollTracking } from 'hooks'
 
 export default function ImageCollection({ collectionId = 'krwhitley' }) {
   let { collection, isLoading } = useCollectionDetails(collectionId)
+  useDocumentTitle(collection && collection.name, 'Supergeneric')
   useScrollTracking()
 
   if (!collection || isLoading) {

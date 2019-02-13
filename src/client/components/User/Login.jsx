@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { navigate } from '@reach/router'
-import Page from '../Page'
-import LoginForm from './LoginForm'
-import Input from '../Controls/Input'
+import Page from 'common/Page'
+import Input from 'common/Input'
 import { validators } from 'utils'
+import LoginForm from './LoginForm'
 import {
   usePrevious,
   useCollections,
@@ -13,23 +13,17 @@ import {
   useLogin,
   useStore,
   globalStore,
-} from '../../hooks'
+  useDocumentTitle,
+} from 'hooks'
 
-export default function Login({ location, signup = false }){
-  console.log('Login')
+export default function Login({ location, signup = false }) {
+  useDocumentTitle('Log In')
   let origin = location.state && location.state.origin || undefined
   let { login, setLogin, error, loginAction, logoutAction, isValid } = useLogin(origin)
   let [ user ] = useStore('user')
 
-  console.log({
-    origin,
-    user,
-    login,
-  })
-
   useEffect(
     () => {
-      console.log('Login:useEffect', user)
       if (user.isLoggedIn) {
         console.log('user already logged in, redirecting to', origin, location)
         navigate(origin || '/')
@@ -37,11 +31,9 @@ export default function Login({ location, signup = false }){
     }, [login, user]
   )
 
-  console.log('isValid', isValid)
-
   return (
     <Page className="form">
-      <h1>{ signup ? 'Sign Up' : 'Login' }</h1>
+      <h1>{ signup ? 'Sign Up' : 'Log In' }</h1>
 
       <Input
         name="email"

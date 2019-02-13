@@ -1,0 +1,20 @@
+.action {
+  opacity: 0.3;
+  transition: opacity 0.15s ease-in-out;
+
+  &:not(.disabled) {
+    cursor: pointer;
+  }
+
+  &:not(.disabled):hover {
+    opacity: 1;
+  }
+
+  &.disabled {
+    opacity: 0.1;
+  }
+}
+
+.action.save:not(.disabled) {
+  color: #38dc38;
+}

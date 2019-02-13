@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import md from 'react-markings'
 import classNames from 'classnames'
-import { FiEdit, FiShare, FiEye } from 'react-icons/fi'
-
-import Inspect from '../../Controls/Inspect'
-import Editable from '../../Controls/Editable'
-import { ActionIcon, ActionIconToggle } from '../../Controls/ActionIcons'
+import { FiEdit, FiCheck, FiEye } from 'react-icons/fi'
+import Inspect from 'common/Inspect'
+import Editable from 'common/Editable'
+import { ActionIcon, ActionIconToggle } from 'common/ActionIcons'
 import { useStore, useUpdate, ownsCollection } from 'hooks'
 
 export default function ImageDetails({ collectionId, isOwner, item }) {
@@ -23,6 +22,13 @@ export default function ImageDetails({ collectionId, isOwner, item }) {
       {
         isOwner &&
         <div className="actions">
+          <ActionIcon
+            onClick={updateAction}
+            disabled={!isDirty}
+            className="save"
+            >
+            <FiCheck />
+          </ActionIcon>
           <ActionIconToggle
             onClick={toggleEditMode}
             state={editMode}
@@ -31,12 +37,6 @@ export default function ImageDetails({ collectionId, isOwner, item }) {
               [false]: <FiEdit />,
             }}>
           </ActionIconToggle>
-          <ActionIcon
-            onClick={updateAction}
-            disabled={!isDirty}
-            >
-            <FiShare />
-          </ActionIcon>
         </div>
       }
 

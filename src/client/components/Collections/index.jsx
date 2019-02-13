@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Router } from '@reach/router'
+import { useLogin, useStore, requireLogin } from 'hooks'
+import Page from 'common/Page'
 import Create from './Create'
 import List from './List'
-import Page from '../Page'
-import { useLogin, useStore, requireLogin } from 'hooks'
 
 export default function CollectionsIndex() {
   // let isLoggedIn = requireLogin(location)

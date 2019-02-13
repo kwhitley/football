@@ -31,7 +31,7 @@ const clientConfig = (isProduction, basePath = DEV_BUILD_PATH) => ({
     // 'mobx-react' : 'mobx-preact',
     'hooks': '~/client/hooks',
     'utils': '~/client/utils',
-    'components': '~/client/components',
+    'common': '~/client/components/common',
   },
   homeDir: 'src',
   output: `${basePath}/client/$name.js`,

@@ -1,12 +1,14 @@
 $storyPaddingRight: 1em;
 $portraitResizeWidth: 40rem;
 $columnSplitWidth: 50rem;
+$imageDetailsTopMargin: 2.1rem;
+$portraitWidth: 45%;
 
 .image-details {
   display: flex;
   flex: 1 80%;
   flex-flow: row-reverse wrap;
-  margin: 2rem 2rem 0;
+  margin: $imageDetailsTopMargin 2rem 0;
 
   .content {
     display: flex;
@@ -36,6 +38,8 @@ $columnSplitWidth: 50rem;
     flex: 0 1 1em;
     align-self: stretch;
     text-align: right;
+    display: flex;
+    flex-direction: column;
 
     .action {
       opacity: 0.3;
@@ -56,11 +60,19 @@ $columnSplitWidth: 50rem;
         opacity: 0.1;
       }
     }
+
+    .save {
+      order: 9;
+    }
   }
 
   @media screen and (max-width: 30rem) {
     flex-flow: column;
     margin: 1.2rem;
+
+    .actions {
+      display: block;
+    }
 
     .action {
       margin: 0 0 1rem 1rem;
@@ -91,7 +103,7 @@ $columnSplitWidth: 50rem;
     white-space: pre-line;
     width: 100%;
     line-height: 1em;
-    margin-bottom: 0.3em;
+    margin-bottom: 0.5em;
   }
 
   h1:empty {
@@ -176,16 +188,16 @@ $columnSplitWidth: 50rem;
 
   @media screen and (min-width: $portraitResizeWidth) {
     i.portrait {
-      flex: 0 45%;
+      flex: 0 $portraitWidth;
       object-fit: cover;
       max-height: calc(100% + #{$backButtonHeight});
-      max-width: 45%;
+      max-width: $portraitWidth;
       margin-top: calc(#{$backButtonHeight} + $gutterSize);
     }
 
     i.portrait + .image-details {
       flex: 1;
-      margin: calc(#{$backButtonHeight} + 2rem) 1rem 0 2rem;
+      margin: calc(#{$backButtonHeight} + #{$imageDetailsTopMargin}) 1rem 0 2rem;
     }
 
     .actions {

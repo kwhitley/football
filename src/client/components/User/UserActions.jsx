@@ -26,8 +26,8 @@ export default function UserActions({ location }) {
                     replace: true
                   }
                 )
-              }>Login</a>
-            <Link to="/signup">Signup</Link>
+              }>Log In</a>
+            <Link to="/signup">Sign Up</Link>
           </div>
       }
     </React.Fragment>

@@ -1,6 +1,6 @@
 import React from 'react'
 import classNames from 'classnames'
-import Back from './Back'
+import Back from 'common/Back'
 
 export default ({ children, visible = true, className, back, ...props }) => {
   return (

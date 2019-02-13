@@ -45,7 +45,7 @@ export function useCollectionSlugIsAvailable(slug) {
 }
 
 export function useCollectionDetails(collectionId) {
-  let [ collection, setCollection ] = useStore(`collection:${collectionId}`, undefined, { persist: true })
+  let [ collection, setCollection ] = useStore(`collection:${collectionId}`, undefined)
   let [ isLoading, setIsLoading ] = useState(false)
 
   useEffect(() => {
