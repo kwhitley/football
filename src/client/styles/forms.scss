@@ -28,6 +28,10 @@ input + input {
   align-items: center;
   padding: 0 3rem 10%;
 
+  @media screen and (max-width: $mobile) {
+    padding: 0 0.75rem 10%;
+  }
+
   h1:first-child, .back + h1 {
     color: #ccc;
     margin-bottom: 1em;
