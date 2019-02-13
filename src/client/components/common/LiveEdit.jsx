@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import classNames from 'classnames'
-import { useAutoResize } from 'hooks'
+import { useAutoResize, useFocus } from 'hooks'
 
 const valueOnly = (fn) => (e) => fn(e.target.value)
 
@@ -13,6 +13,7 @@ export default function LiveEdit({
 }) {
   let ref = useRef(null)
   useAutoResize(ref)
+  useFocus(ref)
 
   return (
     <div className="input-group">
