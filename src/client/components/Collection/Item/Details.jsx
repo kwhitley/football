@@ -7,6 +7,9 @@ import Editable from 'common/Editable'
 import { ActionIcon, ActionIconToggle } from 'common/ActionIcons'
 import { useStore, useUpdate, ownsCollection } from 'hooks'
 
+// used to split story into two columns when appropriate
+const longStory = (story = '') => story.length > 1000
+
 export default function ImageDetails({ collectionId, isOwner, item }) {
   let { update, setUpdate, isDirty, updateAction } = useUpdate({
     path: `/api/collections/${collectionId}/items/${item.id}`,
@@ -58,7 +61,7 @@ export default function ImageDetails({ collectionId, isOwner, item }) {
           onChange={story => setUpdate({ ...update, story })}
           editing={editMode}
           >
-          <div className="story">
+          <div className={classNames('story', longStory(update.story) && 'long')}>
             { md([update.story]) }
           </div>
         </Editable>

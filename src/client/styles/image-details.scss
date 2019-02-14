@@ -134,7 +134,7 @@ $portraitWidth: 45%;
   max-width: 100%;
   width: 100%;
 
-  & + .image-details .story {
+  & + .image-details .story.long {
     @media screen and (min-width: $columnSplitWidth) {
       column-count: 2;
       column-gap: 3rem;
