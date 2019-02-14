@@ -12,12 +12,12 @@ import Details from './Details'
 
 export default function ItemViewer({ collectionId, itemId, navigate }) {
   let { collection, error } = useCollectionDetails(collectionId)
-  let { item, updateItemAction, isLoading } = useItemDetails({ collectionId, itemId })
+  let { item, updateItemAction, isLoading, error: itemError } = useItemDetails({ collectionId, itemId })
   useDocumentTitle(item && item.name, collection && collection.name)
   let isOwner = ownsCollection(collectionId)
 
-  if (!item || isLoading || error) {
-    return error ? <MissingPage message={`Are you sure about that?`} /> : false
+  if (!item || isLoading || error || itemError) {
+    return (error || itemError) ? <MissingPage message={`Are you sure about that?`} /> : false
   }
 
   return (

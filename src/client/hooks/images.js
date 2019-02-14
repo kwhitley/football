@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useStore } from './store'
 
+const CDN_PATH = 'https://cdn.supergeneric.me'
+
 const getOrientation = (image) => image.naturalHeight > image.naturalWidth ? 'portrait' : 'landscape'
 
 export function useImageWithPreview(path) {
@@ -14,7 +16,7 @@ export function useImageWithPreview(path) {
     if (!src) {
       let image = new Image()
       image.onload = () => {
-        setSrc(previewPath)
+        setSrc(CDN_PATH + previewPath)
 
         let newOrientation = getOrientation(image)
         if (newOrientation !== orientation) {
@@ -22,16 +24,16 @@ export function useImageWithPreview(path) {
         }
 
         image.onload = () => {
-          setSrc(path)
+          setSrc(CDN_PATH + path)
 
           let newOrientation = getOrientation(image)
           if (newOrientation !== orientation) {
             setOrientation(newOrientation)
           }
         }
-        image.src = path
+        image.src = CDN_PATH + path
       }
-      image.src = previewPath
+      image.src = CDN_PATH + previewPath
     }
   }, [])
 

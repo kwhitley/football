@@ -71,6 +71,7 @@ export function useCollectionDetails(collectionId) {
 export function useItemDetails({ collectionId, itemId }) {
   let [ item, setItem ] = useState(undefined)
   let [ isLoading, setIsLoading ] = useState(false)
+  let [ error, setError ] = useState(undefined)
 
   useEffect(() => {
     if (!collectionId || !itemId) {
@@ -84,11 +85,16 @@ export function useItemDetails({ collectionId, itemId }) {
         setItem(r)
         setIsLoading(false)
       })
+      .catch(err => {
+        setIsLoading(false)
+        setError(err)
+      })
   }, [collectionId, itemId])
 
   return {
     item,
     isLoading,
+    error,
     updateItemAction: updateItemAction({ collectionId, itemId }),
   }
 }
