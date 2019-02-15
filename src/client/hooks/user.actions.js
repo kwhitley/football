@@ -38,6 +38,8 @@ export const loginAction = ({ login, resetLogin, setUser, setError, origin }) =>
       if (origin) {
         console.log('returning to', origin)
         navigate(origin)
+      } else {
+        navigate('/')
       }
     })
     .catch(() => {

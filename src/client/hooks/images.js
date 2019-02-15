@@ -8,8 +8,7 @@ const getOrientation = (image) => image.naturalHeight > image.naturalWidth ? 'po
 export function useImageWithPreview(path) {
   const previewPath = path.replace(/^(.*)(\.jpg|png)$/i, '$1,preview$2')
   const keyPath = path.replace(/^([^\:]+).*(\.jpg|png)$/, '$1')
-  let [ isLoaded, setIsLoaded ] = useStore(previewPath, false)
-  let [ src, setSrc ] = useStore(path, undefined)
+  let [ src, setSrc ] = useStore(path, undefined, { persist: true })
   let [ orientation, setOrientation ] = useStore(path+':orientation', 'landscape')
 
   useEffect(() => {

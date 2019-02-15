@@ -98,8 +98,8 @@ const loadFragments = async (path) => {
   try {
     await getImage(`/${path}::width=400,height=400,preview.jpg`)
     await getImage(`/${path}::width=400,height=400.jpg`)
-    await getImage(`/${path}::width=1500,height=1500,fit=inside,preview.jpg`)
-    await getImage(`/${path}::width=1500,height=1500,fit=inside.jpg`)
+    await getImage(`/${path}::width=900,height=900,fit=inside,preview.jpg`)
+    await getImage(`/${path}::width=900,height=900,fit=inside.jpg`)
 
     return true
   } catch(err) {

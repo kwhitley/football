@@ -25,6 +25,8 @@ export default function ItemViewer({ collectionId, itemId, navigate }) {
       <Imager
         id={collectionId + '/' + itemId}
         width={900}
+        height={900}
+        fit="inside"
         />
       <Details
         collectionId={collectionId}
