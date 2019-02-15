@@ -1,18 +1,19 @@
 import React from 'react'
 import { Link, navigate } from '@reach/router'
 import { useStore, useLogin } from 'hooks'
+import PoweredBy from './PoweredBy'
 
-export default function UserActions({ location }) {
+export default function Footer({ location }) {
   let origin = location && location.state && location.state.origin || undefined
   let { user, logoutAction } = useLogin()
 
   return (
-    <React.Fragment>
+    <footer>
       {
         user.isLoggedIn
         ? <React.Fragment>
             <a className="link" onClick={logoutAction}>Logout</a>
-            <Link to="/collections">Collections</Link>
+            <Link className="collections" to="/collections">Collections</Link>
           </React.Fragment>
         : <div className="login-signup">
             <a
@@ -30,6 +31,7 @@ export default function UserActions({ location }) {
             <Link to="/signup">Sign Up</Link>
           </div>
       }
-    </React.Fragment>
+      <PoweredBy />
+    </footer>
   )
 }

@@ -8,7 +8,7 @@ import ItemViewer from './Collection/Item/Viewer'
 import Login from './User/Login'
 import CollectionsList from './Collections/List'
 import CreateCollection from './Collections/Create'
-import UserActions from './User/UserActions'
+import Footer from './Layout/Footer'
 
 export default function App() {
   let { spacer } = useKeyboardSpacing()
@@ -30,7 +30,7 @@ export default function App() {
       </Router>
 
       <Router className="controls" primary={false}>
-        <UserActions default />
+        <Footer default />
       </Router>
     </div>
   )

@@ -1,0 +1,27 @@
+footer {
+  display: flex;
+  flex-flow: row-reverse wrap;
+  justify-content: space-between;
+
+  * {
+    margin: 0;
+    padding: 0;
+  }
+
+  .collections {
+    align-self: flex-end;
+  }
+
+  .powered-by {
+    font-size: 0.7rem;
+    text-transform: none;
+    opacity: 0.5;
+    text-align: right;
+    flex: 1 100%;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
