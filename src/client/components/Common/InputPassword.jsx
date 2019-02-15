@@ -1,5 +1,5 @@
 import React from 'react'
-import Input from 'common/Input'
+import Input from 'Common/Input'
 
 export default function InputPassword(props) {
   return (

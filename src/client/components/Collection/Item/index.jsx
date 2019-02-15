@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from '@reach/router'
-import Imager from 'common/Imager'
+import Imager from 'Common/Imager'
 
 export default function GridItem({ item, id }) {
   return (

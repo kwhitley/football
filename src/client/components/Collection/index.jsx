@@ -1,7 +1,7 @@
 import React from 'react'
 import { useCollectionDetails, useScrollTracking, useDocumentTitle } from 'hooks'
-import Page from 'common/Page'
-import MissingPage from 'common/MissingPage'
+import Page from 'Common/Page'
+import MissingPage from 'Common/MissingPage'
 import Grid from './Grid'
 
 export default function ImageCollection({ collectionId = 'krwhitley' }) {

@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react'
-import Page from 'common/Page'
-import Input from 'common/Input'
-import Inspect from 'common/Inspect'
-import Back from 'common/Back'
+import Page from 'Common/Page'
+import Input from 'Common/Input'
+import Inspect from 'Common/Inspect'
+import Back from 'Common/Back'
 import { validators } from 'utils'
 import { useNewCollection, requireLogin } from 'hooks'
 

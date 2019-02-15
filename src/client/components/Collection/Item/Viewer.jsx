@@ -5,9 +5,9 @@ import {
   useDocumentTitle,
   useCollectionDetails,
 } from 'hooks'
-import Imager from 'common/Imager'
-import Page from 'common/Page'
-import MissingPage from 'common/MissingPage'
+import Imager from 'Common/Imager'
+import Page from 'Common/Page'
+import MissingPage from 'Common/MissingPage'
 import Details from './Details'
 
 export default function ItemViewer({ collectionId, itemId, navigate }) {

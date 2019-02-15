@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react'
 import md from 'react-markings'
 import classNames from 'classnames'
 import { FiEdit, FiCheck, FiEye } from 'react-icons/fi'
-import Inspect from 'common/Inspect'
-import Editable from 'common/Editable'
-import { ActionIcon, ActionIconToggle } from 'common/ActionIcons'
+import Inspect from 'Common/Inspect'
+import Editable from 'Common/Editable'
+import { ActionIcon, ActionIconToggle } from 'Common/ActionIcons'
 import { useStore, useUpdate, ownsCollection } from 'hooks'
 
 // used to split story into two columns when appropriate

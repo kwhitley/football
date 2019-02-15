@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import classNames from 'classnames'
-import Page from 'common/Page'
-import Inspect from 'common/Inspect'
-import LiveEdit from 'common/LiveEdit'
-import Input from 'common/Input'
+import Page from 'Common/Page'
+import Inspect from 'Common/Inspect'
+import LiveEdit from 'Common/LiveEdit'
+import Input from 'Common/Input'
 import { useKeyboardSpacing, useDeviceEnvironment } from 'hooks'
 
 export default ({ children, className, ...props }) => {

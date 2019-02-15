@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { navigate } from '@reach/router'
-import Page from 'common/Page'
-import Input from 'common/Input'
+import Page from 'Common/Page'
+import Input from 'Common/Input'
 import { validators } from 'utils'
 import LoginForm from './LoginForm'
 import {

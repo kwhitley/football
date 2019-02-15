@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Router } from '@reach/router'
 import { useLogin, useStore, requireLogin } from 'hooks'
-import Page from 'common/Page'
+import Page from 'Common/Page'
 import Create from './Create'
 import List from './List'
 

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
-import Page from 'common/Page'
-import Back from 'common/Back'
+import Page from 'Common/Page'
+import Back from 'Common/Back'
 
 export default function MissingPage({
   location,

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from '@reach/router'
-import Page from 'common/Page'
+import Page from 'Common/Page'
 import { useLogin, useStore, requireLogin } from 'hooks'
 import List from './List'
 
