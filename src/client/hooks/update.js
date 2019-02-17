@@ -32,6 +32,11 @@ export const useUpdate = ({ item, path }) => {
       })
   }
 
+  let revertAction = () => {
+    setUpdate(item)
+    setIsDirty(false)
+  }
+
   useEffect(() => {
     if (update !== item) {
       // let changes = onlyChanges(item, update)
@@ -40,6 +45,10 @@ export const useUpdate = ({ item, path }) => {
   }, [update])
 
   return {
-    update, setUpdate, isDirty, updateAction,
+    update,
+    setUpdate,
+    isDirty,
+    updateAction,
+    revertAction,
   }
 }

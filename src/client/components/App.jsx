@@ -13,8 +13,6 @@ import Footer from './Layout/Footer'
 export default function App() {
   let { spacer } = useKeyboardSpacing()
 
-  console.log('App:spacer', spacer)
-
   return (
     <div className="page-content" style={{ marginBottom: spacer }}>
       <Router className="main">

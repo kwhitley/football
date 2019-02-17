@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import md from 'react-markings'
 import classNames from 'classnames'
-import { FiEdit, FiCheck, FiEye } from 'react-icons/fi'
+import { FiEdit, FiCheck, FiEye , FiX } from 'react-icons/fi'
 import Inspect from 'Common/Inspect'
 import Editable from 'Common/Editable'
 import { ActionIcon, ActionIconToggle } from 'Common/ActionIcons'
@@ -11,7 +11,7 @@ import { useStore, useUpdate, ownsCollection } from 'hooks'
 const longStory = (story = '') => story.length > 1000
 
 export default function ImageDetails({ collectionId, isOwner, item }) {
-  let { update, setUpdate, isDirty, updateAction } = useUpdate({
+  let { update, setUpdate, isDirty, revertAction, updateAction } = useUpdate({
     path: `/api/collections/${collectionId}/items/${item.id}`,
     item,
   })
@@ -25,13 +25,6 @@ export default function ImageDetails({ collectionId, isOwner, item }) {
       {
         isOwner &&
         <div className="actions">
-          <ActionIcon
-            onClick={updateAction}
-            disabled={!isDirty}
-            className="save"
-            >
-            <FiCheck />
-          </ActionIcon>
           <ActionIconToggle
             onClick={toggleEditMode}
             state={editMode}
@@ -40,6 +33,20 @@ export default function ImageDetails({ collectionId, isOwner, item }) {
               [false]: <FiEdit />,
             }}>
           </ActionIconToggle>
+          <ActionIcon
+            onClick={revertAction}
+            disabled={!isDirty}
+            className="cancel"
+            >
+            <FiX />
+          </ActionIcon>
+          <ActionIcon
+            onClick={updateAction}
+            disabled={!isDirty}
+            className="save"
+            >
+            <FiCheck />
+          </ActionIcon>
         </div>
       }
 

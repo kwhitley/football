@@ -13,11 +13,9 @@ export function useOrientationAngle() {
       setOrientationAngle(angle)
     }
 
-    console.log('adding orientationListener')
     window.addEventListener('orientationchange', orientationListener)
 
     return () => {
-      console.log('removing orientationListener')
       window.removeEventListener('orientationchange', orientationListener)
     }
   }, [])
@@ -72,19 +70,15 @@ export function useFocus(ref) {
   useEffect(() => {
     let el = ref.current
 
-    console.log('useFocus:useEffect')
     let onFocus = () => {
-      console.log('focused')
       setIsFocused(true)
     }
 
     let onBlur = () => {
-      console.log('blurred')
       setIsFocused(false)
     }
 
     if (el) {
-      console.log('adding event listeners')
       el.addEventListener('focus', onFocus)
       el.addEventListener('blur', onBlur)
     } else {
@@ -93,9 +87,8 @@ export function useFocus(ref) {
 
     return () => {
       if (el) {
-        console.log('removing event listeners')
-        // el.removeEventListener('focus', onFocus)
-        // el.removeEventListener('blur', onBlur)
+        el.removeEventListener('focus', onFocus)
+        el.removeEventListener('blur', onBlur)
       }
     }
   }, [ref.current])

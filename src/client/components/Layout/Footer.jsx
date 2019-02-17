@@ -24,7 +24,7 @@ export default function Footer({ location }) {
                     state: {
                       origin: location && location.pathname
                     },
-                    replace: true
+                    replace: true,
                   }
                 )
               }>Log In</a>
