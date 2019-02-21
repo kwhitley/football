@@ -1,7 +1,7 @@
 import React from 'react'
 import {
   useItemDetails,
-  ownsCollection,
+  useOwnsCollection,
   useDocumentTitle,
   useCollectionDetails,
 } from 'hooks'
@@ -14,7 +14,7 @@ export default function ItemViewer({ collectionId, itemId, navigate }) {
   let { collection, error } = useCollectionDetails(collectionId)
   let { item, updateItemAction, isLoading, error: itemError } = useItemDetails({ collectionId, itemId })
   useDocumentTitle(item && item.name, collection && collection.name)
-  let isOwner = ownsCollection(collectionId)
+  let isOwner = useOwnsCollection(collectionId)
 
   if (!item || isLoading || error || itemError) {
     return (error || itemError) ? <MissingPage message={`Are you sure about that?`} /> : false

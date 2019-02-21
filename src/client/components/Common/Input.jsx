@@ -1,9 +1,13 @@
-import React, { useRef } from 'react'
+import React, { useRef, memo } from 'react'
 import classNames from 'classnames'
-import { useFocus } from 'hooks'
+import { useFocus, useStore } from 'hooks'
 
-const valueOnly = (fn) => ({ target }) => {
+const valueOnly = (fn) => (e) => {
+  // console.log('e', e)
+  let { target } = e
+  // console.log('target', target)
   let { name, value } = target
+  // console.log('name:value', name, value)
 
   if (name) {
     return fn(target)
@@ -12,7 +16,7 @@ const valueOnly = (fn) => ({ target }) => {
   }
 }
 
-export default function Input({
+export default memo(function Input({
   name,
   value,
   onChange,
@@ -23,6 +27,7 @@ export default function Input({
   ...props
 }) {
   let ref = useRef(null)
+  let [ foo ] = useStore('foo')
   useFocus(ref)
   let invalid = undefined
   let validationMessage = undefined
@@ -32,8 +37,11 @@ export default function Input({
     validationMessage = invalid && value && validator.message
   }
 
+  console.log('Input, value', value)
+
   return (
     <section className="input-group">
+      useStore('foo')={foo}
       <input
         ref={ref}
         className={classNames('input', className)}
@@ -54,4 +62,4 @@ export default function Input({
       }
     </section>
   )
-}
+})

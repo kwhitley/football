@@ -4,10 +4,10 @@ import Input from 'Common/Input'
 import Inspect from 'Common/Inspect'
 import Back from 'Common/Back'
 import { validators } from 'utils'
-import { useNewCollection, requireLogin } from 'hooks'
+import { useNewCollection, useLoginRequired } from 'hooks'
 
 export default function CreateCollection({ location, navigate }) {
-  let isLoggedIn = requireLogin(location)
+  let isLoggedIn = useLoginRequired(location)
   let collection = useNewCollection()
   let {
     slug,

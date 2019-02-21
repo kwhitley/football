@@ -17,27 +17,26 @@ fetchJSON('/user/profile')
   })
 
 export function useLogin(origin) {
-  let [ login, setLogin ] = useState({
-    email: '',
-    password: '',
-    isValidating: false,
-  })
+  let [ email, setEmail ] = useState('')
+  let [ password, setPassword ] = useState('')
   let [ error, setError ] = useState(undefined)
   let [ user, setUser ] = useStore('user')
+
   let resetLogin = () => {
     setError()
     setLogin({ email: '', password: '', isValidating: false })
   }
 
-  let { email, password } = login
   let isValid = validators.password().isValid(password) &&
     validators.email().isValid(email)
 
   return {
-    login,
+    email,
+    setEmail,
+    password,
+    setPassword,
     user,
     error,
-    setLogin: ({ name, value }) => setLogin({ ...login, [name]: value }),
     loginAction: () => {
       loginAction({ login, resetLogin, setUser, setError, origin })
     },
@@ -51,7 +50,7 @@ export function useLogin(origin) {
   }
 }
 
-export function ownsCollection(collectionId) {
+export function useOwnsCollection(collectionId) {
   let [ user ] = useStore('user')
 
   if (user.isLoggedIn) {
@@ -64,7 +63,7 @@ export function ownsCollection(collectionId) {
   return false
 }
 
-export function requireLogin(location) {
+export function useLoginRequired(location) {
   let [ user ] = useStore('user')
 
   if (!user.isLoggedIn) {

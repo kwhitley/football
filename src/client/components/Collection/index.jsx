@@ -1,5 +1,9 @@
 import React from 'react'
-import { useCollectionDetails, useScrollTracking, useDocumentTitle } from 'hooks'
+import {
+  useCollectionDetails,
+  useScrollTracking,
+  useDocumentTitle,
+} from 'hooks'
 import Page from 'Common/Page'
 import MissingPage from 'Common/MissingPage'
 import Grid from './Grid'
