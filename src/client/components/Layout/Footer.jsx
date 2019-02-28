@@ -5,14 +5,14 @@ import PoweredBy from './PoweredBy'
 
 export default function Footer({ location }) {
   let origin = location && location.state && location.state.origin || undefined
-  let { user, actions } = useLogin()
+  let { user, logoutAction } = useLogin()
 
   return (
     <footer>
       {
         user.isLoggedIn
         ? <React.Fragment>
-            <a className="link" onClick={actions.logout}>Logout</a>
+            <a className="link" onClick={logoutAction}>Logout</a>
             <Link className="collections" to="/collections">Collections</Link>
           </React.Fragment>
         : <div className="login-signup">

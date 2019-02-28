@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useStore } from './store'
 
-const CDN_PATH = process.env.NODE_ENV === 'development'
-                ? ''
-                : 'https://cdn.supergeneric.me'
+const CDN_PATH = 'https://cdn.supergeneric.me'
 
-function getOrientation = (image) => image.naturalHeight > image.naturalWidth
-                                      ? 'portrait'
-                                      : 'landscape'
+function getOrientation(image) {
+  return image.naturalHeight > image.naturalWidth ? 'portrait' : 'landscape'
+}
 
 export function useImageWithPreview(path) {
   const previewPath = path.replace(/^(.*)(\.jpg|png)$/i, '$1,preview$2')

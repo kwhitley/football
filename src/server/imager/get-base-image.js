@@ -2,28 +2,28 @@ import fs from 'fs'
 import sharp from 'sharp'
 import Path from 'path'
 import { download } from './dropbox'
-import { getCollection, getCollectionItem } from '../collections/collections'
+import { getCollection } from '../collections/collections'
 import { imagePath } from '../paths'
 
 // gets image locally, or downloads from dropbox and returns the saved image
 export const getBaseImage = async (requestedImagePath) => {
   return new Promise(async function(resolve, reject) {
     let decodedPath = decodeURI(requestedImagePath)
-    let collectionHash = decodedPath.replace(/\/([^\/]+).*/g, '$1')
-    let hash = decodedPath.replace(/.*\/(\w+).*/g, '$1')
+    let collectionId = decodedPath.replace(/\/([^\/]+).*/g, '$1')
+    let revisionId = decodedPath.replace(/.*\/(\w+).*/g, '$1')
 
     // begin: save final output and stream output to response
     let savepath = imagePath + requestedImagePath
-    let originalpath = imagePath + '/' + collectionHash + '/' + hash + '.jpg'
+    let originalpath = imagePath + '/' + collectionId + '/' + revisionId + '.jpg'
 
-    console.log('getBaseImage', {
-      requestedImagePath,
-      decodedPath,
-      collectionHash,
-      hash,
-      savepath,
-      originalpath,
-    })
+    // console.log('getBaseImage', {
+    //   requestedImagePath,
+    //   decodedPath,
+    //   collectionId,
+    //   revisionId,
+    //   savepath,
+    //   originalpath,
+    // })
 
     // throw new Error('exit')
 
@@ -32,15 +32,12 @@ export const getBaseImage = async (requestedImagePath) => {
 
     // download image from dropbox if not found base locally
     if (!image) {
-      let collection = await getCollection({ hash: collectionHash })
-      let item = await getCollectionItem(collection)({ hash })
-      console.log('item found', item)
-
+      let collection = await getCollection({ slug: collectionId })
       let { source } = collection
-      let binary = await download(source.apiKey, item.id)
+      let binary = await download(source.apiKey, revisionId)
 
       // ensure folder exists before file stream opening
-      await fs.promises.mkdir(imagePath + '/' + collectionHash, { recursive: true }).catch(e => e)
+      await fs.promises.mkdir(imagePath + '/' + collectionId, { recursive: true }).catch(e => e)
 
       console.log('saving base image', originalpath)
       let image = await sharp(binary)

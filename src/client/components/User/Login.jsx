@@ -1,8 +1,7 @@
-import React, { useState, useRef, useEffect, memo, useMemo } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { navigate } from '@reach/router'
 import Page from 'Common/Page'
 import Input from 'Common/Input'
-import Inspect from 'Common/Inspect'
 import { validators } from 'utils'
 import {
   usePrevious,
@@ -16,41 +15,23 @@ import {
   useDocumentTitle,
 } from 'hooks'
 
-
-const useForm = (original) => {
-  const [ values, setValues ] = useState(original)
-  const [ isDirty, setIsDirty ] = useState(false)
-
-  const setValue = (name) => (value) => {
-    setValues({ ...values, [name]: value })
-    setIsDirty(true)
-  }
-
-  return {
-    original,
-    values,
-    setValues,
-    setValue,
-    isDirty,
-  }
-}
-
 export default function Login({ location, signup = false }) {
   useDocumentTitle('Log In')
   let origin = location.state && location.state.origin || undefined
-  origin = origin === '/login' ? '/collections' : origin
   let {
     email,
     setEmail,
     password,
     setPassword,
     login,
+    setLogin,
     error,
-    actions,
+    loginAction,
     logoutAction,
     isValid,
   } = useLogin(origin)
   let [ user ] = useStore('user')
+  let [ foo, setFoo ] = useStore('foo', '')
 
   useEffect(
     () => {
@@ -65,28 +46,30 @@ export default function Login({ location, signup = false }) {
     <Page className="form">
       <h1>{ signup ? 'Sign Up' : 'Log In' }</h1>
 
-      <Inspect item={{ email, password }} />
-
       <Input
-        name="email"
         type="email"
         value={email}
+        // validator={validators.email()}
         onChange={setEmail}
-        validator={validators.email}
         />
 
       <Input
-        name="password"
         type="password"
         value={password}
         onChange={setPassword}
-        validator={validators.password}
+        // validator={validators.password()}
+        />
+
+      <Input
+        value={foo}
+        onChange={setFoo}
+        // validator={validators.password()}
         />
 
         { error && <div className="error">{error}</div> }
 
       <button
-        onClick={actions.login}
+        onClick={loginAction}
         disabled={!isValid}
         >
         { signup ? 'Create Account' : 'Log In' }

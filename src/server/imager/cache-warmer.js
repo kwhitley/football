@@ -33,11 +33,10 @@ export const checkForUpdates = async () => {
   })
 
   for (var collection of collections) {
-    console.log('syncing collection', collection.slug)
     await syncCollection({ _id: collection._id }))
   }
 
-  // get updated collections from db
+  // get updated collections
   collections = await getCollections({
     'source.service': 'dropbox',
     'source.apiKey': { $exists: true },
@@ -45,7 +44,7 @@ export const checkForUpdates = async () => {
 
   for (var collection of collections) {
     for (var item of collection.items) {
-      let path = `${collection.hash}/${item.hash}`
+      let path = `${collection.slug}/${item.id}`
 
       if (!pendingImages.has(path) && !cachedImages.has(path)) {
         console.log('image to be cached', { path })

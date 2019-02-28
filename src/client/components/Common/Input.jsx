@@ -2,7 +2,19 @@ import React, { useRef, memo } from 'react'
 import classNames from 'classnames'
 import { useFocus, useStore } from 'hooks'
 
-const valueOnly = fn => e => fn(e.target.value)
+const valueOnly = (fn) => (e) => {
+  // console.log('e', e)
+  let { target } = e
+  // console.log('target', target)
+  let { name, value } = target
+  // console.log('name:value', name, value)
+
+  if (name) {
+    return fn(target)
+  } else {
+    return fn(value)
+  }
+}
 
 export default memo(function Input({
   name,
@@ -15,6 +27,7 @@ export default memo(function Input({
   ...props
 }) {
   let ref = useRef(null)
+  let [ foo ] = useStore('foo')
   useFocus(ref)
   let invalid = undefined
   let validationMessage = undefined
@@ -28,6 +41,7 @@ export default memo(function Input({
 
   return (
     <section className="input-group">
+      useStore('foo')={foo}
       <input
         ref={ref}
         className={classNames('input', className)}
@@ -35,7 +49,7 @@ export default memo(function Input({
         name={name}
         value={value}
         invalid={invalid}
-        placeholder={placeholder || label || name}
+        placeholder={placeholder || name}
         onChange={valueOnly(onChange)}
         {...props}
         />
