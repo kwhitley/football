@@ -2,9 +2,8 @@ import React from 'react'
 import classNames from 'classnames'
 import Item from './Item'
 
-export default function Grid({ collection }) {
+export default function Grid({ collectionId, items }) {
   let gridScale = undefined
-  let { items } = collection
 
   if (items.length < 8) {
     gridScale = 'some'
@@ -19,8 +18,8 @@ export default function Grid({ collection }) {
       {
         items.map((item, index) =>
           <Item
-            key={item.hash}
-            collection={collection}
+            key={item.id}
+            id={collectionId + '/' + item.hash}
             item={item}
             />
         )

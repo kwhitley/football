@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
 import { useImageWithPreview } from 'hooks'
 
-export default function Image({ path, ...props }) {
+export default function Image({ id, ...props }) {
   const params = Object.keys(props).map(k => `${k}=${props[k]}`)
-  const { src, orientation } = useImageWithPreview(`${path}::${params.join(',')}.jpg`)
+  const { src, orientation } = useImageWithPreview(`/i/${id}::${params.join(',')}.jpg`)
 
   return (
     <i className={'imager ' + orientation}>

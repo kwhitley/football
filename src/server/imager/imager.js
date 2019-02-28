@@ -4,12 +4,8 @@ import { getBaseImage } from './get-base-image'
 import { imagePath } from '../paths'
 
 export const getImage = (requestedImagePath) => {
-  console.log('getImage:', { requestedImagePath })
+  // console.log('getImage:', requestedImagePath)
   return new Promise(async function(resolve, reject) {
-    // trim requests if passed through as root /i/hash/hash style
-    requestedImagePath = requestedImagePath.replace(/^\/i(\/.*)$/,'$1')
-
-    // begin decoding the request path
     let decodedPath = decodeURI(requestedImagePath)
     let collectionId = decodedPath.replace(/\/([^\/]+).*/g, '$1')
     let optionsSegment = decodedPath.replace(/^.*::(.*)\.\w{3,4}$/i, '$1') || ''
@@ -46,15 +42,11 @@ export const getImage = (requestedImagePath) => {
     let file = await getBaseImage(`/${collectionId}/${revisionId}.jpg`)
       .catch((err) => console.error('failure fetching image', err))
 
-    if (!file) {
-      return reject(`error loading image ${requestedImagePath}`)
-    }
-
     try {
       var image = sharp(file).rotate()
     } catch(err) {
       console.log('error loading image', requestedImagePath, err)
-      return reject(err)
+      return false
     }
 
     if (options.preview) {

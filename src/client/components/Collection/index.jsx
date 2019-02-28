@@ -21,7 +21,7 @@ export default function ImageCollection({ collectionId = 'krwhitley' }) {
     <Page className="collection">
       <h1 className="collection-title">{ collection.name }</h1>
 
-      <Grid collection={collection} />
+      <Grid collectionId={collectionId} items={collection.items} />
     </Page>
   )
 }
