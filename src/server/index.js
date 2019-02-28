@@ -14,7 +14,6 @@ import favicon from 'serve-favicon'
 import { connectDatabase } from './db'
 import { cacheWhenIdle, checkForUpdates } from './imager/cache-warmer'
 import { clientPath } from './paths'
-const morgan = require('morgan')
 
 // API
 import api from './api'
@@ -41,7 +40,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(compression())
 
 // add logging
-app.use(morgan('dev'))
+// app.use(morgan('dev'))
 
 // static serving from /dist/client
 console.log(`serving static content from ${clientPath}`)
