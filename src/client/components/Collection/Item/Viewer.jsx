@@ -1,7 +1,6 @@
 import React from 'react'
 import {
   useItemDetails,
-  useOwnsCollection,
   useDocumentTitle,
   useCollectionDetails,
 } from 'hooks'
@@ -11,27 +10,29 @@ import MissingPage from 'Common/MissingPage'
 import Details from './Details'
 
 export default function ItemViewer({ collectionId, itemId, navigate }) {
-  let { collection, error } = useCollectionDetails(collectionId)
-  let { item, updateItemAction, isLoading, error: itemError } = useItemDetails({ collectionId, itemId })
-  useDocumentTitle(item && item.name, collection && collection.name)
-  let isOwner = useOwnsCollection(collectionId)
+  let {
+    item,
+    updateItemAction,
+    isLoading,
+    error,
+  } = useItemDetails({ collectionId, itemId })
+  useDocumentTitle(item && item.name, item && item.collection.name)
 
-  if (!item || isLoading || error || itemError) {
-    return (error || itemError) ? <MissingPage message={`Are you sure about that?`} /> : false
+  if (!item || isLoading || error) {
+    return (error) ? <MissingPage message={`Are you sure about that?`} /> : false
   }
 
   return (
     <Page back className="viewer" navigate={navigate}>
       <Imager
-        id={collectionId + '/' + itemId}
-        width={900}
-        height={900}
+        path={item.imagePath}
+        width={1500}
+        height={1500}
         fit="inside"
         />
       <Details
-        collectionId={collectionId}
+        collectionId={item.collection.slug}
         item={item}
-        isOwner={isOwner}
         updateItemAction={updateItemAction}
         />
     </Page>

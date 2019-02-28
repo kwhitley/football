@@ -5,19 +5,25 @@ import { FiEdit, FiCheck, FiEye , FiX } from 'react-icons/fi'
 import Inspect from 'Common/Inspect'
 import Editable from 'Common/Editable'
 import { ActionIcon, ActionIconToggle } from 'Common/ActionIcons'
-import { useStore, useUpdate, ownsCollection } from 'hooks'
+import {
+  useStore,
+  useUpdate,
+  useOwnsCollection,
+} from 'hooks'
 
 // used to split story into two columns when appropriate
 const longStory = (story = '') => story.length > 1000
 
-export default function ImageDetails({ collectionId, isOwner, item }) {
+export default function ImageDetails({ collectionId, item }) {
+  let isOwner = useOwnsCollection(collectionId)
   let { update, setUpdate, isDirty, revertAction, updateAction } = useUpdate({
-    path: `/api/collections/${collectionId}/items/${item.id}`,
+    path: `/api/collections/${collectionId}/items/${item.hash}`,
     item,
   })
-  let [ editModeEnabled, setEditModeEnabled ] = useStore('editMode', false, { persist: true })
+  let [ editModeEnabled, setEditModeEnabled ] = useStore('editMode', true, { persist: true })
   let editMode = editModeEnabled && isOwner
   let noContent = !item.story && !item.name
+
   const toggleEditMode = () => setEditModeEnabled(!editMode)
 
   return (
@@ -33,13 +39,13 @@ export default function ImageDetails({ collectionId, isOwner, item }) {
               [false]: <FiEdit />,
             }}>
           </ActionIconToggle>
-          <ActionIcon
+          {/*<ActionIcon
             onClick={revertAction}
             disabled={!isDirty}
             className="cancel"
             >
             <FiX />
-          </ActionIcon>
+          </ActionIcon>*/}
           <ActionIcon
             onClick={updateAction}
             disabled={!isDirty}

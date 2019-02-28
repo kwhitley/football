@@ -1,17 +1,17 @@
 import { validators, fetchJSON, fetchStatusIsOK } from 'utils'
 import { navigate } from '@reach/router'
 
-export const loginAction = ({ login, resetLogin, setUser, setError, origin }) => {
+export const loginAction = ({ email, password, resetLogin, setUser, setError, origin }) => {
   let {
     isValid,
     message: passwordMessage,
-  } = validators.password()
+  } = validators.password
 
-  if (!login.email || !login.password) {
+  if (!email || !password) {
     return setError('You need a username and password to login.')
   }
 
-  if (!isValid(login.password)) {
+  if (!isValid(password)) {
     return setError(passwordMessage)
   }
 
@@ -21,7 +21,7 @@ export const loginAction = ({ login, resetLogin, setUser, setError, origin }) =>
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(login),
+      body: JSON.stringify({ email, password }),
     })
     .then(profile => {
       console.log('login success', profile, origin)
@@ -32,14 +32,13 @@ export const loginAction = ({ login, resetLogin, setUser, setError, origin }) =>
       })
 
       setError()
-
       resetLogin && resetLogin()
 
       if (origin) {
         console.log('returning to', origin)
         navigate(origin)
       } else {
-        navigate('/')
+        navigate('/collections')
       }
     })
     .catch(() => {
