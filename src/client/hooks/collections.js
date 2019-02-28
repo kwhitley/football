@@ -50,20 +50,18 @@ export function useCollectionDetails(collectionId) {
   let [ error, setError ] = useState(undefined)
 
   useEffect(() => {
-    if (!collection) {
-      setIsLoading(true)
+    setIsLoading(true)
 
-      fetchJSON(`/api/collections/${collectionId}`)
-        .then(r => {
-          setIsLoading(false)
-          setCollection(r)
-        })
-        .catch(err => {
-          setIsLoading(false)
-          setError(err)
-        })
-    }
-  }, [collectionId])
+    fetchJSON(`/api/collections/${collectionId}`)
+      .then(r => {
+        setIsLoading(false)
+        setCollection(r)
+      })
+      .catch(err => {
+        setIsLoading(false)
+        setError(err)
+      })
+  }, [])
 
   return { collection, isLoading, error }
 }
@@ -89,7 +87,7 @@ export function useItemDetails({ collectionId, itemId }) {
         setIsLoading(false)
         setError(err)
       })
-  }, [collectionId, itemId])
+  }, [])
 
   return {
     item,

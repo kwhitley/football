@@ -24,8 +24,6 @@ export default memo(function Input({
     validationMessage = invalid && value && validator.message
   }
 
-  console.log('Input, value', value)
-
   return (
     <section className="input-group">
       <input

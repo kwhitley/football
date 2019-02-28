@@ -15,19 +15,40 @@ import {
 } from './collections'
 import { isAuthenticated } from '../users/users'
 import db, { collection } from '../db'
+import apicache from 'apicache'
 
 const app = express()
+const cached = apicache.options({
+                debug: process.env.NODE_ENV !== 'production',
+                enabled: false,
+              }).middleware('1 day')
+
+const cleanItems = (item) => {
+  delete item.filename
+  delete item.id
+  delete item.size
+
+  if (item.collection) {
+    delete item.collection.source
+  }
+
+  return item
+}
+
+app.use('/:slug', (req, res, next) => {
+  req.apicacheGroup = req.params.slug
+
+  next()
+})
+
+app.get('/cache', (req, res) => {
+  res.json(apicache.getIndex())
+})
 
 // GET colections index
-app.get('/', async (req, res) => {
+app.get('/', cached, async (req, res) => {
+  req.apicacheGroup = 'collections'
   let result = await getCollections()
-
-  result = result.map(c => {
-    delete c.items
-    delete c.source
-
-    return c
-  })
 
   if (!result) {
     return res.sendStatus(404)
@@ -37,7 +58,7 @@ app.get('/', async (req, res) => {
 })
 
 // GET collection
-app.get('/:slug', async (req, res) => {
+app.get('/:slug', cached, async (req, res) => {
   let { slug } = req.params
   let key = slug.length === 5 ? 'hash' : 'slug'
 
@@ -47,17 +68,9 @@ app.get('/:slug', async (req, res) => {
     return res.sendStatus(404)
   }
 
-  console.log('GET getCollection', { slug }, 'result = ', result)
-
   delete result.source
   delete result.owner
-  result.items = result.items || []
-  result.items = result.items.map(i => {
-    delete i.filename
-    delete i.size
-
-    return i
-  })
+  result.items = result.items.map(cleanItems) || []
 
   res.json(result)
 
@@ -74,22 +87,16 @@ app.patch('/:slug', isAuthenticated, async (req, res) => {
 
   console.log('updating collection', slug, req.body)
 
-  // return res.sendStatus(200)
+  let updateSuccess = await updateCollection({ [key]: slug, owner: user._id })(req.body)
+                              .catch((err) => {
+                                console.error(err)
+                              })
 
-  await updateCollection({ [key]: slug, owner: user._id })(req.body)
-          .catch((err) => {
-            console.error(err)
-            res.sendStatus(400)
-          })
-
-  let response = await getCollections({ slug })
-  user.collections = await getCollections({ owner: user._id })
-
-  if (response) {
-    res.json(response)
-  } else {
-    res.sendStatus(400)
+  if (updateSuccess) {
+    apicache.clear(req.apicacheGroup)
   }
+
+  res.sendStatus(updateSuccess ? 200 : 400)
 })
 
 // DELETE collection
@@ -110,22 +117,23 @@ app.delete('/:slug', isAuthenticated, async (req, res) => {
 })
 
 // GET collection items
-app.get('/:slug/items', async (req, res) => {
+app.get('/:slug/items', cached, async (req, res) => {
   let { slug, item } = req.params
   let key = slug.length === 5 ? 'hash' : 'slug'
 
-  let items = await getCollectionItems({ [key]: slug })
+  let collection = await getCollection({ [key]: slug })
                       .catch(err => console.error(err))
 
-  items ? res.json(await items) : res.sendStatus(400)
+  collection ? res.json(collection.items.map(cleanItems)) : res.sendStatus(404)
 })
 
 // GET collection item (single) by id
-app.get('/:slug/items/:hash', async (req, res) => {
+app.get('/:slug/items/:hash', cached, async (req, res) => {
   let { slug, hash } = req.params
   let key = slug.length === 5 ? 'hash' : 'slug'
 
   let item = await getCollectionItem({ [key]: slug })({ hash })
+                          .then(cleanItems)
                           .catch(err => console.error(err))
 
   return item
@@ -139,13 +147,16 @@ app.patch('/:slug/items/:id', isAuthenticated, async (req, res) => {
   let { user } = req
   let key = slug.length === 5 ? 'hash' : 'slug'
 
-  let update = await updateItemInCollection({ [key]: slug, owner: user._id })(id)(req.body)
+  console.log('updating', { slug, id, update: req.body })
+
+  let updateSuccess = await updateItemInCollection({ [key]: slug, owner: user._id })(id)(req.body)
                       .catch(err => console.error(err))
 
-  let results = await getCollection({ slug })
-                      .catch(err => res.sendStatus(500))
+  if (updateSuccess) {
+    apicache.clear(req.apicacheGroup)
+  }
 
-  res.json(await results)
+  res.sendStatus(updateSuccess ? 200 : 400)
 })
 
 // GET collection sync (trigger)

@@ -15,8 +15,6 @@ export default memo(function LiveEdit({
   useAutoResize(ref)
   useFocus(ref)
 
-  console.log('LiveEdit', value)
-
   return (
     <div className="input-group">
       <textarea

@@ -7,7 +7,12 @@ import { imagePath } from '../paths'
 
 // gets image locally, or downloads from dropbox and returns the saved image
 export const getBaseImage = async (requestedImagePath) => {
+  console.log('getBaseImage', { requestedImagePath })
   return new Promise(async function(resolve, reject) {
+    // trim requests if passed through as root /i/hash/hash style
+    requestedImagePath = requestedImagePath.replace(/^\/i(\/.*)$/,'$1')
+
+    // begin decoding the request path
     let decodedPath = decodeURI(requestedImagePath)
     let collectionHash = decodedPath.replace(/\/([^\/]+).*/g, '$1')
     let hash = decodedPath.replace(/.*\/(\w+).*/g, '$1')
@@ -16,14 +21,14 @@ export const getBaseImage = async (requestedImagePath) => {
     let savepath = imagePath + requestedImagePath
     let originalpath = imagePath + '/' + collectionHash + '/' + hash + '.jpg'
 
-    console.log('getBaseImage', {
-      requestedImagePath,
-      decodedPath,
-      collectionHash,
-      hash,
-      savepath,
-      originalpath,
-    })
+    // console.log('getBaseImage', {
+    //   requestedImagePath,
+    //   decodedPath,
+    //   collectionHash,
+    //   hash,
+    //   savepath,
+    //   originalpath,
+    // })
 
     // throw new Error('exit')
 
@@ -32,9 +37,14 @@ export const getBaseImage = async (requestedImagePath) => {
 
     // download image from dropbox if not found base locally
     if (!image) {
-      let collection = await getCollection({ hash: collectionHash })
-      let item = await getCollectionItem(collection)({ hash })
-      console.log('item found', item)
+      let item = await getCollectionItem({ hash: collectionHash })({ hash })
+
+      if (!item) {
+        return reject('no item found with', { collectionHash, hash })
+      }
+
+      let { collection } = item
+      // console.log('item found', item)
 
       let { source } = collection
       let binary = await download(source.apiKey, item.id)

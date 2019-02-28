@@ -17,10 +17,10 @@ const longStory = (story = '') => story.length > 1000
 export default function ImageDetails({ collectionId, item }) {
   let isOwner = useOwnsCollection(collectionId)
   let { update, setUpdate, isDirty, revertAction, updateAction } = useUpdate({
-    path: `/api/collections/${collectionId}/items/${item.id}`,
+    path: `/api/collections/${collectionId}/items/${item.hash}`,
     item,
   })
-  let [ editModeEnabled, setEditModeEnabled ] = useStore('editMode', false, { persist: true })
+  let [ editModeEnabled, setEditModeEnabled ] = useStore('editMode', true, { persist: true })
   let editMode = editModeEnabled && isOwner
   let noContent = !item.story && !item.name
 
@@ -39,13 +39,13 @@ export default function ImageDetails({ collectionId, item }) {
               [false]: <FiEdit />,
             }}>
           </ActionIconToggle>
-          <ActionIcon
+          {/*<ActionIcon
             onClick={revertAction}
             disabled={!isDirty}
             className="cancel"
             >
             <FiX />
-          </ActionIcon>
+          </ActionIcon>*/}
           <ActionIcon
             onClick={updateAction}
             disabled={!isDirty}

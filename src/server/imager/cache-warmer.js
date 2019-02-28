@@ -3,7 +3,7 @@ import { randomItem } from 'supergeneric/collections'
 import { getIndex } from './dropbox'
 import { getBaseImage } from './get-base-image'
 import { getImage } from './imager.js'
-import { getCollections, syncCollection } from '../collections/collections'
+import { getCollections, getCollectionItems, syncCollection } from '../collections/collections'
 
 // persist list of paths processed and pending to be processed
 const pendingImages = new Set
@@ -19,7 +19,7 @@ let globalUpdate
 
 // delay updates whenever middleware is triggered from a route
 export const cacheWhenIdle = (req, res, next) => {
-  console.log('DELAY IDLE CACHING...', IDLE_CACHE_DELAY, 'ms')
+  // console.log('DELAY IDLE CACHING...', IDLE_CACHE_DELAY, 'ms')
   resetTimer(IDLE_CACHE_DELAY)
   next()
 }
@@ -31,6 +31,8 @@ export const checkForUpdates = async () => {
     'source.service': 'dropbox',
     'source.apiKey': { $exists: true },
   })
+
+  console.log('found', collections.length, 'collections...')
 
   for (var collection of collections) {
     console.log('syncing collection', collection.slug)
@@ -44,8 +46,10 @@ export const checkForUpdates = async () => {
   })
 
   for (var collection of collections) {
-    for (var item of collection.items) {
-      let path = `${collection.hash}/${item.hash}`
+    let items = await getCollectionItems({ hash: collection.hash })
+
+    for (var item of items) {
+      let path = item.imagePath
 
       if (!pendingImages.has(path) && !cachedImages.has(path)) {
         console.log('image to be cached', { path })
@@ -61,7 +65,7 @@ export const checkForUpdates = async () => {
 
 const resetTimer = (delay = 10) => {
   let timeDiff = (new Date() - stallDate)
-  console.log('resetTimer, delay=', delay, 'timeDiff=', timeDiff)
+  // console.log('resetTimer, delay=', delay, 'timeDiff=', timeDiff)
   if (timeDiff > 0) {
     stallDate = new Date(new Date() - -delay) // shorthand to add delay to current Date
     timer && clearTimeout(timer)
@@ -97,10 +101,10 @@ const cacheAnImage = async () => {
 
 const loadFragments = async (path) => {
   try {
-    await getImage(`/${path}::width=400,height=400,preview.jpg`)
-    await getImage(`/${path}::width=400,height=400.jpg`)
-    await getImage(`/${path}::width=900,height=900,fit=inside,preview.jpg`)
-    await getImage(`/${path}::width=900,height=900,fit=inside.jpg`)
+    await getImage(`${path}::width=400,height=400,preview.jpg`)
+    await getImage(`${path}::width=400,height=400.jpg`)
+    await getImage(`${path}::width=1500,height=1500,fit=inside,preview.jpg`)
+    await getImage(`${path}::width=1500,height=1500,fit=inside.jpg`)
 
     return true
   } catch(err) {
