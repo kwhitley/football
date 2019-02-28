@@ -1,5 +1,6 @@
 import db from '../db'
 import { getIndex } from '../imager/dropbox'
+import { generateHash } from '../utils'
 
 export const createCollection = (user) => async (content) => {
   if (!user || !user._id) {
@@ -10,6 +11,7 @@ export const createCollection = (user) => async (content) => {
   content = Object.assign({
               dateCreated: new Date(),
               dateModified: new Date(),
+              hash: generateHash(5),
               owner: user._id,
             }, content)
 
@@ -29,7 +31,11 @@ export const isAvailable = (slug) => db('collections')
                                       .findOne({ slug })
                                       .then(r => !r)
 
-export const addItemToCollection = ({ slug, owner }) => (item) => {
+export const addItemToCollection = ({ slug, owner }) => (item = {}) => {
+  if (!item.hash) {
+    item.hash = generateHash(3)
+  }
+
   console.log('adding item to collection', slug, item)
 
   return db('collections')
@@ -101,9 +107,17 @@ export const getCollectionItems = (where = {}) => db('collections')
                                           .findOne(where)
                                           .then(r => r.items || [])
 
-export const getCollectionItem = (where = {}) => (itemWhere = {}) => db('collections')
-                                          .findOne(where, { foo: 1, dateCreated: 0 })
-                                          .then(r => r.items || [])
+export const getCollectionItem = (where = {}) => (itemWhere = {}) => {
+  let options = {
+                  projection: {
+                    items: { $elemMatch: itemWhere },
+                  }
+                }
+
+  return db('collections')
+    .findOne(where, options)
+    .then(r => r.items ? r.items[0] : undefined)
+}
 
 export const syncCollection = async (where = {}) => {
   try {
@@ -117,6 +131,12 @@ export const syncCollection = async (where = {}) => {
     let dropboxItems = await getIndex(source.apiKey) || []
 
     for (var dbItem of dropboxItems) {
+      /*
+        match by:
+        1 - id (only)
+        2 - filename + folder (both)
+        3 - size + filename + folder (any 2?)
+      */
       if (!collectionItems.find(i => i.id === dbItem.id)) {
         console.log('id', dbItem.id, 'not found in collection... inserting', dbItem)
         await addItemToCollection({ slug, owner })(dbItem)

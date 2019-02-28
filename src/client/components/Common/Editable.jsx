@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { memo } from 'react'
 import LiveEdit from './LiveEdit'
 
-export default function Editable({
+export default memo(function Editable({
   placeholder,
   className,
   value,
@@ -22,4 +22,4 @@ export default function Editable({
       placeholder={placeholder}
       />
   )
-}
+})

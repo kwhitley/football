@@ -19,7 +19,7 @@ export default function Grid({ collectionId, items }) {
         items.map((item, index) =>
           <Item
             key={item.id}
-            id={collectionId + '/' + item.id}
+            id={collectionId + '/' + item.hash}
             item={item}
             />
         )

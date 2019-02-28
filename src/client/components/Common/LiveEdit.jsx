@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, memo } from 'react'
 import classNames from 'classnames'
 import { useAutoResize, useFocus } from 'hooks'
 
-const valueOnly = (fn) => (e) => fn(e.target.value)
+const valueOnly = fn => e => fn(e.target.value)
 
-export default function LiveEdit({
+export default memo(function LiveEdit({
   value,
   placeholder,
   onChange,
@@ -14,6 +14,8 @@ export default function LiveEdit({
   let ref = useRef(null)
   useAutoResize(ref)
   useFocus(ref)
+
+  console.log('LiveEdit', value)
 
   return (
     <div className="input-group">
@@ -28,4 +30,4 @@ export default function LiveEdit({
       <label>{ placeholder }</label>
     </div>
   )
-}
+})

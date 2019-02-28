@@ -1,7 +1,6 @@
 import React from 'react'
 import {
   useItemDetails,
-  useOwnsCollection,
   useDocumentTitle,
   useCollectionDetails,
 } from 'hooks'
@@ -12,9 +11,13 @@ import Details from './Details'
 
 export default function ItemViewer({ collectionId, itemId, navigate }) {
   let { collection, error } = useCollectionDetails(collectionId)
-  let { item, updateItemAction, isLoading, error: itemError } = useItemDetails({ collectionId, itemId })
+  let {
+    item,
+    updateItemAction,
+    isLoading,
+    error: itemError
+  } = useItemDetails({ collectionId, itemId })
   useDocumentTitle(item && item.name, collection && collection.name)
-  let isOwner = useOwnsCollection(collectionId)
 
   if (!item || isLoading || error || itemError) {
     return (error || itemError) ? <MissingPage message={`Are you sure about that?`} /> : false
@@ -31,7 +34,6 @@ export default function ItemViewer({ collectionId, itemId, navigate }) {
       <Details
         collectionId={collectionId}
         item={item}
-        isOwner={isOwner}
         updateItemAction={updateItemAction}
         />
     </Page>

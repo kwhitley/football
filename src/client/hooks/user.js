@@ -24,11 +24,11 @@ export function useLogin(origin) {
 
   let resetLogin = () => {
     setError()
-    setLogin({ email: '', password: '', isValidating: false })
+    setPassword('')
   }
 
-  let isValid = validators.password().isValid(password) &&
-    validators.email().isValid(email)
+  let isValid = validators.password.isValid(password) &&
+                validators.email.isValid(email)
 
   return {
     email,
@@ -37,16 +37,18 @@ export function useLogin(origin) {
     setPassword,
     user,
     error,
-    loginAction: () => {
-      loginAction({ login, resetLogin, setUser, setError, origin })
-    },
     isValid,
-    logoutAction: () => {
-      console.log('logging out')
-      logoutAction({
-        onSuccess: () => setUser({ isLoggedIn: false, profile: undefined })
-      })
-    }
+    actions: {
+      login: () => {
+        loginAction({ email, password, resetLogin, setUser, setError, origin })
+      },
+      logout: () => {
+        console.log('logging out')
+        logoutAction({
+          onSuccess: () => setUser({ isLoggedIn: false, profile: undefined })
+        })
+      },
+    },
   }
 }
 

@@ -5,6 +5,7 @@ import {
   updateCollection,
   getCollections,
   getCollectionList,
+  getCollectionItem,
   getCollectionItems,
   syncCollection,
   isAvailable,
@@ -38,8 +39,9 @@ app.get('/', async (req, res) => {
 // GET collection
 app.get('/:slug', async (req, res) => {
   let { slug } = req.params
+  let key = slug.length === 5 ? 'hash' : 'slug'
 
-  let result = await getCollection({ slug })
+  let result = await getCollection({ [key]: slug })
 
   if (!result) {
     return res.sendStatus(404)
@@ -68,12 +70,13 @@ app.patch('/:slug', isAuthenticated, async (req, res) => {
   const collections = collection('collections')
   const { slug } = req.params
   const { user } = req
+  let key = slug.length === 5 ? 'hash' : 'slug'
 
   console.log('updating collection', slug, req.body)
 
   // return res.sendStatus(200)
 
-  await updateCollection({ slug, owner: user._id })(req.body)
+  await updateCollection({ [key]: slug, owner: user._id })(req.body)
           .catch((err) => {
             console.error(err)
             res.sendStatus(400)
@@ -94,8 +97,9 @@ app.delete('/:slug', isAuthenticated, async (req, res) => {
   const collections = collection('collections')
   const { slug } = req.params
   const { user } = req
+  let key = slug.length === 5 ? 'hash' : 'slug'
 
-  let response = await collections.remove({ slug, owner: String(user._id) })
+  let response = await collections.remove({ [key]: slug, owner: String(user._id) })
   user.collections = await getCollections({ owner: String(user._id) })
 
   if (response) {
@@ -108,29 +112,34 @@ app.delete('/:slug', isAuthenticated, async (req, res) => {
 // GET collection items
 app.get('/:slug/items', async (req, res) => {
   let { slug, item } = req.params
+  let key = slug.length === 5 ? 'hash' : 'slug'
 
-  let items = await getCollectionItems({ slug })
+  let items = await getCollectionItems({ [key]: slug })
                       .catch(err => console.error(err))
 
   items ? res.json(await items) : res.sendStatus(400)
 })
 
 // GET collection item (single) by id
-app.get('/:slug/items/:id', async (req, res) => {
-  let { slug, id } = req.params
+app.get('/:slug/items/:hash', async (req, res) => {
+  let { slug, hash } = req.params
+  let key = slug.length === 5 ? 'hash' : 'slug'
 
-  let allItems = await getCollectionItems({ slug })
-                        .catch(err => console.error(err))
+  let item = await getCollectionItem({ [key]: slug })({ hash })
+                          .catch(err => console.error(err))
 
-  res.json(allItems.find(i => i.id === id))
+  return item
+    ? res.json(item)
+    : res.sendStatus(404)
 })
 
 // PATCH collection item (single) by id
 app.patch('/:slug/items/:id', isAuthenticated, async (req, res) => {
   let { slug, id } = req.params
   let { user } = req
+  let key = slug.length === 5 ? 'hash' : 'slug'
 
-  let update = await updateItemInCollection({ slug, owner: user._id })(id)(req.body)
+  let update = await updateItemInCollection({ [key]: slug, owner: user._id })(id)(req.body)
                       .catch(err => console.error(err))
 
   let results = await getCollection({ slug })
@@ -142,8 +151,9 @@ app.patch('/:slug/items/:id', isAuthenticated, async (req, res) => {
 // GET collection sync (trigger)
 app.get('/:slug/sync', async (req, res) => {
   let { slug } = req.params
+  let key = slug.length === 5 ? 'hash' : 'slug'
 
-  let syncResponse = await syncCollection({ slug })
+  let syncResponse = await syncCollection({ [key]: slug })
                             .catch(err => console.error(err))
 
   return res.json(syncResponse)
