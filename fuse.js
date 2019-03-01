@@ -26,9 +26,6 @@ console.log('description', pkg.description)
 
 const clientConfig = (isProduction, basePath = DEV_BUILD_PATH) => ({
   alias : {
-    // 'react' : 'preact-compat',
-    // 'react-dom' : 'preact-compat',
-    // 'mobx-react' : 'mobx-preact',
     'hooks': '~/client/hooks',
     'utils': '~/client/utils',
     'Common': '~/client/components/Common',
@@ -42,8 +39,9 @@ const clientConfig = (isProduction, basePath = DEV_BUILD_PATH) => ({
   cache: !isProduction,
   sourceMaps: true,
   plugins: [
-    !isProduction && EnvPlugin({
-      NODE_ENV: 'development',
+    EnvPlugin({
+      NODE_ENV: isProduction ? 'production' : 'development',
+      CDN_PATH: process.env.CDN_PATH,
     }),
     JSONPlugin(),
     [
