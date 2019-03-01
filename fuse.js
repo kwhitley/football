@@ -39,8 +39,9 @@ const clientConfig = (isProduction, basePath = DEV_BUILD_PATH) => ({
   cache: !isProduction,
   sourceMaps: true,
   plugins: [
-    !isProduction && EnvPlugin({
-      NODE_ENV: 'development',
+    EnvPlugin({
+      NODE_ENV: isProduction ? 'production' : 'development',
+      CDN_PATH: process.env.CDN_PATH,
     }),
     JSONPlugin(),
     [

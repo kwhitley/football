@@ -39,10 +39,8 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(compression())
 
-// add logging
-// app.use(morgan('dev'))
-
 // static serving from /dist/client
+
 console.log(`serving static content from ${clientPath}`)
 app.use(express.static(clientPath))
 app.use(favicon(path.join(__dirname, '../src/client/images', 'favicon.ico')))

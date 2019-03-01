@@ -1,6 +1,6 @@
 import db from '../db'
 import { getIndex } from '../imager/dropbox'
-import { generateHash } from '../utils'
+import { generateHash } from '../utils/hash'
 
 const getImagePath = (collection) => (item) => `/i/${collection.hash}/${item.hash}`
 
