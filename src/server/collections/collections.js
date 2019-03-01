@@ -1,5 +1,8 @@
 import db from '../db'
 import { getIndex } from '../imager/dropbox'
+import { generateHash } from '../utils'
+
+const getImagePath = (collection) => (item) => `/i/${collection.hash}/${item.hash}`
 
 export const createCollection = (user) => async (content) => {
   if (!user || !user._id) {
@@ -10,6 +13,7 @@ export const createCollection = (user) => async (content) => {
   content = Object.assign({
               dateCreated: new Date(),
               dateModified: new Date(),
+              hash: generateHash(5),
               owner: user._id,
             }, content)
 
@@ -24,12 +28,17 @@ export const updateCollection = ({ slug, owner }) => (content) =>
       { slug, owner },
       { $set: content }
     )
+    .then(r => r.result.nModified === 1)
 
 export const isAvailable = (slug) => db('collections')
                                       .findOne({ slug })
                                       .then(r => !r)
 
-export const addItemToCollection = ({ slug, owner }) => (item) => {
+export const addItemToCollection = ({ slug, owner }) => (item = {}) => {
+  if (!item.hash) {
+    item.hash = generateHash(3)
+  }
+
   console.log('adding item to collection', slug, item)
 
   return db('collections')
@@ -56,7 +65,7 @@ export const removeItemFromCollection = ({ slug, owner }) => (where) =>
       }
     )
 
-export const updateItemInCollection = ({ slug, owner }) => (id) => (content) => {
+export const updateItemInCollection = ({ slug, owner }) => (hash) => (content) => {
   const updateify = (content) => {
     let base = Object.keys(content).reduce((obj, key) => {
       obj[`items.$.${key}`] = content[key]
@@ -77,19 +86,44 @@ export const updateItemInCollection = ({ slug, owner }) => (id) => (content) => 
       {
         slug,
         owner,
-        'items.id': id,
+        'items.hash': hash,
       },
       {
         $set: updateify(content),
       }
     )
+    .then(r => r.result.nModified === 1)
 }
 
-export const getCollection = (where = {}) => db('collections').findOne(where)
+export const getCollection = (where = {}) => db('collections')
+                                                .findOne(where)
+                                                .then(r => {
+                                                  if (!r) {
+                                                    return undefined
+                                                  }
+
+                                                  if (!r.items) {
+                                                    r.items = []
+                                                  }
+
+                                                  r.items.map(i => {
+                                                    i.imagePath = getImagePath(r)(i)
+
+                                                    return i
+                                                  })
+
+                                                  return r
+                                                })
+
+export const getCollectionItems = (where = {}) => getCollection(where).then(r => r.items)
+
 
 export const getCollections = (where = {}) => db('collections')
                                                 .find(where, {
-                                                  items: 0,
+                                                  projection: {
+                                                    items: 0,
+                                                    source: 0,
+                                                  },
                                                 })
                                                 .toArray()
 
@@ -97,16 +131,37 @@ export const getCollectionList = (where = {}) => db('collections')
                                           .find(where)
                                           .toArray()
 
-export const getCollectionItems = (where = {}) => db('collections')
-                                          .findOne(where)
-                                          .then(r => r.items || [])
+export const getCollectionItem = (where = {}) => (itemWhere = {}) => {
+  let options = {
+                  projection: {
+                    hash: 1,
+                    slug: 1,
+                    name: 1,
+                    source: 1,
+                    items: { $elemMatch: itemWhere },
+                  }
+                }
 
-export const getCollectionItem = (where = {}) => (itemWhere = {}) => db('collections')
-                                          .findOne(where, { foo: 1, dateCreated: 0 })
-                                          .then(r => r.items || [])
+  return db('collections')
+    .findOne(where, options)
+    .then(collection => {
+      if (!collection.items) {
+        return undefined
+      }
+
+      let item = collection.items[0]
+      let { name, hash, slug, source } = collection
+
+      item.collection = { name, hash, slug, source }
+      item.imagePath = getImagePath(collection)(item)
+
+      return item
+    })
+}
 
 export const syncCollection = async (where = {}) => {
   try {
+    console.log('syncing collection', where)
     let collection = await getCollection(where)
     let collectionItems = collection.items || []
 
@@ -117,6 +172,12 @@ export const syncCollection = async (where = {}) => {
     let dropboxItems = await getIndex(source.apiKey) || []
 
     for (var dbItem of dropboxItems) {
+      /*
+        match by:
+        1 - id (only)
+        2 - filename + folder (both)
+        3 - size + filename + folder (any 2?)
+      */
       if (!collectionItems.find(i => i.id === dbItem.id)) {
         console.log('id', dbItem.id, 'not found in collection... inserting', dbItem)
         await addItemToCollection({ slug, owner })(dbItem)
@@ -137,6 +198,7 @@ export const syncCollection = async (where = {}) => {
     }
 
   } catch(err) {
-    throw new Error(err)
+    console.error('error syncing', err)
+    return false
   }
 }
