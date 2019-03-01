@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useStore } from './store'
 
-const SOURCE_PATH = process.env.NODE_ENV === 'development'
-                ? ''
-                : 'https://cdn.supergeneric.me'
+const SOURCE_PATH = process.env.CDN_PATH || ''
 
 const getOrientation = (image) => image.naturalHeight > image.naturalWidth
                                   ? 'portrait'
