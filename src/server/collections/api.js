@@ -184,7 +184,7 @@ app.get('/:slug/available', async (req, res) => {
 
 // POST collection
 app.post('/', isAuthenticated, async (req, res) => {
-  let { name, slug } = req.body
+  let { slug } = req.body
   let { user } = req
 
   let available = await isAvailable(slug)
@@ -193,7 +193,7 @@ app.post('/', isAuthenticated, async (req, res) => {
     return res.sendStatus(409)
   }
 
-  let response = await createCollection(req.user)(req.body)
+  let response = await createCollection(user)(req.body)
                           .catch((err) => {
                             console.error(err)
                             res.sendStatus(400)

@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react'
 import {
   fetchJSON,
   fetchStatusIsOK,
+  postJSON,
   withValue,
   withSlugifiedValue,
   validators,
 } from 'utils'
 import { useStore } from './store'
 import { updateItemAction } from './collection.actions'
+import { navigate } from '@reach/router'
 
 export function useCollections() {
   let [ collections, setCollections ] = useState([])
@@ -100,6 +102,7 @@ export function useItemDetails({ collectionId, itemId }) {
 export function useNewCollection() {
   let [ slug, setSlug ] = useState('')
   let [ apiKey, setApiKey ] = useState('')
+  let [ error, setError ] = useState('')
   let isAvailable = useCollectionSlugIsAvailable(slug)
   let isValid = isAvailable
 
@@ -110,5 +113,21 @@ export function useNewCollection() {
     isValid,
     setSlug: withSlugifiedValue(setSlug),
     isAvailable: useCollectionSlugIsAvailable(slug),
+    createCollectionAction: () => {
+      postJSON('/api/collections',{
+          slug,
+          source: {
+            service: 'dropbox',
+            apiKey,
+          }
+        })
+        .then(success => {
+          if (!success) {
+            setError('There was an error submitting your information.  Try again?')
+          } else {
+            navigate('/collections/')
+          }
+        })
+    },
   }
 }

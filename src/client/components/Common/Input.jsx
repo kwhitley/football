@@ -12,6 +12,7 @@ export default memo(function Input({
   placeholder,
   className,
   validator,
+  isValid,
   ...props
 }) {
   let ref = useRef(null)
@@ -20,7 +21,7 @@ export default memo(function Input({
   let validationMessage = undefined
 
   if (validator) {
-    invalid = validator.isValid(value) ? undefined : 'true'
+    invalid = validator.isValid(isValid !== undefined ? isValid : value) ? undefined : 'true'
     validationMessage = invalid && value && validator.message
   }
 

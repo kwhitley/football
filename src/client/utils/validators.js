@@ -10,6 +10,7 @@ export const validators = {
   },
   collectionName: {
     isValid: isAvailable => isAvailable,
-    message: 'This name is invalid or has already been taken',
+    message: `Collection "slugs" should be a unique identifier of 5 characters or more,
+              and only contain lowercase letters, numbers, or dashes.  Example: http://www.supergeneric.me/your-cool-gallery-here`,
   },
 }

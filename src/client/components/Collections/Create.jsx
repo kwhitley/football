@@ -25,17 +25,19 @@ export default function CreateCollection({ location, navigate }) {
 
   return (
     <Page className="form" visible={isLoggedIn} back navigate={navigate}>
-      <h1>Create a New Collection</h1>
+      <h1>Create Collection</h1>
 
       <Input
-        placeholder="Collection Link (URL)"
+        placeholder="Collection Link"
+        label="Collection Link (must be lowercase or dashes)"
         value={slug}
-        validator={validators.collectionName(isAvailable)}
+        validator={validators.collectionName}
+        isValid={isAvailable}
         onChange={setSlug}
         />
 
       <Input
-        placeholder="Your API Key"
+        placeholder="A Valid Dropbox API Key"
         value={apiKey}
         onChange={setApiKey}
         />

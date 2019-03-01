@@ -20,7 +20,7 @@ export function patch(path, update) {
   })
 }
 
-export function post(path, item) {
+export function postJSON(path, item) {
   return fetchStatusIsOK(path, {
     method: 'POST',
     headers: {
