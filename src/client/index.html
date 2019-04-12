@@ -1,14 +1,34 @@
 <html lang="en">
   <head>
-    <title>$title</title>
+    <title>Football</title>
     <meta charSet="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    $description
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    $css
+    <style type="text/css">
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        font-family: sans-serif;
+        color: #666;
+      }
+
+      body > * {
+        flex: 0;
+        padding: 0 2em 2em;
+        font-weight: lighter;
+        letter-spacing: -0.05rem;
+      }
+
+      em {
+        font-style: normal;
+        font-weight: 400;
+        color: #222;
+      }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
-    $bundles
+    <h1>Because <em>football.com</em> was already taken.</h1>
   </body>
 </html>

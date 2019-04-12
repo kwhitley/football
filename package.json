@@ -1,11 +1,8 @@
 {
-  "name": "supergeneric-gallery",
+  "name": "football",
   "version": "1.0.0",
-  "description": "for painless photo gallery creation",
-  "title": "Supergeneric Gallery",
-  "engines": {
-    "node": ">=10.0.0"
-  },
+  "description": "The real football",
+  "title": "A football expanation",
   "main": "dist/server.js",
   "target": "esnext",
   "scripts": {
@@ -21,37 +18,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@supergeneric/express-server": "^1.1.2",
-    "apicache": "^1.4.0",
-    "bcryptjs": "^2.4.3",
-    "dotenv": "^6.2.0",
-    "dropbox": "^4.0.16",
-    "express": "^4.16.4",
-    "globby": "^9.0.0",
-    "isomorphic-fetch": "^2.2.1",
-    "javascript-blowfish": "^1.0.4",
-    "mongodb": "^3.1.13",
-    "sharp": "^0.21.3",
-    "supergeneric": "^1.1.0",
-    "xs-blowfish": "^2.0.0"
+    "@supergeneric/express-server": "^1.1.2"
   },
   "devDependencies": {
-    "@reach/router": "^1.2.1",
-    "chai": "^4.2.0",
-    "classnames": "^2.2.6",
-    "esm": "^3.2.7",
     "fuse-box": "^3.7.1",
     "fuse-test-runner": "^1.0.16",
     "less": "^3.9.0",
-    "mocha": "^6.0.2",
     "node-sass": "^4.11.0",
-    "prop-types": "^15.7.2",
-    "react": "^16.8.3",
-    "react-dom": "^16.8.3",
-    "react-hot-loader": "^4.7.1",
-    "react-icons": "^3.4.0",
-    "react-markings": "^1.3.0",
-    "terser": "^3.16.1",
-    "typescript": "^3.3.3333"
+    "terser": "^3.17.0",
+    "typescript": "^3.4.3"
   }
 }
